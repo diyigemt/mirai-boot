@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
-<mapper namespace="org.qqbot.mapper.PermissionMapper">
-    <resultMap id="BaseMap" type="org.qqbot.entity.PermissionItem">
+<mapper namespace="org.miraiboot.mapper.PermissionMapper">
+    <resultMap id="BaseMap" type="org.miraiboot.entity.PermissionItem">
         <id column="id" property="id" jdbcType="INTEGER"/>
         <result column="command_id" property="commandId" jdbcType="VARCHAR"/>
         <result column="sender_id" property="senderId" jdbcType="VARCHAR"/>
