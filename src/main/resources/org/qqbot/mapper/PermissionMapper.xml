@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="org.qqbot.mapper.PermissionMapper">
+    <resultMap id="BaseMap" type="org.qqbot.entity.PermissionItem">
+        <id column="id" property="id" jdbcType="INTEGER"/>
+        <result column="command_id" property="commandId" jdbcType="VARCHAR"/>
+        <result column="sender_id" property="senderId" jdbcType="VARCHAR"/>
+        <result column="permit" property="permit" jdbcType="BOOLEAN"/>
+    </resultMap>
+
+    <select id="getPermission" resultMap="BaseMap">
+        SELECT `id`, `command_id`, `sender_id`, `permit`
+        FROM `permission`
+        WHERE `sender_id` = #{senderId}
+        AND `command_id` = #{commandId}
+    </select>
+
+    <insert id="updatePermission">
+        INSERT INTO `permission`(`command_id`, `sender_id`, `permit`)
+        VALUES (#{commandId}, #{senderId}, #{permit})
+        ON DUPLICATE KEY
+        UPDATE `permit` = #{permit}
+    </insert>
+
+    <delete id="removePermission">
+        DELETE FROM `permission`
+        WHERE sender_id = #{senderId}
+        AND `command_id` = #{commandId}
+    </delete>
+
+</mapper>
