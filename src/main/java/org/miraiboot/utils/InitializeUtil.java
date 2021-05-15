@@ -1,4 +1,4 @@
-package org.miraiboot.interfaces;
+package org.miraiboot.utils;
 
 public interface InitializeUtil {
 

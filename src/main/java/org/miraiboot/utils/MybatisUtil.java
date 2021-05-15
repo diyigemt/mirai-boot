@@ -5,7 +5,6 @@ import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.apache.ibatis.session.SqlSessionFactoryBuilder;
 import org.miraiboot.annotation.AutoInit;
-import org.miraiboot.interfaces.InitializeUtil;
 import org.miraiboot.mapper.BaseMapper;
 
 import java.io.IOException;
@@ -43,7 +42,7 @@ public class MybatisUtil implements InitializeUtil {
 	}
 
 	/**
-	 * 获取一个sqlsession
+	 * 获取一个sqlSession
 	 * 官方推荐执行完事务后需要释放
 	 * @return 一个session
 	 */

@@ -2,18 +2,16 @@ package org.miraiboot.entity;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import net.mamoe.mirai.utils.BotConfiguration;
 
 @Data
 @AllArgsConstructor
 public class ConfigFileBotConfiguration {
-  private ProtocolKind protocol;
+  private BotConfiguration.MiraiProtocol protocol;
   private String device;
 
   public ConfigFileBotConfiguration() {
-    this.protocol = ProtocolKind.ANDROID_PHONE;
+    this.protocol = BotConfiguration.MiraiProtocol.ANDROID_PHONE;
     this.device = "device.json";
-  }
-  public enum ProtocolKind {
-    ANDROID_PHONE, ANDROID_PAD, ANDROID_WATCH
   }
 }

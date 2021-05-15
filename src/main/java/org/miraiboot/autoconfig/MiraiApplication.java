@@ -3,14 +3,17 @@ package org.miraiboot.autoconfig;
 import net.mamoe.mirai.Bot;
 import net.mamoe.mirai.BotFactory;
 import net.mamoe.mirai.event.events.GroupMessageEvent;
-import net.mamoe.mirai.utils.BotConfiguration;
+import net.mamoe.mirai.event.events.MessageEvent;
 import org.miraiboot.annotation.EventHandler;
 import org.miraiboot.annotation.EventHandlerComponent;
 import org.miraiboot.annotation.MiraiBootApplication;
 import org.miraiboot.entity.ConfigFile;
-import org.miraiboot.listener.GroupListener;
+import org.miraiboot.entity.ConfigFileBot;
+import org.miraiboot.entity.ConfigFileBotConfiguration;
+import org.miraiboot.listener.EventListener;
 import org.miraiboot.mirai.MiraiMain;
-import org.miraiboot.utils.EventHandlerUtil;
+import org.miraiboot.utils.BotManager;
+import org.miraiboot.utils.EventHandlerManager;
 import org.miraiboot.utils.FileUtil;
 import org.yaml.snakeyaml.Yaml;
 
@@ -29,6 +32,8 @@ public class MiraiApplication {
       return;
     }
     MiraiMain.logger.info(miraiBootApplication.description());
+    // 初始化实现了InitializeUtil接口的工具类
+    GlobalLoader.initUtil(target);
     // 尝试读取配置文件
     MiraiMain.logger.info("开始读取配置文件");
     File configFile = FileUtil.getInstance().getConfigFile(target);
@@ -48,7 +53,7 @@ public class MiraiApplication {
       MiraiMain.logger.error("配置文件读取出错");
     }
 
-    // 开始自动包扫描
+    // 开始自动包扫描 注册event handler
     String packageName = target.getPackageName();
     List<Class<?>> classHasAnnotation = GlobalLoader.getClassHasAnnotation(EventHandlerComponent.class, packageName);
     if (classHasAnnotation != null && !classHasAnnotation.isEmpty()) {
@@ -58,25 +63,38 @@ public class MiraiApplication {
             EventHandler methodAnnotation = method.getAnnotation(EventHandler.class);
             String targetName = methodAnnotation.target();
             if (targetName.equals("")) targetName = method.getName();
-            EventHandlerUtil.getInstance().on(targetName, aClass, method);
+            EventHandlerManager.getInstance().on(targetName, aClass, method);
           }
         }
       }
     }
-
-    GlobalLoader.init(target);
     Scanner scanner = new Scanner(System.in);
-    Bot bean = BotFactory.INSTANCE.newBot(1741557205L, "Hunter28", botConfiguration -> {
-      botConfiguration.fileBasedDeviceInfo("device.json");
-      botConfiguration.setProtocol(BotConfiguration.MiraiProtocol.ANDROID_PHONE);
-      botConfiguration.noNetworkLog();
-    });
-    bean.getEventChannel().subscribeAlways(GroupMessageEvent.class, new GroupListener());
-    bean.login();
+    final boolean isNetwork = config.getMiraiboot().getLogger().isNetwork();
+    // 注册Bot
+    for (ConfigFileBot configFileBot : config.getMiraiboot().getBots()) {
+      long account = configFileBot.getAccount();
+      if (account == 123L) continue;
+      String value = configFileBot.getPassword().getValue();
+      if (value.equals("pwd")) continue;
+      Bot bot = BotFactory.INSTANCE.newBot(account, value, botConfiguration -> {
+        ConfigFileBotConfiguration configuration = configFileBot.getConfiguration();
+        botConfiguration.fileBasedDeviceInfo(configuration.getDevice());
+        botConfiguration.setProtocol(configuration.getProtocol());
+        if (!isNetwork) {
+          botConfiguration.noNetworkLog();
+        }
+      });
+      // 注册统一的事件监听器
+      bot.getEventChannel().subscribeAlways(MessageEvent.class, new EventListener());
+      BotManager.getInstance().register(configFileBot.getAccount(), bot);
+    }
+    // 注册完成 统一登录
+    BotManager.getInstance().loginAll();
+    // 阻塞主线程
     while (true) {
       String command = scanner.next();
       if (command.equals("exit")) {
-        bean.close();
+        BotManager.getInstance().logoutAll();
         break;
       }
     }

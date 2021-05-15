@@ -11,11 +11,11 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
 
-public class EventHandlerUtil {
-  private static final EventHandlerUtil INSTANCE = new EventHandlerUtil();
+public class EventHandlerManager {
+  private static final EventHandlerManager INSTANCE = new EventHandlerManager();
   private static final Map<String, List<EventHandlerItem>> STORE = new HashMap<String, List<EventHandlerItem>>();
 
-  public static EventHandlerUtil getInstance() { return INSTANCE; }
+  public static EventHandlerManager getInstance() { return INSTANCE; }
 
   public void on(String target, Class<?> invoker, Method handler) {
     List<EventHandlerItem> eventHandlerItems = STORE.get(target);

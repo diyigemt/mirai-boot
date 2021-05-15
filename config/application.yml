@@ -1,10 +1,10 @@
 miraiboot:
   bots:
     -
-      account: 123
+      account: 1741557205
       password:
         kind: PLAIN
-        value: pwd
+        value: Hunter28
       configuration:
         protocol: ANDROID_PHONE
         device: device.json

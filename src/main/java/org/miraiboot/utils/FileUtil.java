@@ -1,27 +1,27 @@
 package org.miraiboot.utils;
 
-
-import org.miraiboot.Main;
 import org.miraiboot.annotation.AutoInit;
-import org.miraiboot.interfaces.InitializeUtil;
 
 import java.io.*;
-import java.net.URL;
 
 @AutoInit
 public class FileUtil implements InitializeUtil {
   private static String RESOURCE_ROOT_FOLDER_PATH;
+  private static String CONFIG_ROOT_FOLDER_PATH;
   /* linux: "/" windows: "\\" */
   public static String SYSTEM_PATH_DIV;
 
   private static final FileUtil INSTANCE = new FileUtil();
 
   public static void init(Class<?> target) {
-//    File dataFolder = new File(getJARRootPath());
-//    RESOURCE_ROOT_FOLDER_PATH = dataFolder.toPath().toString();
-//    SYSTEM_PATH_DIV = System.getProperty("os.name").startsWith("win") ? "\\" : "/";
     SYSTEM_PATH_DIV = File.separator;
-    RESOURCE_ROOT_FOLDER_PATH = getJARRootPath(target) + SYSTEM_PATH_DIV + "data";
+    String base = getJARRootPath(target) + SYSTEM_PATH_DIV;
+    RESOURCE_ROOT_FOLDER_PATH = base + "data";
+    CONFIG_ROOT_FOLDER_PATH = base + "config";
+    File resourceFileDir = new File(RESOURCE_ROOT_FOLDER_PATH);
+    if (!resourceFileDir.exists()) resourceFileDir.mkdir();
+    File configFileDir = new File(CONFIG_ROOT_FOLDER_PATH);
+    if (!configFileDir.exists()) configFileDir.mkdir();
   }
 
   public static FileUtil getInstance() {
@@ -51,12 +51,12 @@ public class FileUtil implements InitializeUtil {
   }
 
   public File getConfigFile(Class<?> target) {
-    File configFile = new File(getJARRootPath(target) + "/application.yml");
+    File configFile = new File(CONFIG_ROOT_FOLDER_PATH + "/application.yml");
     return configFile.exists() ? configFile : null;
   }
 
   public File createConfigFile(Class<?> target) {
-    File configFile = new File(getJARRootPath(target) + "/application.yml");
+    File configFile = new File(CONFIG_ROOT_FOLDER_PATH + "/application.yml");
     if (!configFile.exists()) {
       try {
         if (!configFile.createNewFile()) return null;
