@@ -28,7 +28,7 @@ public class MybatisUtil implements InitializeUtil {
 	/**
 	 * 根据配置文件 初始化工厂
 	 */
-	public static void init() {
+	public static void init(Class<?> target) {
 		Reader reader = null;
 		try {
 			reader = Resources.getResourceAsReader("mybatis-config.xml");
@@ -49,7 +49,7 @@ public class MybatisUtil implements InitializeUtil {
 	 */
 	public SqlSession getSqlSession() {
 		if (factory == null) {
-			init();
+			init(null);
 		}
 		return factory.openSession();
 	}

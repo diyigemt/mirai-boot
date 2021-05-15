@@ -1,0 +1,20 @@
+miraiboot:
+  bots:
+    -
+      account: 123
+      password:
+        kind: PLAIN
+        value: pwd
+      configuration:
+        protocol: ANDROID_PHONE
+        device: device.json
+    -
+      account: 123
+      password:
+        kind: PLAIN
+        value: pwd
+      configuration:
+        protocol: ANDROID_PHONE
+        device: device.json
+  logger:
+    network: false

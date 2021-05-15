@@ -50,16 +50,16 @@ public class FileUtil implements InitializeUtil {
     return new File(RESOURCE_ROOT_FOLDER_PATH + SYSTEM_PATH_DIV + fold + SYSTEM_PATH_DIV + fileName);
   }
 
-  public boolean checkConfigFileExist(Class<?> target) {
+  public File getConfigFile(Class<?> target) {
     File configFile = new File(getJARRootPath(target) + "/application.yml");
-    return configFile.exists();
+    return configFile.exists() ? configFile : null;
   }
 
-  public boolean createConfigFile(Class<?> target) {
+  public File createConfigFile(Class<?> target) {
     File configFile = new File(getJARRootPath(target) + "/application.yml");
     if (!configFile.exists()) {
       try {
-        if (!configFile.createNewFile()) return false;
+        if (!configFile.createNewFile()) return null;
         InputStream resourceAsStream = FileUtil.class.getResourceAsStream("/application-example.yml");
         FileOutputStream stream = new FileOutputStream(configFile);
         byte[] buf = new byte[4096];
@@ -71,10 +71,10 @@ public class FileUtil implements InitializeUtil {
         resourceAsStream.close();
       } catch (IOException e) {
         e.printStackTrace();
-        return false;
+        return null;
       }
     }
-    return true;
+    return configFile;
   }
 
   public static String getJARRootPath(Class<?> target) {
