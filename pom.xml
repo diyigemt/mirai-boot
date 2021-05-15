@@ -91,6 +91,14 @@
             <version>2.6.4</version>
         </dependency>
 
+        <!-- https://mvnrepository.com/artifact/org.yaml/snakeyaml -->
+        <dependency>
+            <groupId>org.yaml</groupId>
+            <artifactId>snakeyaml</artifactId>
+            <version>1.28</version>
+        </dependency>
+
+
         <!-- https://mvnrepository.com/artifact/net.mamoe/mirai-login-solver-selenium -->
         <!--        <dependency>-->
         <!--            <groupId>net.mamoe</groupId>-->

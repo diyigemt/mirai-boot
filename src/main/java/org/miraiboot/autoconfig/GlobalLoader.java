@@ -20,14 +20,14 @@ import java.util.jar.JarFile;
 
 public class GlobalLoader {
   private static final char SYSTEM_PATH_DIV = File.separatorChar;
-  public static void init() {
+  public static void init(Class<?> mainClass) {
     //自动初始化初始化类
     List<Class<? extends InitializeUtil>> allClassByInterface = null;
     try {
       allClassByInterface = GlobalLoader.getAllClassByInterface(InitializeUtil.class);
       for (Class<? extends InitializeUtil> aClass : allClassByInterface) {
-        Method init = aClass.getMethod("init");
-        init.invoke(null);
+        Method init = aClass.getMethod("init", Class.class);
+        init.invoke(null, mainClass);
       }
     } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
       e.printStackTrace();

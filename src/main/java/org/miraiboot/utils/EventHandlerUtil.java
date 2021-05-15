@@ -51,8 +51,9 @@ public class EventHandlerUtil {
 
   private boolean checkEventType(EventHandlerType[] types, MessageEvent event) {
     for (EventHandlerType type : types) {
-      if (event instanceof FriendMessageEvent && type == EventHandlerType.FRIEND_MESSAGE_HANDLER) return true;
-      if (event instanceof GroupMessageEvent && type == EventHandlerType.GROUP_MESSAGE_HANDLER) return true;
+      if (type == EventHandlerType.MESSAGE_HANDLER_ALL) return true;
+      if (event instanceof FriendMessageEvent && type == EventHandlerType.MESSAGE_HANDLER_FRIEND) return true;
+      if (event instanceof GroupMessageEvent && type == EventHandlerType.MESSAGE_HANDLER_GROUP) return true;
     }
     return false;
   }
