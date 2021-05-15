@@ -1,7 +1,5 @@
 package org.miraiboot.autoconfig;
 
-import org.miraiboot.utils.InitializeUtil;
-
 import java.io.FileFilter;
 import java.io.File;
 import java.io.IOException;
@@ -20,21 +18,6 @@ import java.util.jar.JarFile;
 
 public class GlobalLoader {
   private static final char SYSTEM_PATH_DIV = File.separatorChar;
-  public static void initUtil(Class<?> mainClass) {
-    //自动初始化初始化类
-    List<Class<? extends InitializeUtil>> allClassByInterface = null;
-    try {
-      allClassByInterface = GlobalLoader.getAllClassByInterface(InitializeUtil.class);
-      if (allClassByInterface == null) return;
-      for (Class<? extends InitializeUtil> aClass : allClassByInterface) {
-        Method init = aClass.getMethod("init", Class.class);
-        init.invoke(null, mainClass);
-      }
-    } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
-      e.printStackTrace();
-    }
-  }
-
   /**
    * 取得某个接口下所有实现这个接口的类
    */

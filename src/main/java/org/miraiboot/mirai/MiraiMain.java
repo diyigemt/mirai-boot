@@ -11,7 +11,7 @@ import net.mamoe.mirai.utils.MiraiLogger;
  * @author diyigemt
  */
 public class MiraiMain {
-	public static final MiraiLogger logger = MiraiLogger.create("status");
+	public static final MiraiLogger logger = MiraiLogger.create("mirai-boot-status");
 	// 全局唯一实例
 	public static final MiraiMain INSTANCE = new MiraiMain();
 

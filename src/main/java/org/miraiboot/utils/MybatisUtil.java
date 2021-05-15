@@ -18,7 +18,7 @@ import java.util.List;
  * mybatis工具类
  */
 @AutoInit
-public class MybatisUtil implements InitializeUtil {
+public class MybatisUtil {
 	// 全局mybatis工厂 官方文档推荐只有一个
 	private static SqlSessionFactory factory;
 

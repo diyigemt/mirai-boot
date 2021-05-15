@@ -4,6 +4,7 @@ import net.mamoe.mirai.Bot;
 import net.mamoe.mirai.BotFactory;
 import net.mamoe.mirai.event.events.GroupMessageEvent;
 import net.mamoe.mirai.event.events.MessageEvent;
+import org.miraiboot.annotation.AutoInit;
 import org.miraiboot.annotation.EventHandler;
 import org.miraiboot.annotation.EventHandlerComponent;
 import org.miraiboot.annotation.MiraiBootApplication;
@@ -18,28 +19,29 @@ import org.miraiboot.utils.FileUtil;
 import org.yaml.snakeyaml.Yaml;
 
 import java.io.*;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Scanner;
 
 public class MiraiApplication {
-  public static void run(Class<?> target, String... args) {
+  public static void run(Class<?> mainClass, String... args) {
     // TODO AutoConfiguration
     // 打印描述
-    MiraiBootApplication miraiBootApplication = target.getAnnotation(MiraiBootApplication.class);
+    MiraiBootApplication miraiBootApplication = mainClass.getAnnotation(MiraiBootApplication.class);
     if (miraiBootApplication == null) {
       MiraiMain.logger.error("没有找到主类! 请将主类加上@MiraiBootApplication注解");
       return;
     }
     MiraiMain.logger.info(miraiBootApplication.description());
-    // 初始化实现了InitializeUtil接口的工具类
-    GlobalLoader.initUtil(target);
+    // 初始化FileUtil
+    FileUtil.init(mainClass);
     // 尝试读取配置文件
     MiraiMain.logger.info("开始读取配置文件");
-    File configFile = FileUtil.getInstance().getConfigFile(target);
+    File configFile = FileUtil.getInstance().getConfigFile(mainClass);
     if (configFile == null) {
       MiraiMain.logger.warning("未找到配置文件, 请自行在新创建的配置文件中修改");
-      configFile = FileUtil.getInstance().createConfigFile(target);
+      configFile = FileUtil.getInstance().createConfigFile(mainClass);
       if (configFile == null) {
         MiraiMain.logger.error("配置文件创建失败");
       }
@@ -51,20 +53,19 @@ public class MiraiApplication {
     } catch (FileNotFoundException e) {
       e.printStackTrace();
       MiraiMain.logger.error("配置文件读取出错");
+      return;
     }
-
+    MiraiMain.logger.info("配置文件读取成功");
     // 开始自动包扫描 注册event handler
-    String packageName = target.getPackageName();
-    List<Class<?>> classHasAnnotation = GlobalLoader.getClassHasAnnotation(EventHandlerComponent.class, packageName);
-    if (classHasAnnotation != null && !classHasAnnotation.isEmpty()) {
-      for (Class<?> aClass : classHasAnnotation) {
-        for (Method method : aClass.getMethods()) {
-          if (method.isAnnotationPresent(EventHandler.class)) {
-            EventHandler methodAnnotation = method.getAnnotation(EventHandler.class);
-            String targetName = methodAnnotation.target();
-            if (targetName.equals("")) targetName = method.getName();
-            EventHandlerManager.getInstance().on(targetName, aClass, method);
-          }
+    String packageName = mainClass.getPackageName();
+    List<Class<?>> classes = GlobalLoader.getClasses(packageName);
+    if (!classes.isEmpty()) {
+      for (Class<?> clazz : classes) {
+        if (clazz.isAnnotationPresent(AutoInit.class)) {
+          handleAutoInit(mainClass, clazz);
+        }
+        if (clazz.isAnnotationPresent(EventHandlerComponent.class)) {
+          handleEventHandler(clazz);
         }
       }
     }
@@ -78,7 +79,7 @@ public class MiraiApplication {
       if (value.equals("pwd")) continue;
       Bot bot = BotFactory.INSTANCE.newBot(account, value, botConfiguration -> {
         ConfigFileBotConfiguration configuration = configFileBot.getConfiguration();
-        botConfiguration.fileBasedDeviceInfo(configuration.getDevice());
+        botConfiguration.fileBasedDeviceInfo(FileUtil.getInstance().getBotDeviceFilePath(account, configuration.getDevice()));
         botConfiguration.setProtocol(configuration.getProtocol());
         if (!isNetwork) {
           botConfiguration.noNetworkLog();
@@ -96,6 +97,24 @@ public class MiraiApplication {
       if (command.equals("exit")) {
         BotManager.getInstance().logoutAll();
         break;
+      }
+    }
+  }
+  private static void handleAutoInit(Class<?> mainClass, Class<?> clazz) {
+    try {
+      Method init = clazz.getMethod("init", Class.class);
+      init.invoke(null, mainClass);
+    } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
+      e.printStackTrace();
+    }
+  }
+  private static void handleEventHandler(Class<?> clazz) {
+    for (Method method : clazz.getMethods()) {
+      if (method.isAnnotationPresent(EventHandler.class)) {
+        EventHandler methodAnnotation = method.getAnnotation(EventHandler.class);
+        String targetName = methodAnnotation.target();
+        if (targetName.equals("")) targetName = method.getName();
+        EventHandlerManager.getInstance().on(targetName, clazz, method);
       }
     }
   }

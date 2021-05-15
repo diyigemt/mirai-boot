@@ -1,13 +1,11 @@
 package org.miraiboot.utils;
 
-import org.miraiboot.annotation.AutoInit;
-
 import java.io.*;
 
-@AutoInit
-public class FileUtil implements InitializeUtil {
+public class FileUtil {
   private static String RESOURCE_ROOT_FOLDER_PATH;
   private static String CONFIG_ROOT_FOLDER_PATH;
+  private static String BOT_DEVICE_FOLDER_PATH;
   /* linux: "/" windows: "\\" */
   public static String SYSTEM_PATH_DIV;
 
@@ -18,10 +16,16 @@ public class FileUtil implements InitializeUtil {
     String base = getJARRootPath(target) + SYSTEM_PATH_DIV;
     RESOURCE_ROOT_FOLDER_PATH = base + "data";
     CONFIG_ROOT_FOLDER_PATH = base + "config";
+    // 初始化资源文件夹
     File resourceFileDir = new File(RESOURCE_ROOT_FOLDER_PATH);
     if (!resourceFileDir.exists()) resourceFileDir.mkdir();
+    // 初始化配置文件夹
     File configFileDir = new File(CONFIG_ROOT_FOLDER_PATH);
     if (!configFileDir.exists()) configFileDir.mkdir();
+    // 初始化机器人device文件位置文件夹
+    BOT_DEVICE_FOLDER_PATH = CONFIG_ROOT_FOLDER_PATH + SYSTEM_PATH_DIV + "bots";
+    File botDeviceFileDir = new File(BOT_DEVICE_FOLDER_PATH);
+    if (!botDeviceFileDir.exists()) botDeviceFileDir.mkdir();
   }
 
   public static FileUtil getInstance() {
@@ -48,6 +52,13 @@ public class FileUtil implements InitializeUtil {
   public File getResourceFile(String fileName, String fold) {
     if (fold == null) return new File(RESOURCE_ROOT_FOLDER_PATH + SYSTEM_PATH_DIV + fileName);
     return new File(RESOURCE_ROOT_FOLDER_PATH + SYSTEM_PATH_DIV + fold + SYSTEM_PATH_DIV + fileName);
+  }
+
+  public String getBotDeviceFilePath(long botId, String deviceFileName) {
+    String s = BOT_DEVICE_FOLDER_PATH + SYSTEM_PATH_DIV + botId;
+    File botDeviceFile = new File(s);
+    if (!botDeviceFile.exists()) botDeviceFile.mkdir();
+    return s + SYSTEM_PATH_DIV + deviceFileName;
   }
 
   public File getConfigFile(Class<?> target) {
