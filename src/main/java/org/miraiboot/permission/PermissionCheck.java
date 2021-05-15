@@ -18,8 +18,6 @@ public class PermissionCheck {
     if (handler != null) methodAnnotation = handler.getAnnotation(CheckPermission.class);
     Permission permission = PermissionCheck.getGroupPermission(methodAnnotation, classAnnotation);
     long botId = event.getBot().getId();
-    // 判断是否为At
-    if (permission.isAt() && !event.getMessage().contains(new At(botId))) return false;
     // 判断数据库中的权限
 //    PermissionItem permissionItem = PermissionUtil.getInstance().getPermissionItem(event.getSender().getId(), command.getType().getIndex());
 //    if (permissionItem != null) {

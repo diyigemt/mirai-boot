@@ -21,23 +21,11 @@ public class Permission {
   //是否只允许管理员操作
   private boolean isAdminOnly;
 
-  //是否接受At才操作
-  private boolean isAt;
-
   public Permission() {
     this.allows = new HashSet<String>();
     this.blocks = new HashSet<String>();
     this.isGroupOwnerOnly = false;
     this.isAdminOnly = false;
-    this.isAt = true;
-  }
-
-  public boolean isAt() {
-    return isAt;
-  }
-
-  public void setAt(boolean at) {
-    isAt = at;
   }
 
   public Set<String> getAllows() {

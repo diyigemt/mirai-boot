@@ -24,9 +24,6 @@ public @interface CheckPermission {
   //是否允许管理员(包括群主)
   boolean isAdminOnly() default false;
 
-  //是否At才动作
-  boolean isAt() default true;
-
   //与数据库权限对应的id号
   int permissionIndex() default -1;
 }
