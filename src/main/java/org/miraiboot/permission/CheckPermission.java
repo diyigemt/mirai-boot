@@ -28,5 +28,5 @@ public @interface CheckPermission {
   boolean isAt() default true;
 
   //与数据库权限对应的id号
-  int permissionIndex() default -1;
+  int permissionIndex() default 0;
 }

@@ -6,6 +6,9 @@ import net.mamoe.mirai.event.events.MessageEvent;
 import org.miraiboot.annotation.EventHandler;
 import org.miraiboot.constant.EventHandlerType;
 import org.miraiboot.entity.EventHandlerItem;
+import org.miraiboot.mirai.MiraiMain;
+import org.miraiboot.permission.CheckPermission;
+import org.miraiboot.permission.PermissionCheck;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -37,6 +40,19 @@ public class EventHandlerManager {
     for (EventHandlerItem handler : eventHandlerItems) {
       EventHandlerType[] type = handler.getType();
       if (!checkEventType(type, event)) return false;
+      if(handler.getHandler().isAnnotationPresent(CheckPermission.class)){//检查权限
+        int commandid = handler.getHandler().getAnnotation(CheckPermission.class).permissionIndex();//获取权限ID
+        if(!PermissionCheck.checkGroupPermission(handler, (GroupMessageEvent) event, commandid)){
+          MiraiMain.getInstance().quickReply(event, "您的管理员已禁止您使用该功能");
+          return true;
+        }
+        else {
+          if(!PermissionCheck.idenitityCheck(handler, (GroupMessageEvent) event)){
+            MiraiMain.getInstance().quickReply(event, "权限不足");
+            return true;
+          }
+        }
+      }
       Method method = handler.getHandler();
       Class<?> invoker = handler.getInvoker();
       try {

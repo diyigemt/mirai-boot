@@ -24,7 +24,7 @@
 		</plugin>
 	</plugins>
 	
-	<environments default="deploy">
+	<environments default="deploy3">
 		<environment id="development">
 			<transactionManager type="JDBC"/>
 			<dataSource type="POOLED">
