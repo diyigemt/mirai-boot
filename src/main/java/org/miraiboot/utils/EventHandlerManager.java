@@ -62,18 +62,17 @@ public class EventHandlerManager {
       // 开始处理@Filter 和 @PreProcessor
       int parameterCount = method.getParameterCount();
       Object[] parameters = null;
-      PreProcessorData processorData = null;
+      PreProcessorData processorData =  new PreProcessorData();
       // 如果是多参数handler
       if (parameterCount != 1) {
         parameters = new Object[parameterCount];
         parameters[0] = event;
-        parameters[1] = null;
+        processorData = CommandUtil.getInstance().parseArgs(plainText, method, processorData);
+        parameters[1] = processorData;
         // 开始预处理 分离参数之类的
-        processorData = new PreProcessorData();
         if (method.isAnnotationPresent(MessageFilter.class) || method.isAnnotationPresent(MessageFilters.class)) {
           processorData.setText(plainText);
           processorData.setCommand(target);
-          processorData = CommandUtil.getInstance().parseArgs(plainText, method, processorData);
           parameters[1] = processorData;
         }
         if (method.isAnnotationPresent(MessagePreProcessor.class) || method.isAnnotationPresent(MessagePreProcessors.class)) {
