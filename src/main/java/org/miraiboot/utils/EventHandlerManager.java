@@ -6,8 +6,10 @@ import net.mamoe.mirai.event.events.MessageEvent;
 import org.miraiboot.annotation.*;
 import org.miraiboot.constant.EventHandlerType;
 import org.miraiboot.entity.EventHandlerItem;
-import org.miraiboot.entity.MessagePreProcessorItem;
 import org.miraiboot.entity.PreProcessorData;
+import org.miraiboot.mirai.MiraiMain;
+import org.miraiboot.permission.CheckPermission;
+import org.miraiboot.permission.PermissionCheck;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -40,7 +42,22 @@ public class EventHandlerManager {
       EventHandlerType[] type = handler.getType();
       if (!checkEventType(type, event)) return null;
       Method method = handler.getHandler();
+
       // TODO 处理权限
+      if(handler.getHandler().isAnnotationPresent(CheckPermission.class)){
+        //获取权限ID
+        int commandid = method.getAnnotation(CheckPermission.class).permissionIndex();
+        if(!PermissionCheck.checkGroupPermission(handler, (GroupMessageEvent) event, commandid)){
+          MiraiMain.getInstance().quickReply(event, "您的管理员已禁止您使用该功能");
+          return "您的管理员已禁止您使用该功能";
+        }
+        else {
+          if(!PermissionCheck.idenitityCheck(handler, (GroupMessageEvent) event)){
+            MiraiMain.getInstance().quickReply(event, "权限不足");
+            return "权限不足";
+          }
+        }
+      }
 
       // 开始处理@Filter 和 @PreProcessor
       int parameterCount = method.getParameterCount();
