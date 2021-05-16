@@ -14,22 +14,22 @@ import java.util.stream.Collectors;
 public class MessageEventListener implements Consumer<MessageEvent> {
 	@Override
 	public void accept(MessageEvent messageEvent) {
-		// 执行强制触发EventHandler
-		String res = EventHandlerManager.getInstance().emit("", messageEvent);
-		if (res != null) {
-			MiraiMain.logger.error(res);
-		}
 		// 提取纯文本
 		List<SingleMessage> collect = messageEvent.getMessage().stream().filter(message -> message instanceof PlainText).collect(Collectors.toList());
 		StringBuffer sb = new StringBuffer();
 		collect.forEach(item -> {
 			sb.append(item.contentToString());
 		});
+		String source = sb.toString();
+		// 执行强制触发EventHandler
+		String res = EventHandlerManager.getInstance().emit("", messageEvent, source);
+		if (res != null) {
+			MiraiMain.logger.error(res);
+		}
 		// 获取指令
-		String content = messageEvent.getMessage().serializeToMiraiCode();
-		String command = CommandUtil.getInstance().parseCommand(content);
+		String command = CommandUtil.getInstance().parseCommand(source);
 		// 执行指令对应的EventHandler
-		res = EventHandlerManager.getInstance().emit(command, messageEvent);
+		res = EventHandlerManager.getInstance().emit(command, messageEvent, source);
 		if (res != null) {
 			MiraiMain.logger.error(res);
 		}

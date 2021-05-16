@@ -1,6 +1,11 @@
 package org.miraiboot.utils;
 
-import java.util.ArrayList;
+import org.miraiboot.annotation.EventHandler;
+import org.miraiboot.annotation.MessagePreProcessor;
+import org.miraiboot.entity.MessagePreProcessorItem;
+import org.miraiboot.entity.PreProcessorData;
+
+import java.lang.reflect.Method;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.regex.Matcher;
@@ -49,8 +54,26 @@ public class CommandUtil {
 		return command;
 	}
 
-	public ArrayList<String> parseArgs(String source, String regexp) {
-		ArrayList<String> res = new ArrayList<String>();
-		return res;
+	public PreProcessorData parseArgs(String source, Method handler, PreProcessorData data) {
+		EventHandler eventHandlerAnnotation = handler.getAnnotation(EventHandler.class);
+		String target = eventHandlerAnnotation.target();
+		String command = target.equals("") ? handler.getName() : target;
+		String start = eventHandlerAnnotation.start();
+		String remove = command + start;
+		String s = source.substring(source.indexOf(remove) + remove.length()).trim();
+		String split = eventHandlerAnnotation.split();
+		String[] res = s.split(split);
+		data.addArgs(res);
+		data.setCommandText(s);
+		return data;
+	}
+
+	public PreProcessorData parsePreProcessor(Method handler, PreProcessorData data) {
+		MessagePreProcessor[] annotations = handler.getDeclaredAnnotationsByType(MessagePreProcessor.class);
+		MessagePreProcessorItem preProcessorItem = new MessagePreProcessorItem();
+		for (MessagePreProcessor preProcessor : annotations) {
+			preProcessorItem.addFilterType(preProcessor.filterType());
+		}
+		return data;
 	}
 }

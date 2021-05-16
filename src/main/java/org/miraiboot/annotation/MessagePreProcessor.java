@@ -17,14 +17,16 @@ public @interface MessagePreProcessor {
   /**
    * 将所有纯文本消息提取出来
    * 保存在PreProcessorData.text中
+   * @see org.miraiboot.entity.PreProcessorData
    * @since 1.0.0
    */
   boolean textProcessor() default false;
   /**
    * 将对应类型的消息提取出来
    * 保存在PreProcessorData.classified中
+   * @see org.miraiboot.entity.PreProcessorData
    * @see MessagePreProcessorMessageType
    * @since 1.0.0
    */
-  MessagePreProcessorMessageType[] messageProcessor() default {};
+  MessagePreProcessorMessageType[] filterType() default {};
 }

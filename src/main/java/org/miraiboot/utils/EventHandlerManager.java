@@ -3,9 +3,10 @@ package org.miraiboot.utils;
 import net.mamoe.mirai.event.events.FriendMessageEvent;
 import net.mamoe.mirai.event.events.GroupMessageEvent;
 import net.mamoe.mirai.event.events.MessageEvent;
-import org.miraiboot.annotation.EventHandler;
+import org.miraiboot.annotation.*;
 import org.miraiboot.constant.EventHandlerType;
 import org.miraiboot.entity.EventHandlerItem;
+import org.miraiboot.entity.MessagePreProcessorItem;
 import org.miraiboot.entity.PreProcessorData;
 
 import java.lang.reflect.InvocationTargetException;
@@ -32,7 +33,7 @@ public class EventHandlerManager {
     return STORE.remove(target);
   }
 
-  public String emit(String target, MessageEvent event) {
+  public String emit(String target, MessageEvent event, String plainText) {
     List<EventHandlerItem> eventHandlerItems = STORE.get(target);
     if (eventHandlerItems == null) return null;
     for (EventHandlerItem handler : eventHandlerItems) {
@@ -47,12 +48,21 @@ public class EventHandlerManager {
       PreProcessorData processorData = null;
       // 如果是多参数handler
       if (parameterCount != 1) {
-        // 开始预处理 分离参数之类的
-        processorData = new PreProcessorData();
         parameters = new Object[parameterCount];
         parameters[0] = event;
-        parameters[1] = processorData;
-        EventHandler eventHandlerAnnotation = method.getAnnotation(EventHandler.class);
+        parameters[1] = null;
+        // 开始预处理 分离参数之类的
+        processorData = new PreProcessorData();
+        if (method.isAnnotationPresent(MessageFilter.class) || method.isAnnotationPresent(MessageFilters.class)) {
+          processorData.setText(plainText);
+          processorData.setCommand(target);
+          processorData = CommandUtil.getInstance().parseArgs(plainText, method, processorData);
+          parameters[1] = processorData;
+        }
+        if (method.isAnnotationPresent(MessagePreProcessor.class) || method.isAnnotationPresent(MessagePreProcessors.class)) {
+          processorData = CommandUtil.getInstance().parsePreProcessor(method, processorData);
+          parameters[1] = processorData;
+        }
       }
       Class<?> invoker = handler.getInvoker();
       try {
