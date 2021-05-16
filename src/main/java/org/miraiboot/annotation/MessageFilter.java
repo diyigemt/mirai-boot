@@ -1,6 +1,6 @@
 package org.miraiboot.annotation;
 
-import org.miraiboot.constant.MessageEventFilterMatchType;
+import org.miraiboot.constant.MessageFilterMatchType;
 
 import java.lang.annotation.*;
 
@@ -11,8 +11,9 @@ import java.lang.annotation.*;
  */
 @Target({ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
+@Repeatable(MessageFilters.class)
 @Documented
-public @interface MessageEventFilter {
+public @interface MessageFilter {
 
   /**
    * 匹配关键词的内容 为空表示忽略
@@ -21,10 +22,10 @@ public @interface MessageEventFilter {
   String value() default "";
   /**
    * 匹配类型  详见MessageEventFilterMatchType
-   * @see MessageEventFilterMatchType
+   * @see MessageFilterMatchType
    * @since 1.0.0
    */
-  MessageEventFilterMatchType matchType() default MessageEventFilterMatchType.NULL;
+  MessageFilterMatchType matchType() default MessageFilterMatchType.NULL;
   /**
    * 匹配的账号列表
    * 若消息发送着不在列表内则不做响应

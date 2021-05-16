@@ -1,6 +1,6 @@
 package org.miraiboot.constant;
 
-public enum MessageEventFilterMatchType {
+public enum MessageFilterMatchType {
   /**
    * 忽略
    */
@@ -9,6 +9,10 @@ public enum MessageEventFilterMatchType {
    * 相同匹配
    */
   EQUALS,
+  /**
+   * 忽略大小写的相同匹配
+   */
+  EQUALS_IGNORE_CASE,
   /**
    * 包含匹配
    */

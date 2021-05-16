@@ -1,0 +1,12 @@
+miraiboot:
+  bots:
+    -
+      account: 1741557205
+      password:
+        kind: PLAIN
+        value: Hunter28
+      configuration:
+        protocol: ANDROID_PHONE
+        device: device.json
+  logger:
+    network: false

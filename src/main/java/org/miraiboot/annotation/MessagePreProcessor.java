@@ -1,7 +1,6 @@
 package org.miraiboot.annotation;
 
-import org.miraiboot.constant.MessageEventFilterMatchType;
-import org.miraiboot.constant.MessageEventPreProcessorMessageType;
+import org.miraiboot.constant.MessagePreProcessorMessageType;
 
 import java.lang.annotation.*;
 
@@ -12,8 +11,9 @@ import java.lang.annotation.*;
  */
 @Target({ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
+@Repeatable(MessagePreProcessors.class)
 @Documented
-public @interface MessageEventPreProcessor {
+public @interface MessagePreProcessor {
   /**
    * 将所有纯文本消息提取出来
    * 保存在PreProcessorData.text中
@@ -23,8 +23,8 @@ public @interface MessageEventPreProcessor {
   /**
    * 将对应类型的消息提取出来
    * 保存在PreProcessorData.classified中
-   * @see MessageEventPreProcessorMessageType
+   * @see MessagePreProcessorMessageType
    * @since 1.0.0
    */
-  MessageEventPreProcessorMessageType[] messageProcessor() default {};
+  MessagePreProcessorMessageType[] messageProcessor() default {};
 }

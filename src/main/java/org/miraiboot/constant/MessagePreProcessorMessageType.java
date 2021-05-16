@@ -1,6 +1,6 @@
 package org.miraiboot.constant;
 
-public enum MessageEventPreProcessorMessageType {
+public enum MessagePreProcessorMessageType {
   PlainText,
   Image,
   At,

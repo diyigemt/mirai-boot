@@ -2,7 +2,6 @@ package org.miraiboot.autoconfig;
 
 import net.mamoe.mirai.Bot;
 import net.mamoe.mirai.BotFactory;
-import net.mamoe.mirai.event.events.GroupMessageEvent;
 import net.mamoe.mirai.event.events.MessageEvent;
 import org.miraiboot.annotation.AutoInit;
 import org.miraiboot.annotation.EventHandler;
@@ -11,9 +10,10 @@ import org.miraiboot.annotation.MiraiBootApplication;
 import org.miraiboot.entity.ConfigFile;
 import org.miraiboot.entity.ConfigFileBot;
 import org.miraiboot.entity.ConfigFileBotConfiguration;
-import org.miraiboot.listener.EventListener;
+import org.miraiboot.listener.MessageEventListener;
 import org.miraiboot.mirai.MiraiMain;
 import org.miraiboot.utils.BotManager;
+import org.miraiboot.utils.CommandUtil;
 import org.miraiboot.utils.EventHandlerManager;
 import org.miraiboot.utils.FileUtil;
 import org.yaml.snakeyaml.Yaml;
@@ -69,7 +69,9 @@ public class MiraiApplication {
         }
       }
     }
-    Scanner scanner = new Scanner(System.in);
+    // 事件注册完成 对正则进行编译
+    CommandUtil.getInstance().compileCommandPattern();
+    // 开始读取配置文件
     final boolean isNetwork = config.getMiraiboot().getLogger().isNetwork();
     // 注册Bot
     for (ConfigFileBot configFileBot : config.getMiraiboot().getBots()) {
@@ -86,12 +88,13 @@ public class MiraiApplication {
         }
       });
       // 注册统一的事件监听器
-      bot.getEventChannel().subscribeAlways(MessageEvent.class, new EventListener());
+      bot.getEventChannel().subscribeAlways(MessageEvent.class, new MessageEventListener());
       BotManager.getInstance().register(configFileBot.getAccount(), bot);
     }
     // 注册完成 统一登录
     BotManager.getInstance().loginAll();
     // 阻塞主线程
+    Scanner scanner = new Scanner(System.in);
     while (true) {
       String command = scanner.next();
       if (command.equals("exit")) {
@@ -100,6 +103,12 @@ public class MiraiApplication {
       }
     }
   }
+
+  /**
+   * 初始化带有@AutoInit的类
+   * @param mainClass 主类
+   * @param clazz 目标类
+   */
   private static void handleAutoInit(Class<?> mainClass, Class<?> clazz) {
     try {
       Method init = clazz.getMethod("init", Class.class);
@@ -108,11 +117,25 @@ public class MiraiApplication {
       e.printStackTrace();
     }
   }
+
+  /**
+   * 将被@EventHandlerComponent注册的类<br/>
+   * 中被@EventHandler注册的方法加入EventhendlerManager中统一管理
+   * @param clazz 被@EventHandlerComponent注册的类
+   */
   private static void handleEventHandler(Class<?> clazz) {
     for (Method method : clazz.getMethods()) {
       if (method.isAnnotationPresent(EventHandler.class)) {
         EventHandler methodAnnotation = method.getAnnotation(EventHandler.class);
+        // 注册强制触发EventHandler
+        if (methodAnnotation.isAny()) {
+          EventHandlerManager.getInstance().on("", clazz, method);
+          continue;
+        }
         String targetName = methodAnnotation.target();
+        String start = methodAnnotation.start();
+        // 注册指令开头
+        if (!start.equals("")) CommandUtil.getInstance().registerCommandStart(start);
         if (targetName.equals("")) targetName = method.getName();
         EventHandlerManager.getInstance().on(targetName, clazz, method);
       }

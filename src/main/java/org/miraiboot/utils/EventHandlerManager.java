@@ -6,6 +6,7 @@ import net.mamoe.mirai.event.events.MessageEvent;
 import org.miraiboot.annotation.EventHandler;
 import org.miraiboot.constant.EventHandlerType;
 import org.miraiboot.entity.EventHandlerItem;
+import org.miraiboot.entity.PreProcessorData;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -31,22 +32,41 @@ public class EventHandlerManager {
     return STORE.remove(target);
   }
 
-  public boolean emit(String target, MessageEvent event) {
+  public String emit(String target, MessageEvent event) {
     List<EventHandlerItem> eventHandlerItems = STORE.get(target);
-    if (eventHandlerItems == null) return false;
+    if (eventHandlerItems == null) return null;
     for (EventHandlerItem handler : eventHandlerItems) {
       EventHandlerType[] type = handler.getType();
-      if (!checkEventType(type, event)) return false;
+      if (!checkEventType(type, event)) return null;
       Method method = handler.getHandler();
+      // TODO 处理权限
+
+      // 开始处理@Filter 和 @PreProcessor
+      int parameterCount = method.getParameterCount();
+      Object[] parameters = null;
+      PreProcessorData processorData = null;
+      // 如果是多参数handler
+      if (parameterCount != 1) {
+        // 开始预处理 分离参数之类的
+        processorData = new PreProcessorData();
+        parameters = new Object[parameterCount];
+        parameters[0] = event;
+        parameters[1] = processorData;
+        EventHandler eventHandlerAnnotation = method.getAnnotation(EventHandler.class);
+      }
       Class<?> invoker = handler.getInvoker();
       try {
-        method.invoke(invoker.getDeclaredConstructor().newInstance(), event);
+        if (parameterCount != 1) {
+          method.invoke(invoker.getDeclaredConstructor().newInstance(), parameters);
+        } else {
+          method.invoke(invoker.getDeclaredConstructor().newInstance(), event);
+        }
       } catch (IllegalAccessException | InvocationTargetException | InstantiationException | NoSuchMethodException e) {
         e.printStackTrace();
-        return false;
+        return "事件执行出错";
       }
     }
-    return true;
+    return null;
   }
 
   private boolean checkEventType(EventHandlerType[] types, MessageEvent event) {
