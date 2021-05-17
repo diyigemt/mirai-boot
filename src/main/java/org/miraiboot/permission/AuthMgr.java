@@ -1,12 +1,13 @@
 package org.miraiboot.permission;
 
+import net.mamoe.mirai.contact.MemberPermission;
+import net.mamoe.mirai.event.events.GroupMessageEvent;
 import net.mamoe.mirai.event.events.MessageEvent;
 import net.mamoe.mirai.message.data.At;
 import net.mamoe.mirai.message.data.SingleMessage;
 import org.miraiboot.annotation.EventHandler;
 import org.miraiboot.annotation.EventHandlerComponent;
 import org.miraiboot.annotation.MessagePreProcessor;
-import org.miraiboot.annotation.MessagePreProcessors;
 import org.miraiboot.constant.FunctionId;
 import org.miraiboot.constant.MessagePreProcessorMessageType;
 import org.miraiboot.entity.PreProcessorData;
@@ -24,7 +25,7 @@ import java.util.List;
 public class AuthMgr {
 
     @EventHandler(target = "permit")
-    @CheckPermission(isAdminOnly = true, permissionIndex = FunctionId.permit)
+    @CheckPermission(isAdminOnly = true, permissionIndex = FunctionId.permit, isStrictRestricted = true)
     @MessagePreProcessor(filterType = MessagePreProcessorMessageType.At)
     public void authorityManager(MessageEvent event, PreProcessorData data){
         List<String> args = data.getArgs();
