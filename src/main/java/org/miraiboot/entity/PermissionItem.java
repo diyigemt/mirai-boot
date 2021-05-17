@@ -26,6 +26,12 @@ public class PermissionItem {
     this.permit = permit;
   }
 
+  public PermissionItem(long senderId, int commandId, int permits) {
+    this.senderId = String.valueOf(senderId);
+    this.commandId = commandId;
+    this.permits = permits;
+  }
+
   public int getId() {
     return id;
   }
@@ -72,5 +78,10 @@ public class PermissionItem {
 
   public void setPermits(int permits) {
     this.permits = permits;
+    if(permits == 0){
+      this.permit = false;
+    }else{
+      this.permit = true;
+    }
   }
 }

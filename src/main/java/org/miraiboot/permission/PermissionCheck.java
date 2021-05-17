@@ -21,7 +21,7 @@ import java.util.Objects;
 
 public class PermissionCheck {
 
-  public static boolean checkGroupPermission(EventHandlerItem item, GroupMessageEvent event, int commandId) {
+  public static boolean checkGroupPermission(GroupMessageEvent event, int commandId) {
 //    Method handler = item.getHandler();
 //    Class<?> aClass = item.getInvoker();
 //    CheckPermission classAnnotation = aClass.getAnnotation(CheckPermission.class);
@@ -32,22 +32,30 @@ public class PermissionCheck {
     // 判断是否为At
 //    if (permission.isAt() && !event.getMessage().contains(new At(botId))) return false;
     // 数据库动态权限检查
-    if(commandId == 0) return true;//默认值不查
+    if(commandId == 0) return false;//默认值不查
+    PermissionItem permissionItem;
     try{
-      PermissionItem permissionItem = PermissionUtil.getInstance().getPermissionItem(event.getSender().getId(), String.valueOf(commandId));
-      if(permissionItem.isPermit().equals("false")){
-        return false;
+      permissionItem = PermissionUtil.getInstance().getPermissionItem(event.getSender().getId(), String.valueOf(commandId));
+      if(permissionItem.getPermits() > 0){//被授予临时权限
+        return true;
       }
-    } catch (NullPointerException e){//数据库没相关记录，说明没有被禁过
-      return true;
+    }catch (NullPointerException e){//数据库没相关记录，说明没有任何禁用和授权
+      return false;
     }
+    if(permissionItem.getPermits() <= 0){
+      MiraiMain.getInstance().quickReply(event, "您的管理员已禁止您使用该功能");
+      return false;
+    }
+//    else if(permissionItem.getPermits() > 0){//被授予临时权限
+//      return true;
+//    }
 //    PermissionItem permissionItem = PermissionUtil.getInstance().getPermissionItem(event.getSender().getId(), command.getType().getIndex());
 //    if (permissionItem != null) {
 //      return Boolean.parseBoolean(permissionItem.isPermit());
 //    }
     // 判断数据库中的权限和@Annotation写死的权限
 //    if (!checkList(permission, event, command)) return false;
-    return true;
+    return false;
   }
 
   public static boolean identityCheck(EventHandlerItem item, GroupMessageEvent event){//群员身份检查，优先级低
@@ -81,13 +89,8 @@ public class PermissionCheck {
     List<String> args = data.getArgs();
     long targetId = -1L;
     String temp = args.get(2);
-    try{
-      temp = temp.substring(temp.lastIndexOf(":") + 1, temp.lastIndexOf("]"));
-      targetId = Long.parseLong(temp);
-    }catch (Exception e){
-      MiraiMain.getInstance().quickReply(event, "目标成员不存在");
-      return true;
-    }
+    temp = temp.substring(temp.lastIndexOf(":") + 1, temp.lastIndexOf("]"));
+    targetId = Long.parseLong(temp);
     MemberPermission targetPermission = Objects.requireNonNull(event.getGroup().get(targetId)).getPermission();
     int targetAuthLevel = targetPermission.ordinal();
     if(senderAuthLevel <= targetAuthLevel){
@@ -118,6 +121,15 @@ public class PermissionCheck {
       return true;
     }
 
+    return true;
+  }
+
+  public static boolean atValidationCheck(PreProcessorData data){
+    List<SingleMessage> args = data.getClassified();
+    if(args.size() == 0) return true;
+    if(!args.contains("[Mirai:")){
+      return false;
+    }
     return true;
   }
 }

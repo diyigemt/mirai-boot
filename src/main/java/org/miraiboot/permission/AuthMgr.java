@@ -1,5 +1,6 @@
 package org.miraiboot.permission;
 
+import net.mamoe.mirai.event.events.GroupMessageEvent;
 import net.mamoe.mirai.event.events.MessageEvent;
 import net.mamoe.mirai.message.data.At;
 import net.mamoe.mirai.message.data.SingleMessage;
@@ -39,7 +40,11 @@ public class AuthMgr {
         }
         int commandId = 0;
         try{
-            commandId = FunctionId.getMap(args.get(0));
+            if(args.get(0).contains("assign") || args.get(0).contains("cancel")){
+                commandId = FunctionId.getMap(args.get(1));
+            }else{
+                commandId = FunctionId.getMap(args.get(0));
+            }
         }catch (NullPointerException e){
             MiraiMain.getInstance().quickReply(event, "一个或多个参数无效");
             return;
@@ -49,6 +54,15 @@ public class AuthMgr {
             permit = 0;
         }else if(args.get(1).equals("on")){
             permit = 1;
+        }else if(args.get(0).contains("assign") || args.get(0).contains("cancel")){
+            if(args.get(0).equals("assign")){
+                permit = -1;
+                TempPermission.tempAuthProcess((GroupMessageEvent) event, commandId);
+            }
+            else if(args.get(0).equals("cancel")){
+                permit = -1;
+                TempPermission.cancelAuthProcess((GroupMessageEvent) event, commandId);
+            }
         }
         if(permit == 2 || commandId == 0 || (senderId == -1L) || senderId == event.getBot().getId()){
             MiraiMain.getInstance().quickReply(event, "命令：permit 无法将“permit”项识别为 函数、脚本文件或可运行程序的名称，请检查参数的拼写。");

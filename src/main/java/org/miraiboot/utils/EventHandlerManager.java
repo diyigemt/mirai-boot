@@ -51,28 +51,32 @@ public class EventHandlerManager {
 
       // TODO 处理权限
       if (handler.getHandler().isAnnotationPresent(CheckPermission.class)) {
+        boolean flag = true;
         //获取权限ID
+        CommandUtil commandUtil = new CommandUtil();
+        PreProcessorData data = new PreProcessorData();
+        String source = event.getMessage().serializeToMiraiCode();
+        data = commandUtil.parseArgs(source, handler.getHandler(), data);
+        if(!PermissionCheck.atValidationCheck(data)){
+          MiraiMain.getInstance().quickReply(event, "目标成员不存在");
+          return "目标成员不存在";
+        }
         if(method.getAnnotation(CheckPermission.class).isStrictRestricted()){
-          CommandUtil commandUtil = new CommandUtil();
-          PreProcessorData data = new PreProcessorData();
-          String source = event.getMessage().serializeToMiraiCode();
-          data = commandUtil.parseArgs(source, handler.getHandler(), data);
           if(!PermissionCheck.strictRestrictedCheck((GroupMessageEvent) event, data)){
             MiraiMain.getInstance().quickReply(event, "您当前的权限不足以对目标用户操作");
             return "您当前的权限不足以对目标用户操作";
           }
         }
         int commandId = method.getAnnotation(CheckPermission.class).permissionIndex();
-        if(!PermissionCheck.checkGroupPermission(handler, (GroupMessageEvent) event, commandId)){
-          MiraiMain.getInstance().quickReply(event, "您的管理员已禁止您使用该功能");
-          return "您的管理员已禁止您使用该功能";
+        if(PermissionCheck.checkGroupPermission((GroupMessageEvent) event, commandId)){
+          flag = false;
         }
-        else if(!PermissionCheck.individualAuthCheck(handler, (GroupMessageEvent) event)){
+        if(!PermissionCheck.individualAuthCheck(handler, (GroupMessageEvent) event) && flag){
           MiraiMain.getInstance().quickReply(event, "您没有权限使用该功能");
           return "您没有权限使用该功能";
         }
         else {
-          if(!PermissionCheck.identityCheck(handler, (GroupMessageEvent) event)){
+          if(!PermissionCheck.identityCheck(handler, (GroupMessageEvent) event) && flag){
             MiraiMain.getInstance().quickReply(event, "权限不足");
             return "权限不足";
           }

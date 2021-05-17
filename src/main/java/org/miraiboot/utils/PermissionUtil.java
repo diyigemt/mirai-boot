@@ -21,6 +21,11 @@ public class PermissionUtil {
     updatePermissionItem(item);
   }
 
+  public void addPermissionItem(long targetId, int commandId, int permits) {
+    PermissionItem item = new PermissionItem(targetId, commandId, permits);
+    updatePermissionItem(item);
+  }
+
   public void removePermissionItem(long targetId, int commandId) {
     PermissionItem item = new PermissionItem(targetId, commandId, false);
     MybatisUtil.getInstance().removeData(PermissionMapper.class, "removePermission", item);
@@ -31,8 +36,18 @@ public class PermissionUtil {
     updatePermissionItem(item);
   }
 
+  public void enablePermissionItem(long targetId, int commandId, int permits) {
+    PermissionItem item = new PermissionItem(targetId, commandId, permits);
+    updatePermissionItem(item);
+  }
+
   public void disablePermissionItem(long targetId, int commandId) {
     PermissionItem item = new PermissionItem(targetId, commandId, false);
+    updatePermissionItem(item);
+  }
+
+  public void disablePermissionItem(long targetId, int commandId, int permits) {
+    PermissionItem item = new PermissionItem(targetId, commandId, permits);
     updatePermissionItem(item);
   }
 
