@@ -7,6 +7,7 @@ import net.mamoe.mirai.event.events.MessageEvent;
 import org.miraiboot.annotation.*;
 import org.miraiboot.constant.EventHandlerType;
 import org.miraiboot.entity.EventHandlerItem;
+import org.miraiboot.entity.EventHandlerNextItem;
 import org.miraiboot.entity.PreProcessorData;
 import org.miraiboot.interfaces.EventHandlerNext;
 import org.miraiboot.mirai.MiraiMain;
@@ -20,9 +21,11 @@ import java.util.*;
 public class EventHandlerManager {
   private static final EventHandlerManager INSTANCE = new EventHandlerManager();
   private static final Map<String, List<EventHandlerItem>> STORE = new HashMap<String, List<EventHandlerItem>>();
-  private static final Map<String, List<EventHandlerNext>> LISTENING_STORE = new HashMap<String, List<EventHandlerNext>>();
+  private static final Map<String, List<EventHandlerNextItem>> LISTENING_STORE = new HashMap<String, List<EventHandlerNextItem>>();
 
-  public static EventHandlerManager getInstance() { return INSTANCE; }
+  public static EventHandlerManager getInstance() {
+    return INSTANCE;
+  }
 
   public void on(String target, Class<?> invoker, Method handler) {
     List<EventHandlerItem> eventHandlerItems = STORE.get(target);
@@ -47,15 +50,14 @@ public class EventHandlerManager {
       Method method = handler.getHandler();
 
       // TODO 处理权限
-      if(handler.getHandler().isAnnotationPresent(CheckPermission.class)){
+      if (handler.getHandler().isAnnotationPresent(CheckPermission.class)) {
         //获取权限ID
         int commandid = method.getAnnotation(CheckPermission.class).permissionIndex();
-        if(!PermissionCheck.checkGroupPermission(handler, (GroupMessageEvent) event, commandid)){
+        if (!PermissionCheck.checkGroupPermission(handler, (GroupMessageEvent) event, commandid)) {
           MiraiMain.getInstance().quickReply(event, "您的管理员已禁止您使用该功能");
           return "您的管理员已禁止您使用该功能";
-        }
-        else {
-          if(!PermissionCheck.idenitityCheck(handler, (GroupMessageEvent) event)){
+        } else {
+          if (!PermissionCheck.idenitityCheck(handler, (GroupMessageEvent) event)) {
             MiraiMain.getInstance().quickReply(event, "权限不足");
             return "权限不足";
           }
@@ -65,7 +67,7 @@ public class EventHandlerManager {
       // 开始处理@Filter 和 @PreProcessor
       int parameterCount = method.getParameterCount();
       Object[] parameters = null;
-      PreProcessorData processorData =  new PreProcessorData();
+      PreProcessorData processorData = new PreProcessorData();
       // 如果是多参数handler
       if (parameterCount != 1) {
         parameters = new Object[parameterCount];
@@ -108,29 +110,87 @@ public class EventHandlerManager {
   }
 
   public void onNext(String target, EventHandlerNext onNext) {
-    List<EventHandlerNext> events = LISTENING_STORE.get(target);
-    if (events == null) events = new ArrayList<EventHandlerNext>();
-    events.add(onNext);
+    onNext(target, onNext, -1L, -1);
+  }
+
+  public void onNext(String target, EventHandlerNext onNext, long timeOut) {
+    onNext(target, onNext, timeOut, -1);
+  }
+
+  public void onNext(String target, EventHandlerNext onNext, int triggerCount) {
+    onNext(target, onNext, -1L, triggerCount);
+  }
+
+  public void onNext(String target, EventHandlerNext onNext, long timeOut, int triggerCount) {
+    List<EventHandlerNextItem> events = LISTENING_STORE.get(target);
+    if (events == null) events = new ArrayList<EventHandlerNextItem>();
+    EventHandlerNextItem eventHandlerNextItem = new EventHandlerNextItem(onNext, timeOut, triggerCount);
+    events.add(eventHandlerNextItem);
+    LISTENING_STORE.put(target, events);
+  }
+
+  public void onNext(String target, EventHandlerNext onNext, long timeOut, int triggerCount, MessageEvent event, PreProcessorData data) {
+    List<EventHandlerNextItem> events = LISTENING_STORE.get(target);
+    if (events == null) events = new ArrayList<EventHandlerNextItem>();
+    EventHandlerNextItem eventHandlerNextItem = new EventHandlerNextItem(onNext, timeOut, triggerCount);
+    if (timeOut != -1) {
+      List<EventHandlerNextItem> finalEvents = events;
+      eventHandlerNextItem.setLastEvent(event);
+      eventHandlerNextItem.setLastData(data);
+      eventHandlerNextItem.start(new TimerTask() {
+        @Override
+        public void run() {
+          eventHandlerNextItem.onTimeOut();
+          eventHandlerNextItem.onDestroy();
+          finalEvents.remove(eventHandlerNextItem);
+          if (finalEvents.isEmpty()) LISTENING_STORE.remove(target);
+        }
+      });
+    }
+    events.add(eventHandlerNextItem);
     LISTENING_STORE.put(target, events);
   }
 
   public String emitNext(String target, MessageEvent event, String plainText) {
-    List<EventHandlerNext> events = LISTENING_STORE.get(target);
+    List<EventHandlerNextItem> events = LISTENING_STORE.get(target);
     if (events == null) return null;
-    for (EventHandlerNext next : events) {
+    for (int i = 0; i < events.size(); i++) {
+      EventHandlerNextItem next = events.get(i);
+      EventHandlerNext handler = next.getHandler();
       PreProcessorData data = new PreProcessorData();
       data.setText(plainText);
       try {
-        Method onNext = next.getClass().getMethod("onNext", MessageEvent.class, PreProcessorData.class);
+        Method onNext = handler.getClass().getMethod("onNext", MessageEvent.class, PreProcessorData.class);
         data = CommandUtil.getInstance().parsePreProcessor(event, onNext, data);
       } catch (NoSuchMethodException e) {
         e.printStackTrace();
         return "没有找到该方法!";
       }
-      ListeningStatus status = next.onNext(event, data);
-      if (status == ListeningStatus.STOPPED) events.remove(next);
-      if (events.isEmpty()) LISTENING_STORE.remove(target);
+      if (next.check()) {
+        ListeningStatus status = next.onNext(event, data);
+        if (status == ListeningStatus.STOPPED) {
+          next.cancel();
+          next.onDestroy();
+          events.remove(next);
+          i--;
+        } else {
+          next.start(new TimerTask() {
+            @Override
+            public void run() {
+              next.onTimeOut();
+              next.onDestroy();
+              events.remove(next);
+            }
+          });
+        }
+      } else {
+        next.cancel();
+        next.onDestroy();
+        events.remove(next);
+        i--;
+      }
     }
+    if (events.isEmpty()) LISTENING_STORE.remove(target);
     return null;
   }
 
