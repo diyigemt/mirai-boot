@@ -1,5 +1,6 @@
 package org.miraiboot.permission;
 
+import net.mamoe.mirai.Bot;
 import net.mamoe.mirai.contact.MemberPermission;
 import net.mamoe.mirai.event.events.GroupMessageEvent;
 import net.mamoe.mirai.event.events.MessageEvent;
@@ -29,7 +30,7 @@ public class AuthMgr {
     @MessagePreProcessor(filterType = MessagePreProcessorMessageType.At)
     public void authorityManager(MessageEvent event, PreProcessorData data){
         List<String> args = data.getArgs();
-        if(args == null || args.size() > 2){
+        if(args == null){
             MiraiMain.getInstance().quickReply(event, "获取参数出错");
             return;
         }
@@ -52,8 +53,8 @@ public class AuthMgr {
         }else if(args.get(1).equals("on")){
             permit = 1;
         }
-        if(permit == 2 || commandId == 0 || senderId == -1L){
-            MiraiMain.getInstance().quickReply(event, "一个或多个参数无效");
+        if(permit == 2 || commandId == 0 || (senderId == -1L) || senderId == event.getBot().getId()){
+            MiraiMain.getInstance().quickReply(event, "命令：permit 无法将“permit”项识别为 函数、脚本文件或可运行程序的名称，请检查参数的拼写。");
             permit = 2;
             return;
         }

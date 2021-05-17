@@ -81,8 +81,13 @@ public class PermissionCheck {
     List<String> args = data.getArgs();
     long targetId = -1L;
     String temp = args.get(2);
-    temp = temp.substring(temp.lastIndexOf(":") + 1, temp.lastIndexOf("]"));
-    targetId = Long.parseLong(temp);
+    try{
+      temp = temp.substring(temp.lastIndexOf(":") + 1, temp.lastIndexOf("]"));
+      targetId = Long.parseLong(temp);
+    }catch (Exception e){
+      MiraiMain.getInstance().quickReply(event, "目标成员不存在");
+      return true;
+    }
     MemberPermission targetPermission = Objects.requireNonNull(event.getGroup().get(targetId)).getPermission();
     int targetAuthLevel = targetPermission.ordinal();
     if(senderAuthLevel <= targetAuthLevel){
