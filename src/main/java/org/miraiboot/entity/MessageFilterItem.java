@@ -65,6 +65,7 @@ public class MessageFilterItem {
     boolean res = false;
     switch (matchType) {
       case NULL:
+        res = true;
         break;
       case EQUALS:
         res = source.equals(value);

@@ -24,7 +24,7 @@ import java.util.regex.Pattern;
 public class CommandUtil {
 	private static final CommandUtil INSTANCE = new CommandUtil();
 	private static final Set<String> COMMAND_START_SET = new HashSet<String>();
-	private static final String BASE_PATTERN = "([\\u4e00-\\u9fa5]+|[a-zA-Z]+)";
+	private static final String BASE_PATTERN = "([\\u4e00-\\u9fa5]+|[a-zA-Z0-9]+)";
 	private static final List<String> SPECIAL_CHARACTER = Arrays.asList("^", "$", "[", "(", ")", "{", "\\", "?", ".", "*", "|", "+");
 	private static Pattern commandPattern;
 
