@@ -1,8 +1,5 @@
 package org.miraiboot.permission;
 
-import net.mamoe.mirai.Bot;
-import net.mamoe.mirai.contact.MemberPermission;
-import net.mamoe.mirai.event.events.GroupMessageEvent;
 import net.mamoe.mirai.event.events.MessageEvent;
 import net.mamoe.mirai.message.data.At;
 import net.mamoe.mirai.message.data.SingleMessage;
