@@ -3,6 +3,7 @@ package org.miraiboot.permission;
 import net.mamoe.mirai.contact.MemberPermission;
 import net.mamoe.mirai.event.events.GroupMessageEvent;
 import net.mamoe.mirai.message.data.At;
+import net.mamoe.mirai.message.data.MessageChain;
 import net.mamoe.mirai.message.data.SingleMessage;
 import org.jetbrains.annotations.Nullable;
 import org.miraiboot.annotation.MessagePreProcessor;
@@ -83,14 +84,17 @@ public class PermissionCheck {
     return permission;
   }
 
-  public static boolean strictRestrictedCheck(GroupMessageEvent event, PreProcessorData data){
+  public static boolean strictRestrictedCheck(GroupMessageEvent event){
     MemberPermission senderPermissions = event.getSender().getPermission();
     int senderAuthLevel = senderPermissions.ordinal();
-    List<String> args = data.getArgs();
+    MessageChain content = event.getMessage();
+    long botId = event.getBot().getId();
     long targetId = -1L;
-    String temp = args.get(2);
-    temp = temp.substring(temp.lastIndexOf(":") + 1, temp.lastIndexOf("]"));
-    targetId = Long.parseLong(temp);
+    for(SingleMessage s : content){
+      if(s instanceof At && ((At) s).getTarget() != botId){
+        targetId = ((At) s).getTarget();
+      }
+    }
     MemberPermission targetPermission = Objects.requireNonNull(event.getGroup().get(targetId)).getPermission();
     int targetAuthLevel = targetPermission.ordinal();
     if(senderAuthLevel <= targetAuthLevel){

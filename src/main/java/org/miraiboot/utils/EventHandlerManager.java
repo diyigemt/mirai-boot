@@ -60,7 +60,7 @@ public class EventHandlerManager {
           return "目标成员不存在";
         }
         if(method.getAnnotation(CheckPermission.class).isStrictRestricted()){
-          if(!PermissionCheck.strictRestrictedCheck((GroupMessageEvent) event, processorData)){
+          if(!PermissionCheck.strictRestrictedCheck((GroupMessageEvent) event)){
             MiraiMain.getInstance().quickReply(event, "您当前的权限不足以对目标用户操作");
             return "您当前的权限不足以对目标用户操作";
           }
