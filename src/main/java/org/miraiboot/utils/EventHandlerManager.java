@@ -67,6 +67,10 @@ public class EventHandlerManager {
           MiraiMain.getInstance().quickReply(event, "您的管理员已禁止您使用该功能");
           return "您的管理员已禁止您使用该功能";
         }
+        else if(!PermissionCheck.individualAuthCheck(handler, (GroupMessageEvent) event)){
+          MiraiMain.getInstance().quickReply(event, "您没有权限使用该功能");
+          return "您没有权限使用该功能";
+        }
         else {
           if(!PermissionCheck.identityCheck(handler, (GroupMessageEvent) event)){
             MiraiMain.getInstance().quickReply(event, "权限不足");

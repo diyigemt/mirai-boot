@@ -95,4 +95,29 @@ public class PermissionCheck {
     }
     return true;
   }
+
+  public static boolean individualAuthCheck(EventHandlerItem item, GroupMessageEvent event){
+    Method method = item.getHandler();
+    String[] allows = method.getAnnotation(CheckPermission.class).allows();
+    String[] blocks = method.getAnnotation(CheckPermission.class).blocks();
+    long senderId = event.getSender().getId();
+    if(allows.length != 0){
+      for(String i : allows){
+        if(Long.parseLong(i) == senderId){
+          return true;
+        }
+      }
+      return false;
+    }
+    if(blocks.length != 0){
+      for(String i : blocks){
+        if(Long.parseLong(i) == senderId){
+          return false;
+        }
+      }
+      return true;
+    }
+
+    return true;
+  }
 }
