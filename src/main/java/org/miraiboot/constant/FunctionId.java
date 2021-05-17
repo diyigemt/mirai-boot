@@ -1,8 +1,6 @@
 package org.miraiboot.constant;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * 所有功能都需要在这注册ID号，依次顺延
@@ -32,6 +30,18 @@ public class FunctionId {
      */
     public static int getMap(String target){
         return map.get(target);
+    }
+
+    public static String getKey(int value){
+        Set set=map.entrySet();
+        Iterator it=set.iterator();
+        while(it.hasNext()) {
+            Map.Entry entry=(Map.Entry)it.next();
+            if(entry.getValue().equals(value)) {
+                return entry.getKey().toString();
+            }
+        }
+        return null;
     }
 
     /**

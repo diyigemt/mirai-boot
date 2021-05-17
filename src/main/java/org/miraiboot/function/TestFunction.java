@@ -6,7 +6,6 @@ import org.miraiboot.annotation.EventHandler;
 import org.miraiboot.annotation.EventHandlerComponent;
 import org.miraiboot.constant.FunctionId;
 import org.miraiboot.entity.PreProcessorData;
-import org.miraiboot.mirai.MiraiMain;
 import org.miraiboot.permission.CheckPermission;
 
 @EventHandlerComponent
