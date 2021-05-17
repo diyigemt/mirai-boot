@@ -1,9 +1,14 @@
 package org.miraiboot.permission;
 
 import net.mamoe.mirai.event.events.MessageEvent;
+import net.mamoe.mirai.message.data.At;
+import net.mamoe.mirai.message.data.SingleMessage;
 import org.miraiboot.annotation.EventHandler;
 import org.miraiboot.annotation.EventHandlerComponent;
+import org.miraiboot.annotation.MessagePreProcessor;
+import org.miraiboot.annotation.MessagePreProcessors;
 import org.miraiboot.constant.FunctionId;
+import org.miraiboot.constant.MessagePreProcessorMessageType;
 import org.miraiboot.entity.PreProcessorData;
 import org.miraiboot.mirai.MiraiMain;
 import org.miraiboot.utils.PermissionUtil;
@@ -20,14 +25,19 @@ public class AuthMgr {
 
     @EventHandler(target = "permit")
     @CheckPermission(isAdminOnly = true, permissionIndex = FunctionId.permit)
+    @MessagePreProcessor(filterType = MessagePreProcessorMessageType.At)
     public void authorityManager(MessageEvent event, PreProcessorData data){
         List<String> args = data.getArgs();
         if(args == null || args.size() > 2){
             MiraiMain.getInstance().quickReply(event, "获取参数出错");
             return;
         }
-        String context = event.getMessage().serializeToMiraiCode();
-        long senderId = Long.parseLong(context.substring(context.lastIndexOf(":") + 1, context.lastIndexOf("]")));
+        List<SingleMessage> classified = data.getClassified();
+        long senderId = -1L;
+        for (SingleMessage message : classified) {
+            senderId = ((At) message).getTarget();
+            if (senderId != event.getBot().getId()) break;
+        }
         int commandId = FunctionId.getMap(args.get(0));
         int permit = 2;
         if(args.get(1).equals("off")){
