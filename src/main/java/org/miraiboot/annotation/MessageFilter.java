@@ -48,13 +48,21 @@ public @interface MessageFilter {
    */
   String[] bots() default {};
   /**
-   * 是否当bot被at时才触发
+   * 是否当bot被at时才触发<br/>
+   * <strong>好友消息时忽略<strong/>
    * @since 1.0.0
    */
   boolean isAt() default false;
   /**
+   * 是否at全体时才触发<br/>
+   * <strong>好友消息时忽略<strong/>
+   * @since 1.0.0
+   */
+  boolean isAtAll() default false;
+  /**
    * 是否有人被at时才触发
-   * 不一定是bot被at
+   * 不一定是bot被at<br/>
+   * <strong>好友消息时忽略<strong/>
    * @since 1.0.0
    */
   boolean isAtAny() default false;

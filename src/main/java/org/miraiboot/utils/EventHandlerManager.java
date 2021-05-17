@@ -76,6 +76,10 @@ public class EventHandlerManager {
       }
 
       // 开始处理@Filter 和 @PreProcessor
+      // 判断Filter
+      if (method.isAnnotationPresent(MessageFilter.class) || method.isAnnotationPresent(MessageFilters.class)) {
+        if (!CommandUtil.getInstance().checkFilter(event, method, plainText)) return "filter 未通过";
+      }
       int parameterCount = method.getParameterCount();
       Object[] parameters = null;
       PreProcessorData processorData = new PreProcessorData();
@@ -84,13 +88,9 @@ public class EventHandlerManager {
         parameters = new Object[parameterCount];
         parameters[0] = event;
         processorData = CommandUtil.getInstance().parseArgs(plainText, method, processorData);
+        processorData.setText(plainText);
         parameters[1] = processorData;
         // 开始预处理 分离参数之类的
-        if (method.isAnnotationPresent(MessageFilter.class) || method.isAnnotationPresent(MessageFilters.class)) {
-          processorData.setText(plainText);
-          processorData.setCommand(target);
-          parameters[1] = processorData;
-        }
         if (method.isAnnotationPresent(MessagePreProcessor.class) || method.isAnnotationPresent(MessagePreProcessors.class)) {
           processorData = CommandUtil.getInstance().parsePreProcessor(event, method, processorData);
           parameters[1] = processorData;
@@ -206,9 +206,6 @@ public class EventHandlerManager {
   }
 
   public PreProcessorData parsePreProcessorData(MessageEvent event, Method handler, PreProcessorData data) {
-    if (handler.isAnnotationPresent(MessageFilter.class) || handler.isAnnotationPresent(MessageFilters.class)) {
-      CommandUtil.getInstance().checkFilter(event, handler, data);
-    }
     if (handler.isAnnotationPresent(MessagePreProcessor.class) || handler.isAnnotationPresent(MessagePreProcessors.class)) {
       data = CommandUtil.getInstance().parsePreProcessor(event, handler, data);
     }

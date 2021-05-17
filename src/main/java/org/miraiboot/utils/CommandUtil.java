@@ -82,11 +82,11 @@ public class CommandUtil {
 		return data;
 	}
 
-	public boolean checkFilter(MessageEvent event, Method handler, PreProcessorData data) {
+	public boolean checkFilter(MessageEvent event, Method handler, String source) {
 		MessageFilter[] filters = handler.getDeclaredAnnotationsByType(MessageFilter.class);
-		MessageFilterItem item = new MessageFilterItem();
 		for (MessageFilter filter : filters) {
-
+			MessageFilterItem item = new MessageFilterItem(filter);
+			if (!item.check(event, source)) return false;
 		}
 		return true;
 	}
