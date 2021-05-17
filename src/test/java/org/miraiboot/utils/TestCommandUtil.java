@@ -12,7 +12,7 @@ public class TestCommandUtil {
   @Test
   public void testParseArgs() throws NoSuchMethodException {
     Method testReply = TestFunction.class.getMethod("testReply", MessageEvent.class);
-    CommandUtil.getInstance().parseArgs("reply 123 456 789", testReply, new PreProcessorData());
+    CommandUtil.getInstance().parseArgs("reply 123 456 789", "reply", testReply, new PreProcessorData());
   }
   @Test
   public void testCompilePattern() {

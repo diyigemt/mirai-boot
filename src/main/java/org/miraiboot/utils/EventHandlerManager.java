@@ -56,7 +56,7 @@ public class EventHandlerManager {
           CommandUtil commandUtil = new CommandUtil();
           PreProcessorData data = new PreProcessorData();
           String source = event.getMessage().serializeToMiraiCode();
-          data = commandUtil.parseArgs(source, handler.getHandler(), data);
+          data = commandUtil.parseArgs(source, target, handler.getHandler(), data);
           if(!PermissionCheck.strictRestrictedCheck((GroupMessageEvent) event, data)){
             MiraiMain.getInstance().quickReply(event, "您当前的权限不足以对目标用户操作");
             return "您当前的权限不足以对目标用户操作";
@@ -91,7 +91,7 @@ public class EventHandlerManager {
       if (parameterCount != 1) {
         parameters = new Object[parameterCount];
         parameters[0] = event;
-        processorData = CommandUtil.getInstance().parseArgs(plainText, method, processorData);
+        processorData = CommandUtil.getInstance().parseArgs(plainText, target, method, processorData);
         processorData.setText(plainText);
         parameters[1] = processorData;
         // 开始预处理 分离参数之类的
@@ -209,10 +209,8 @@ public class EventHandlerManager {
     return null;
   }
 
-  public PreProcessorData parsePreProcessorData(MessageEvent event, Method handler, PreProcessorData data) {
-    if (handler.isAnnotationPresent(MessagePreProcessor.class) || handler.isAnnotationPresent(MessagePreProcessors.class)) {
-      data = CommandUtil.getInstance().parsePreProcessor(event, handler, data);
-    }
-    return data;
+  public void registerAlias(String target, String alias) {
+    List<EventHandlerItem> eventHandlerItems = STORE.get(target);
+    if (eventHandlerItems != null) STORE.put(alias, eventHandlerItems);
   }
 }

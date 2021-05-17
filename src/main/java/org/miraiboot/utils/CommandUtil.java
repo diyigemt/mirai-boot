@@ -68,12 +68,19 @@ public class CommandUtil {
 		return command;
 	}
 
-	public PreProcessorData parseArgs(String source, Method handler, PreProcessorData data) {
+	/**
+	 * 从纯文本中分理出参数和被检测到属于指令的内容
+	 * @param source 消息纯文本
+	 * @param command 指令 由于指令别名的存在没有从方法的注解中获取 而是采用在listener中获取的指令名
+	 * @param handler 触发的方法
+	 * @param data 存储处理结果
+	 * @return 处理结果
+	 */
+	public PreProcessorData parseArgs(String source, String command, Method handler, PreProcessorData data) {
 		EventHandler eventHandlerAnnotation = handler.getAnnotation(EventHandler.class);
-		String target = eventHandlerAnnotation.target();
-		String command = target.equals("") ? handler.getName() : target;
 		String start = eventHandlerAnnotation.start();
 		String remove = command + start;
+		// 如果是别名
 		String s = source.substring(source.indexOf(remove) + remove.length()).trim();
 		String split = eventHandlerAnnotation.split();
 		String[] res = s.split(split);
