@@ -38,14 +38,20 @@ public class AuthMgr {
             senderId = ((At) message).getTarget();
             if (senderId != event.getBot().getId()) break;
         }
-        int commandId = FunctionId.getMap(args.get(0));
+        int commandId = 0;
+        try{
+            commandId = FunctionId.getMap(args.get(0));
+        }catch (NullPointerException e){
+            MiraiMain.getInstance().quickReply(event, "一个或多个参数无效");
+            return;
+        }
         int permit = 2;
         if(args.get(1).equals("off")){
             permit = 0;
         }else if(args.get(1).equals("on")){
             permit = 1;
         }
-        if(permit == 2 || commandId == 0 || senderId == 0){
+        if(permit == 2 || commandId == 0 || senderId == -1L){
             MiraiMain.getInstance().quickReply(event, "一个或多个参数无效");
             permit = 2;
             return;
