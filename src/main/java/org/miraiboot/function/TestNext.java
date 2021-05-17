@@ -14,9 +14,9 @@ import org.miraiboot.utils.EventHandlerManager;
 public class TestNext {
 
   @EventHandler(target = "搜图")
-  public void testReply(MessageEvent event, PreProcessorData data) {
+  public void testTimeOut(MessageEvent event, PreProcessorData data) {
     MiraiMain.getInstance().quickReply(event, "图呢");
-    EventHandlerManager.getInstance().onNext(String.valueOf(event.getSender().getId()), new EventHandlerNext() {
+    EventHandlerManager.getInstance().onNext(event.getSender().getId(), new EventHandlerNext() {
       @Override
       public ListeningStatus onNext(MessageEvent nextEvent, PreProcessorData nextData) {
         if (nextData.getText().contains("没有")) {
@@ -32,5 +32,30 @@ public class TestNext {
         MiraiMain.getInstance().quickReply(nextEvent, "已经超时 停止监听");
       }
     }, 2 * 1000L, -1, event, data);
+  }
+
+  @EventHandler(target = "trigger")
+  public void testTriggerOut(MessageEvent event, PreProcessorData data) {
+    MiraiMain.getInstance().quickReply(event, "开始监听");
+    EventHandlerManager.getInstance().onNext(event.getSender().getId(), new EventHandlerNext() {
+      @Override
+      public ListeningStatus onNext(MessageEvent event, PreProcessorData data) {
+        MiraiMain.getInstance().quickReply(event, "剩余次数: " + data.getTriggerCount());
+        if (data.getText().contains("没有")) {
+          MiraiMain.getInstance().quickReply(event, "主动停止监听");
+          return ListeningStatus.STOPPED;
+        }
+        return ListeningStatus.LISTENING;
+      }
+      @Override
+      public void onTriggerOut(MessageEvent event, PreProcessorData data) {
+        MiraiMain.getInstance().quickReply(event, "次数耗尽 停止监听");
+      }
+
+      @Override
+      public void onTimeOut(MessageEvent event, PreProcessorData data) {
+        MiraiMain.getInstance().quickReply(event, "已经超时 停止监听");
+      }
+    }, 10 * 1000L, 3);
   }
 }

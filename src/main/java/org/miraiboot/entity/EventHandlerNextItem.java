@@ -39,6 +39,7 @@ public class EventHandlerNextItem {
   public ListeningStatus onNext(MessageEvent event, PreProcessorData data) {
     this.lastEvent = event;
     this.lastData = data;
+    if (this.triggerCount != -1) data.setTriggerCount(this.triggerCount);
     return handler.onNext(event, data);
   }
 

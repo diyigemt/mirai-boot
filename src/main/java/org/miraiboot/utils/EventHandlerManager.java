@@ -21,7 +21,7 @@ import java.util.*;
 public class EventHandlerManager {
   private static final EventHandlerManager INSTANCE = new EventHandlerManager();
   private static final Map<String, List<EventHandlerItem>> STORE = new HashMap<String, List<EventHandlerItem>>();
-  private static final Map<String, List<EventHandlerNextItem>> LISTENING_STORE = new HashMap<String, List<EventHandlerNextItem>>();
+  private static final Map<Long, List<EventHandlerNextItem>> LISTENING_STORE = new HashMap<Long, List<EventHandlerNextItem>>();
 
   public static EventHandlerManager getInstance() {
     return INSTANCE;
@@ -120,19 +120,19 @@ public class EventHandlerManager {
     return false;
   }
 
-  public void onNext(String target, EventHandlerNext onNext) {
+  public void onNext(long target, EventHandlerNext onNext) {
     onNext(target, onNext, -1L, -1);
   }
 
-  public void onNext(String target, EventHandlerNext onNext, long timeOut) {
+  public void onNext(long target, EventHandlerNext onNext, long timeOut) {
     onNext(target, onNext, timeOut, -1);
   }
 
-  public void onNext(String target, EventHandlerNext onNext, int triggerCount) {
+  public void onNext(long target, EventHandlerNext onNext, int triggerCount) {
     onNext(target, onNext, -1L, triggerCount);
   }
 
-  public void onNext(String target, EventHandlerNext onNext, long timeOut, int triggerCount) {
+  public void onNext(long target, EventHandlerNext onNext, long timeOut, int triggerCount) {
     List<EventHandlerNextItem> events = LISTENING_STORE.get(target);
     if (events == null) events = new ArrayList<EventHandlerNextItem>();
     EventHandlerNextItem eventHandlerNextItem = new EventHandlerNextItem(onNext, timeOut, triggerCount);
@@ -140,7 +140,7 @@ public class EventHandlerManager {
     LISTENING_STORE.put(target, events);
   }
 
-  public void onNext(String target, EventHandlerNext onNext, long timeOut, int triggerCount, MessageEvent event, PreProcessorData data) {
+  public void onNext(long target, EventHandlerNext onNext, long timeOut, int triggerCount, MessageEvent event, PreProcessorData data) {
     List<EventHandlerNextItem> events = LISTENING_STORE.get(target);
     if (events == null) events = new ArrayList<EventHandlerNextItem>();
     EventHandlerNextItem eventHandlerNextItem = new EventHandlerNextItem(onNext, timeOut, triggerCount);
@@ -162,7 +162,7 @@ public class EventHandlerManager {
     LISTENING_STORE.put(target, events);
   }
 
-  public String emitNext(String target, MessageEvent event, String plainText) {
+  public String emitNext(long target, MessageEvent event, String plainText) {
     List<EventHandlerNextItem> events = LISTENING_STORE.get(target);
     if (events == null) return null;
     for (int i = 0; i < events.size(); i++) {

@@ -1,8 +1,6 @@
 package org.miraiboot.entity;
 
 import lombok.Data;
-import lombok.NoArgsConstructor;
-import net.mamoe.mirai.message.data.MessageContent;
 import net.mamoe.mirai.message.data.SingleMessage;
 
 import java.util.ArrayList;
@@ -29,8 +27,20 @@ public class PreProcessorData {
    * 匹配到的参数
    */
   private List<String> args;
+  /**
+   * 消息纯文本
+   */
   private String text;
+  /**
+   * 由@MessagePreProcessor过滤出的消息内容
+   * @see org.miraiboot.annotation.MessagePreProcessor
+   */
   private List<SingleMessage> classified;
+
+  /**
+   * 上下文触发剩余次数
+   */
+  private int triggerCount;
 
   public PreProcessorData() {
     this.args = new ArrayList<String>();
