@@ -6,6 +6,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -48,6 +50,17 @@ public class TestSimple {
       String group = matcher.group(1);
       s = s.replaceAll(group, "");
     }
+  }
+
+  @Test
+  public void testTimer() {
+    Timer timer = new Timer();
+    timer.schedule(new TimerTask() {
+      @Override
+      public void run() {
+        System.out.println("hello world");
+      }
+    }, 2000);
   }
 
   public void testA(String a) {

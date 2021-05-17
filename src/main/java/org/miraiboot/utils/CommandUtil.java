@@ -1,12 +1,18 @@
 package org.miraiboot.utils;
 
+import net.mamoe.mirai.event.events.MessageEvent;
+import net.mamoe.mirai.message.data.SingleMessage;
 import org.miraiboot.annotation.EventHandler;
+import org.miraiboot.annotation.MessageFilter;
 import org.miraiboot.annotation.MessagePreProcessor;
+import org.miraiboot.entity.MessageFilterItem;
 import org.miraiboot.entity.MessagePreProcessorItem;
 import org.miraiboot.entity.PreProcessorData;
 
 import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -19,6 +25,7 @@ public class CommandUtil {
 	private static final CommandUtil INSTANCE = new CommandUtil();
 	private static final Set<String> COMMAND_START_SET = new HashSet<String>();
 	private static final String BASE_PATTERN = "([\\u4e00-\\u9fa5]+|[a-zA-Z]+)";
+	private static final List<String> SPECIAL_CHARACTER = Arrays.asList("^", "$", "[", "(", ")", "{", "\\", "?", ".", "*", "|", "+");
 	private static Pattern commandPattern;
 
 
@@ -31,9 +38,16 @@ public class CommandUtil {
 	public void compileCommandPattern() {
 		StringBuilder sb = new StringBuilder();
 		if (!COMMAND_START_SET.isEmpty()) {
-			sb.append("[");
-			COMMAND_START_SET.forEach(sb::append);
-			sb.append("]");
+			sb.append("(");
+			COMMAND_START_SET.forEach(item -> {
+				if (SPECIAL_CHARACTER.contains(item)) {
+					sb.append("\\").append(item).append("|");
+				} else {
+					sb.append(item).append("|");
+				}
+			});
+			sb.replace(sb.length() - 1, sb.length(), "");
+			sb.append(")");
 		}
 		sb.append(BASE_PATTERN);
 		commandPattern = Pattern.compile(sb.toString());
@@ -68,12 +82,23 @@ public class CommandUtil {
 		return data;
 	}
 
-	public PreProcessorData parsePreProcessor(Method handler, PreProcessorData data) {
+	public boolean checkFilter(MessageEvent event, Method handler, PreProcessorData data) {
+		MessageFilter[] filters = handler.getDeclaredAnnotationsByType(MessageFilter.class);
+		MessageFilterItem item = new MessageFilterItem();
+		for (MessageFilter filter : filters) {
+
+		}
+		return true;
+	}
+
+	public PreProcessorData parsePreProcessor(MessageEvent event, Method handler, PreProcessorData data) {
 		MessagePreProcessor[] annotations = handler.getDeclaredAnnotationsByType(MessagePreProcessor.class);
 		MessagePreProcessorItem preProcessorItem = new MessagePreProcessorItem();
 		for (MessagePreProcessor preProcessor : annotations) {
 			preProcessorItem.addFilterType(preProcessor.filterType());
 		}
+		List<SingleMessage> singleMessages = preProcessorItem.parseMessage(event);
+		data.addClassified(singleMessages);
 		return data;
 	}
 }

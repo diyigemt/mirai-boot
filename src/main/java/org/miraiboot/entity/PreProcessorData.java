@@ -3,6 +3,7 @@ package org.miraiboot.entity;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import net.mamoe.mirai.message.data.MessageContent;
+import net.mamoe.mirai.message.data.SingleMessage;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -29,14 +30,18 @@ public class PreProcessorData {
    */
   private List<String> args;
   private String text;
-  private List<MessageContent> classified;
+  private List<SingleMessage> classified;
 
   public PreProcessorData() {
     this.args = new ArrayList<String>();
-    this.classified = new ArrayList<MessageContent>();
+    this.classified = new ArrayList<SingleMessage>();
   }
 
   public void addArgs(String[] args) {
     this.args.addAll(Arrays.asList(args));
+  }
+
+  public void addClassified(List<SingleMessage> messages) {
+    this.classified.addAll(messages);
   }
 }

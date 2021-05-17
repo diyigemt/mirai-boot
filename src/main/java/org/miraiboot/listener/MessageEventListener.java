@@ -21,6 +21,8 @@ public class MessageEventListener implements Consumer<MessageEvent> {
 			sb.append(item.contentToString());
 		});
 		String source = sb.toString();
+		// 执行监听中的特定对话
+		EventHandlerManager.getInstance().emitNext(String.valueOf(messageEvent.getSender().getId()), messageEvent, source);
 		// 执行强制触发EventHandler
 		String res = EventHandlerManager.getInstance().emit("", messageEvent, source);
 		if (res != null) {

@@ -1,5 +1,6 @@
 package org.miraiboot.utils;
 
+import net.mamoe.mirai.event.ListeningStatus;
 import net.mamoe.mirai.event.events.FriendMessageEvent;
 import net.mamoe.mirai.event.events.GroupMessageEvent;
 import net.mamoe.mirai.event.events.MessageEvent;
@@ -7,6 +8,7 @@ import org.miraiboot.annotation.*;
 import org.miraiboot.constant.EventHandlerType;
 import org.miraiboot.entity.EventHandlerItem;
 import org.miraiboot.entity.PreProcessorData;
+import org.miraiboot.interfaces.EventHandlerNext;
 import org.miraiboot.mirai.MiraiMain;
 import org.miraiboot.permission.CheckPermission;
 import org.miraiboot.permission.PermissionCheck;
@@ -18,6 +20,7 @@ import java.util.*;
 public class EventHandlerManager {
   private static final EventHandlerManager INSTANCE = new EventHandlerManager();
   private static final Map<String, List<EventHandlerItem>> STORE = new HashMap<String, List<EventHandlerItem>>();
+  private static final Map<String, List<EventHandlerNext>> LISTENING_STORE = new HashMap<String, List<EventHandlerNext>>();
 
   public static EventHandlerManager getInstance() { return INSTANCE; }
 
@@ -76,7 +79,7 @@ public class EventHandlerManager {
           parameters[1] = processorData;
         }
         if (method.isAnnotationPresent(MessagePreProcessor.class) || method.isAnnotationPresent(MessagePreProcessors.class)) {
-          processorData = CommandUtil.getInstance().parsePreProcessor(method, processorData);
+          processorData = CommandUtil.getInstance().parsePreProcessor(event, method, processorData);
           parameters[1] = processorData;
         }
       }
@@ -102,5 +105,42 @@ public class EventHandlerManager {
       if (event instanceof GroupMessageEvent && type == EventHandlerType.MESSAGE_HANDLER_GROUP) return true;
     }
     return false;
+  }
+
+  public void onNext(String target, EventHandlerNext onNext) {
+    List<EventHandlerNext> events = LISTENING_STORE.get(target);
+    if (events == null) events = new ArrayList<EventHandlerNext>();
+    events.add(onNext);
+    LISTENING_STORE.put(target, events);
+  }
+
+  public String emitNext(String target, MessageEvent event, String plainText) {
+    List<EventHandlerNext> events = LISTENING_STORE.get(target);
+    if (events == null) return null;
+    for (EventHandlerNext next : events) {
+      PreProcessorData data = new PreProcessorData();
+      data.setText(plainText);
+      try {
+        Method onNext = next.getClass().getMethod("onNext", MessageEvent.class, PreProcessorData.class);
+        data = CommandUtil.getInstance().parsePreProcessor(event, onNext, data);
+      } catch (NoSuchMethodException e) {
+        e.printStackTrace();
+        return "没有找到该方法!";
+      }
+      ListeningStatus status = next.onNext(event, data);
+      if (status == ListeningStatus.STOPPED) events.remove(next);
+      if (events.isEmpty()) LISTENING_STORE.remove(target);
+    }
+    return null;
+  }
+
+  public PreProcessorData parsePreProcessorData(MessageEvent event, Method handler, PreProcessorData data) {
+    if (handler.isAnnotationPresent(MessageFilter.class) || handler.isAnnotationPresent(MessageFilters.class)) {
+      CommandUtil.getInstance().checkFilter(event, handler, data);
+    }
+    if (handler.isAnnotationPresent(MessagePreProcessor.class) || handler.isAnnotationPresent(MessagePreProcessors.class)) {
+      data = CommandUtil.getInstance().parsePreProcessor(event, handler, data);
+    }
+    return data;
   }
 }
