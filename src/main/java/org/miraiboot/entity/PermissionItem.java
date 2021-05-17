@@ -5,7 +5,8 @@ public class PermissionItem {
   private int commandId;
   private String senderId;
   private boolean permit;
-  private int remain;
+  private int permits = 0;
+  private int remain = -1;
 
   public PermissionItem() {}
 
@@ -63,5 +64,13 @@ public class PermissionItem {
 
   public void setRemain(int remain) {
     this.remain = remain;
+  }
+
+  public int getPermits() {
+    return permits;
+  }
+
+  public void setPermits(int permits) {
+    this.permits = permits;
   }
 }
