@@ -5,7 +5,7 @@ import java.lang.annotation.*;
 /**
  * @author diyigemt
  * 群消息权限规定
- * 优先级 at-> permission table -> blocks -> allows -> isGroupOwnerOnly -> isAdminOnly
+ * 优先级 at-> permission table -> blocks -> allows -> isStrictRestricted -> isGroupOwnerOnly -> isAdminOnly
  */
 @Target({ElementType.METHOD, ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
@@ -17,6 +17,9 @@ public @interface CheckPermission {
 
   //禁止列表
   String[] blocks() default {};
+
+  //是否严格检查身份（群主和管理员之间的权限将严格划分）
+  boolean isStrictRestricted() default false;
 
   //是否只允许群主
   boolean isGroupOwnerOnly() default false;
