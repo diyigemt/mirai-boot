@@ -1,11 +1,20 @@
 package org.miraiboot.entity;
 
+import com.j256.ormlite.field.DatabaseField;
+import com.j256.ormlite.table.DatabaseTable;
+
+@DatabaseTable(tableName = "permission")
 public class PermissionItem {
+  @DatabaseField(generatedId = true, columnName = "id", unique = true)
   private int id;
+  @DatabaseField(columnName = "command_id")
   private int commandId;
+  @DatabaseField(columnName = "sender_id")
   private String senderId;
+  @DatabaseField(columnName = "permit", defaultValue = "false")
   private boolean permit;
   private int permits = 0;
+  @DatabaseField(columnName = "remain")
   private int remain = -1;
 
   public PermissionItem() {}
@@ -85,3 +94,4 @@ public class PermissionItem {
     }
   }
 }
+

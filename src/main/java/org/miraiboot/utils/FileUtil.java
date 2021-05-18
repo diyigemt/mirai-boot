@@ -16,16 +16,20 @@ public class FileUtil {
     String base = getJARRootPath(target) + SYSTEM_PATH_DIV;
     RESOURCE_ROOT_FOLDER_PATH = base + "data";
     CONFIG_ROOT_FOLDER_PATH = base + "config";
+    String dBRootFolderPath = CONFIG_ROOT_FOLDER_PATH + SYSTEM_PATH_DIV + "dbs";
     // 初始化资源文件夹
     File resourceFileDir = new File(RESOURCE_ROOT_FOLDER_PATH);
-    if (!resourceFileDir.exists()) resourceFileDir.mkdir();
+    if (!resourceFileDir.exists()) resourceFileDir.mkdirs();
     // 初始化配置文件夹
     File configFileDir = new File(CONFIG_ROOT_FOLDER_PATH);
-    if (!configFileDir.exists()) configFileDir.mkdir();
+    if (!configFileDir.exists()) configFileDir.mkdirs();
     // 初始化机器人device文件位置文件夹
     BOT_DEVICE_FOLDER_PATH = CONFIG_ROOT_FOLDER_PATH + SYSTEM_PATH_DIV + "bots";
     File botDeviceFileDir = new File(BOT_DEVICE_FOLDER_PATH);
-    if (!botDeviceFileDir.exists()) botDeviceFileDir.mkdir();
+    if (!botDeviceFileDir.exists()) botDeviceFileDir.mkdirs();
+    //初始化db文件夹
+    File dBFileDir = new File(dBRootFolderPath);
+    if (!dBFileDir.exists()) dBFileDir.mkdirs();
   }
 
   public static FileUtil getInstance() {
