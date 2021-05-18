@@ -45,7 +45,7 @@ public class AuthMgr {
         int remain = -2;//-1代表无限制
         try{
             remain = Integer.parseInt(args.get(2));
-            if(remain == 0){
+            if(remain == 0 || remain < 0){
                 MiraiMain.getInstance().quickReply(event, "参数：次数限制必须 ＞ 0");
                 return;
             }
