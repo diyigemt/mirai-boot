@@ -19,4 +19,11 @@ public class TestCommandUtil {
     String s1 = CommandUtil.getInstance().parseCommand("这是测试用*a 代码");
     String s2 = CommandUtil.getInstance().parseCommand("这是测试用/a 代码");
   }
+  @Test
+  public void testCompilePattern2() {
+    CommandUtil.getInstance().registerCommandStart(";");
+    CommandUtil.getInstance().registerCommandStart("/");
+    CommandUtil.getInstance().compileCommandPattern();
+    String s2 = CommandUtil.getInstance().parseCommand("/aaa");
+  }
 }

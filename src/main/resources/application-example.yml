@@ -1,12 +1,22 @@
 miraiboot:
   bots:
     -
-      account: 123
+      account: 123 # qq号
       password:
-        kind: PLAIN
-        value: pwd
+        kind: PLAIN # 密码类型 目前仅支持PLAIN纯文本类型
+        value: pwd # qq密码
       configuration:
-        protocol: ANDROID_PHONE
-        device: device.json
+        protocol: ANDROID_PHONE # qq登录协议 支持 ANDROID_PHONE ANDROID_PAD ANDROID_WATCH
+        device: device.json # 设备信息文件名
+    # 可以配置多个 在@EventFilter中修改bot字段可以指定不同的bot处理事件
+    - account: 123 # qq号
+      password:
+        kind: PLAIN # 密码类型 目前仅支持PLAIN纯文本类型
+        value: pwd # qq密码
+      configuration:
+        protocol: ANDROID_PHONE # qq登录协议 支持 ANDROID_PHONE ANDROID_PAD ANDROID_WATCH
+        device: device.json # 设备信息文件名
   logger:
-    network: false
+    network: false # 是否在控制台显示bot的网络信息
+  configs: # 全局配置
+    DEFAULT_COMMAND_START: "" # 默认指令开头 当@EventHandler中没有指定start时使用改配置

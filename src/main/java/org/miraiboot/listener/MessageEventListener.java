@@ -30,6 +30,7 @@ public class MessageEventListener implements Consumer<MessageEvent> {
 		}
 		// 获取指令
 		String command = CommandUtil.getInstance().parseCommand(source);
+		if (command.equals("")) return;
 		// 执行指令对应的EventHandler
 		res = EventHandlerManager.getInstance().emit(command, messageEvent, source);
 		if (res != null) {

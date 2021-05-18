@@ -7,15 +7,13 @@ import org.miraiboot.annotation.AutoInit;
 import org.miraiboot.annotation.EventHandler;
 import org.miraiboot.annotation.EventHandlerComponent;
 import org.miraiboot.annotation.MiraiBootApplication;
+import org.miraiboot.constant.ConstantGlobal;
 import org.miraiboot.entity.ConfigFile;
 import org.miraiboot.entity.ConfigFileBot;
 import org.miraiboot.entity.ConfigFileBotConfiguration;
 import org.miraiboot.listener.MessageEventListener;
 import org.miraiboot.mirai.MiraiMain;
-import org.miraiboot.utils.BotManager;
-import org.miraiboot.utils.CommandUtil;
-import org.miraiboot.utils.EventHandlerManager;
-import org.miraiboot.utils.FileUtil;
+import org.miraiboot.utils.*;
 import org.yaml.snakeyaml.Yaml;
 
 import java.io.*;
@@ -55,6 +53,9 @@ public class MiraiApplication {
       MiraiMain.logger.error("配置文件读取出错");
       return;
     }
+    // 注册全局配置
+    GlobalConfig.getInstance().putAll(config.getMiraiboot().getConfigs());
+    GlobalConfig.getInstance().init();
     MiraiMain.logger.info("配置文件读取成功");
     // 开始自动包扫描 注册event handler
     String packageName = mainClass.getPackageName();
@@ -136,9 +137,16 @@ public class MiraiApplication {
         }
         String targetName = methodAnnotation.target();
         String start = methodAnnotation.start();
-        // 注册指令开头
-        if (!start.equals("")) CommandUtil.getInstance().registerCommandStart(start);
-        if (targetName.equals("")) targetName = method.getName();
+        if (targetName.equals("")) {
+          targetName = method.getName();
+        }
+        if (start.equals("")) {
+          Object o = GlobalConfig.getInstance().get(ConstantGlobal.DEFAULT_COMMAND_START);
+          if (!o.toString().equals("")) targetName = o + targetName;
+        } else {
+          // 注册指令开头
+          CommandUtil.getInstance().registerCommandStart(start);
+        }
         EventHandlerManager.getInstance().on(targetName, clazz, method);
       }
     }

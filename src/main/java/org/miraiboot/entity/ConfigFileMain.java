@@ -5,6 +5,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.util.List;
+import java.util.Map;
 
 @Data
 @NoArgsConstructor
@@ -12,4 +13,5 @@ import java.util.List;
 public class ConfigFileMain {
   List<ConfigFileBot> bots;
   ConfigFileLogger logger;
+  Map<String, Object> configs;
 }

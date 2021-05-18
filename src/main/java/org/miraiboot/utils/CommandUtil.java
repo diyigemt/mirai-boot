@@ -5,6 +5,7 @@ import net.mamoe.mirai.message.data.SingleMessage;
 import org.miraiboot.annotation.EventHandler;
 import org.miraiboot.annotation.MessageFilter;
 import org.miraiboot.annotation.MessagePreProcessor;
+import org.miraiboot.constant.ConstantGlobal;
 import org.miraiboot.entity.MessageFilterItem;
 import org.miraiboot.entity.MessagePreProcessorItem;
 import org.miraiboot.entity.PreProcessorData;
@@ -24,7 +25,7 @@ import java.util.regex.Pattern;
 public class CommandUtil {
 	private static final CommandUtil INSTANCE = new CommandUtil();
 	private static final Set<String> COMMAND_START_SET = new HashSet<String>();
-	private static final String BASE_PATTERN = "([\\u4e00-\\u9fa5]+|[a-zA-Z0-9]+)";
+	private static final String BASE_PATTERN = "?([\\u4e00-\\u9fa5]+|[a-zA-Z0-9]+))";
 	private static final List<String> SPECIAL_CHARACTER = Arrays.asList("^", "$", "[", "(", ")", "{", "\\", "?", ".", "*", "|", "+");
 	private static Pattern commandPattern;
 
@@ -37,8 +38,8 @@ public class CommandUtil {
 
 	public void compileCommandPattern() {
 		StringBuilder sb = new StringBuilder();
+		sb.append("((");
 		if (!COMMAND_START_SET.isEmpty()) {
-			sb.append("(");
 			COMMAND_START_SET.forEach(item -> {
 				if (SPECIAL_CHARACTER.contains(item)) {
 					sb.append("\\").append(item).append("|");
@@ -47,8 +48,8 @@ public class CommandUtil {
 				}
 			});
 			sb.replace(sb.length() - 1, sb.length(), "");
-			sb.append(")");
 		}
+		sb.append(")");
 		sb.append(BASE_PATTERN);
 		commandPattern = Pattern.compile(sb.toString());
 	}
@@ -62,7 +63,7 @@ public class CommandUtil {
 		// 默认为空指令
 		String command = "";
 		Matcher matcher = commandPattern.matcher(source);
-		if (matcher.find()) {
+		if (matcher.find() && matcher.groupCount() >= 3) {
 			command = matcher.group(1);
 		}
 		return command;
@@ -79,8 +80,11 @@ public class CommandUtil {
 	public PreProcessorData parseArgs(String source, String command, Method handler, PreProcessorData data) {
 		EventHandler eventHandlerAnnotation = handler.getAnnotation(EventHandler.class);
 		String start = eventHandlerAnnotation.start();
-		String remove = command + start;
-		// 如果是别名
+		if (start.equals("")) {
+			Object o = GlobalConfig.getInstance().get(ConstantGlobal.DEFAULT_COMMAND_START);
+			if (!o.toString().equals("")) start = o.toString();
+		}
+		String remove = start + command;
 		String s = source.substring(source.indexOf(remove) + remove.length()).trim();
 		String split = eventHandlerAnnotation.split();
 		String[] res = s.split(split);
