@@ -148,10 +148,10 @@ public class SendMessageUtil {
         String name = "sounds";
         try{
             if(path.contains("https")){
-                resource = InpStreamReceiver(path);
+                resource = InpStreamReceiver(path, true);
 
             }else if(path.contains("http")){
-                resource = InpStreamReceiver(path);
+                resource = InpStreamReceiver(path, false);
             }else {
                 File file = new File(path);
                 resource = ExternalResource.create(file);
@@ -167,10 +167,15 @@ public class SendMessageUtil {
         Close();
     }
 
-    private static ExternalResource InpStreamReceiver(String path) throws IOException {
+    private static ExternalResource InpStreamReceiver(String path, boolean isHttps) throws IOException {
         String name = "sounds";
         ExternalResource externalResource = null;
-        InputStream inputStream = HttpUtil.getInputStream(path);
+        InputStream inputStream = null;
+        if(isHttps){
+            inputStream = HttpUtil.getInputStream_https(path);
+        }else {
+            inputStream = HttpUtil.getInputStream(path);
+        }
         externalResource = Mirai.getInstance().getFileCacheStrategy().newCache(inputStream, name);
         return externalResource;
     }
