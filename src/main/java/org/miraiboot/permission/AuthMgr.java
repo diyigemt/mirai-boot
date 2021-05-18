@@ -9,6 +9,7 @@ import org.miraiboot.annotation.EventHandlerComponent;
 import org.miraiboot.annotation.MessagePreProcessor;
 import org.miraiboot.constant.FunctionId;
 import org.miraiboot.constant.MessagePreProcessorMessageType;
+import org.miraiboot.entity.PermissionItem;
 import org.miraiboot.entity.PreProcessorData;
 import org.miraiboot.mirai.MiraiMain;
 import org.miraiboot.utils.PermissionUtil;
@@ -39,6 +40,16 @@ public class AuthMgr {
             if (senderId != event.getBot().getId()) break;
         }
         int commandId = 0;
+
+        //临时权限剩余次数限制
+        int remain = -2;//-1代表无限制
+        try{
+            remain = Integer.parseInt(args.get(2));
+            if(remain == 0){
+                MiraiMain.getInstance().quickReply(event, "参数：次数限制必须 ＞ 0");
+                return;
+            }
+        }catch (IndexOutOfBoundsException e){}
         try{
             if(args.get(0).contains("assign") || args.get(0).contains("cancel")){
                 commandId = FunctionId.getMap(args.get(1));
@@ -57,7 +68,7 @@ public class AuthMgr {
         }else if(args.get(0).contains("assign") || args.get(0).contains("cancel")){
             if(args.get(0).equals("assign")){
                 permit = -1;
-                TempPermission.tempAuthProcess((GroupMessageEvent) event, commandId);
+                TempPermission.tempAuthProcess((GroupMessageEvent) event, commandId, remain);
             }
             else if(args.get(0).equals("cancel")){
                 permit = -1;
@@ -70,8 +81,20 @@ public class AuthMgr {
             return;
         }
         if(permit == 0){
-            PermissionUtil.getInstance().addPermissionItem(senderId, commandId);
-            MiraiMain.getInstance().quickReply(event, "对用户" + senderId + "的" + args.get(0) + "功能，禁用完成");
+            PermissionItem permissionItem = PermissionUtil.getInstance().getPermissionItem(senderId, String.valueOf(commandId));
+            try{
+                if(permissionItem.getSenderId() == senderId && permissionItem.getPermits() > 0){//数据库中存在临时权限
+                    permissionItem.setPermits(0);
+                    PermissionUtil.getInstance().updatePermissionItem(permissionItem);
+                    MiraiMain.getInstance().quickReply(event, "对用户" + senderId + "的" + args.get(0) + "功能，禁用完成，临时权限已取消");
+                }else {
+                    MiraiMain.getInstance().quickReply(event, "该用户已被禁用，无需操作");
+                }
+            }catch (NullPointerException e){//数据库没有记录
+                PermissionUtil.getInstance().addPermissionItem(senderId, commandId);
+                MiraiMain.getInstance().quickReply(event, "对用户" + senderId + "的" + args.get(0) + "功能，禁用完成");
+            }
+
         }else if(permit == 1){
             PermissionUtil.getInstance().removePermissionItem(senderId, commandId);
             MiraiMain.getInstance().quickReply(event, "对用户" + senderId + "的" + args.get(0) + "功能，解锁完成");
