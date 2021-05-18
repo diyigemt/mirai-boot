@@ -12,6 +12,7 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 public class MessageEventListener implements Consumer<MessageEvent> {
+	public static boolean eventLoggerEnable = true;
 	@Override
 	public void accept(MessageEvent messageEvent) {
 		// 提取纯文本

@@ -8,7 +8,9 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class ConfigFileLogger {
   private boolean network;
+  private boolean eventStatus;
   public ConfigFileLogger() {
     this.network = false;
+    this.eventStatus = true;
   }
 }

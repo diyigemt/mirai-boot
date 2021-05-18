@@ -8,11 +8,14 @@ import org.miraiboot.annotation.EventHandler;
 import org.miraiboot.annotation.EventHandlerComponent;
 import org.miraiboot.annotation.MiraiBootApplication;
 import org.miraiboot.constant.ConstantGlobal;
+import org.miraiboot.constant.FunctionId;
 import org.miraiboot.entity.ConfigFile;
 import org.miraiboot.entity.ConfigFileBot;
 import org.miraiboot.entity.ConfigFileBotConfiguration;
+import org.miraiboot.entity.ConfigFileMain;
 import org.miraiboot.listener.MessageEventListener;
 import org.miraiboot.mirai.MiraiMain;
+import org.miraiboot.permission.CheckPermission;
 import org.miraiboot.utils.*;
 import org.yaml.snakeyaml.Yaml;
 
@@ -73,9 +76,12 @@ public class MiraiApplication {
     // 事件注册完成 对正则进行编译
     CommandUtil.getInstance().compileCommandPattern();
     // 开始读取配置文件
-    final boolean isNetwork = config.getMiraiboot().getLogger().isNetwork();
+    ConfigFileMain miraiboot = config.getMiraiboot();
+    final boolean isNetwork = miraiboot.getLogger().isNetwork();
+    // 设置事件监听的logger是否启用
+    MessageEventListener.eventLoggerEnable = miraiboot.getLogger().isEventStatus();
     // 注册Bot
-    for (ConfigFileBot configFileBot : config.getMiraiboot().getBots()) {
+    for (ConfigFileBot configFileBot : miraiboot.getBots()) {
       long account = configFileBot.getAccount();
       if (account == 123L) continue;
       String value = configFileBot.getPassword().getValue();
@@ -147,6 +153,13 @@ public class MiraiApplication {
           // 注册指令开头
           CommandUtil.getInstance().registerCommandStart(start);
         }
+        // 注册与指令对应的权限id
+        int permissionIndex = 0;
+        if (method.isAnnotationPresent(CheckPermission.class)) {
+          CheckPermission permission = method.getAnnotation(CheckPermission.class);
+          permissionIndex = permission.permissionIndex();
+        }
+        FunctionId.put(targetName, permissionIndex);
         EventHandlerManager.getInstance().on(targetName, clazz, method);
       }
     }

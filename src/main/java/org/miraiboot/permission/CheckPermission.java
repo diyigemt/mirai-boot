@@ -2,6 +2,8 @@ package org.miraiboot.permission;
 
 import java.lang.annotation.*;
 
+import static org.miraiboot.constant.FunctionId.DEFAULT_INDEX;
+
 /**
  * @author diyigemt
  * 群消息权限规定
@@ -18,7 +20,7 @@ public @interface CheckPermission {
   //禁止列表
   String[] blocks() default {};
 
-  //是否严格检查身份（群主和管理员之间的权限将严格划分）
+  //是否严格检查身份（群主和管理员之间的权限将严格划分）防止下克上
   boolean isStrictRestricted() default false;
 
   //是否只允许群主
@@ -28,5 +30,5 @@ public @interface CheckPermission {
   boolean isAdminOnly() default false;
 
   //与数据库权限对应的id号
-  int permissionIndex() default 0;
+  int permissionIndex() default DEFAULT_INDEX;
 }

@@ -14,13 +14,11 @@ import java.util.*;
 public class FunctionId {
 
     //用来查询ID
-    public static final Map<String, Integer> map = new HashMap<>(){{
-        //对外开放功能
-        put("reply", reply);
+    public static final Map<String, Integer> map = new HashMap<>();
 
-        //管理员功能
-        put("permit", permit);
-    }};
+    public static void put(String key, int value) {
+        map.put(key, value);
+    }
 
     /**
      *
@@ -43,6 +41,9 @@ public class FunctionId {
         }
         return null;
     }
+
+    // 默认permissionIndex
+    public static final int DEFAULT_INDEX = 0;
 
     /**
      * 给注解用的

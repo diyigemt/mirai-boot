@@ -1,13 +1,15 @@
 package org.miraiboot.permission;
 
 import net.mamoe.mirai.event.events.GroupMessageEvent;
+import net.mamoe.mirai.event.events.MessageEvent;
 import org.miraiboot.constant.FunctionId;
 import org.miraiboot.entity.PermissionItem;
 import org.miraiboot.mirai.MiraiMain;
 import org.miraiboot.utils.PermissionUtil;
 
 public class TempPermission {
-    public static void tempAuthProcess(GroupMessageEvent event, int commandId, int remain){
+    public static void tempAuthProcess(MessageEvent event, int commandId, int remain){
+        if (!(event instanceof GroupMessageEvent)) return;
         long senderId = event.getSender().getId();
         PermissionItem permissionItem = null;
         permissionItem = PermissionUtil.getInstance().getPermissionItem(event.getSender().getId(), String.valueOf(commandId));
@@ -37,7 +39,8 @@ public class TempPermission {
         }
     }
 
-    public static void cancelAuthProcess(GroupMessageEvent event, int commandId){
+    public static void cancelAuthProcess(MessageEvent event, int commandId){
+        if (!(event instanceof GroupMessageEvent)) return;
         long senderId = event.getSender().getId();
         PermissionItem permissionItem = PermissionUtil.getInstance().getPermissionItem(senderId, String.valueOf(commandId));
         if(permissionItem != null){

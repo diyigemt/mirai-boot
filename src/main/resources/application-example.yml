@@ -18,5 +18,6 @@ miraiboot:
         device: device.json # 设备信息文件名
   logger:
     network: false # 是否在控制台显示bot的网络信息
+    eventStatus: true # 是否在控制台打印事件执行失败信息
   configs: # 全局配置
     DEFAULT_COMMAND_START: "" # 默认指令开头 当@EventHandler中没有指定start时使用改配置

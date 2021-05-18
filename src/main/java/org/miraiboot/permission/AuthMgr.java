@@ -60,6 +60,9 @@ public class AuthMgr {
             MiraiMain.getInstance().quickReply(event, "一个或多个参数无效");
             return;
         }
+        // 说明指令并没有被CheckPermission注解 不能进行权限判断
+        if (commandId == 0) return;
+
         int permit = 2;
         if(args.get(1).equals("off")){
             permit = 0;
@@ -68,14 +71,14 @@ public class AuthMgr {
         }else if(args.get(0).contains("assign") || args.get(0).contains("cancel")){
             if(args.get(0).equals("assign")){
                 permit = -1;
-                TempPermission.tempAuthProcess((GroupMessageEvent) event, commandId, remain);
+                TempPermission.tempAuthProcess(event, commandId, remain);
             }
             else if(args.get(0).equals("cancel")){
                 permit = -1;
-                TempPermission.cancelAuthProcess((GroupMessageEvent) event, commandId);
+                TempPermission.cancelAuthProcess(event, commandId);
             }
         }
-        if(permit == 2 || commandId == 0 || (senderId == -1L) || senderId == event.getBot().getId()){
+        if(permit == 2 || (senderId == -1L) || senderId == event.getBot().getId()){
             MiraiMain.getInstance().quickReply(event, "命令：permit 无法将“permit”项识别为 函数、脚本文件或可运行程序的名称，请检查参数的拼写。");
             permit = 2;
             return;
