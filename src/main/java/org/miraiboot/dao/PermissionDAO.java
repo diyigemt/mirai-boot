@@ -16,7 +16,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-@AutoInit
 public class PermissionDAO {
   private static final PermissionDAO INSTANCE = new PermissionDAO();
   private static Dao<PermissionItem, Integer> dao;

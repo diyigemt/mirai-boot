@@ -9,12 +9,15 @@ import org.miraiboot.annotation.EventHandlerComponent;
 import org.miraiboot.annotation.MiraiBootApplication;
 import org.miraiboot.constant.ConstantGlobal;
 import org.miraiboot.constant.FunctionId;
+import org.miraiboot.dao.PermissionDAO;
 import org.miraiboot.entity.ConfigFile;
 import org.miraiboot.entity.ConfigFileBot;
 import org.miraiboot.entity.ConfigFileBotConfiguration;
 import org.miraiboot.entity.ConfigFileMain;
+import org.miraiboot.function.TestAlias;
 import org.miraiboot.listener.MessageEventListener;
 import org.miraiboot.mirai.MiraiMain;
+import org.miraiboot.permission.AuthMgr;
 import org.miraiboot.permission.CheckPermission;
 import org.miraiboot.utils.*;
 import org.yaml.snakeyaml.Yaml;
@@ -63,6 +66,12 @@ public class MiraiApplication {
     // 开始自动包扫描 注册event handler
     String packageName = mainClass.getPackageName();
     List<Class<?>> classes = GlobalLoader.getClasses(packageName);
+    // 添加权限管理命令和别名命令
+    classes.add(TestAlias.class);
+    classes.add(AuthMgr.class);
+    // 初始化permission数据库
+    classes.add(PermissionDAO.class);
+    // 开始处理事件handler
     if (!classes.isEmpty()) {
       for (Class<?> clazz : classes) {
         if (clazz.isAnnotationPresent(AutoInit.class)) {
@@ -102,6 +111,8 @@ public class MiraiApplication {
     MiraiMain.logger.info("初始化完成 开始登录bot");
     BotManager.getInstance().loginAll();
     MiraiMain.logger.info("bot登录成功 系统启动完成");
+    // 注册配置文件中的指令别名
+    EventHandlerManager.getInstance().registerAlias(miraiboot.getAlias());
     // 阻塞主线程
     Scanner scanner = new Scanner(System.in);
     while (true) {

@@ -223,4 +223,9 @@ public class EventHandlerManager {
     // 将别名与权限对应起来
     FunctionId.registerAlias(target, alias);
   }
+
+  public void registerAlias(Map<String, String> alias) {
+    if (alias == null) return;
+    alias.forEach(this::registerAlias);
+  }
 }

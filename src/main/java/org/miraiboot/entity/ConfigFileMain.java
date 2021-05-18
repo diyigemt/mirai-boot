@@ -14,4 +14,5 @@ public class ConfigFileMain {
   List<ConfigFileBot> bots;
   ConfigFileLogger logger;
   Map<String, Object> configs;
+  Map<String, String> alias;
 }

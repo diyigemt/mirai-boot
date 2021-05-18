@@ -19,5 +19,6 @@ public class TestAlias {
     String target = args.get(0);
     String alias = args.get(1);
     EventHandlerManager.getInstance().registerAlias(target, alias);
+    MiraiMain.getInstance().quickReply(event, "为指令:" + target + " 添加别名:" + alias);
   }
 }
