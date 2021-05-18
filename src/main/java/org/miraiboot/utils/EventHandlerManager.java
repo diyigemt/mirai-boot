@@ -6,6 +6,7 @@ import net.mamoe.mirai.event.events.GroupMessageEvent;
 import net.mamoe.mirai.event.events.MessageEvent;
 import org.miraiboot.annotation.*;
 import org.miraiboot.constant.EventHandlerType;
+import org.miraiboot.constant.FunctionId;
 import org.miraiboot.entity.EventHandlerItem;
 import org.miraiboot.entity.EventHandlerNextItem;
 import org.miraiboot.entity.PreProcessorData;
@@ -216,7 +217,10 @@ public class EventHandlerManager {
   }
 
   public void registerAlias(String target, String alias) {
+    // 将别名与方法对应起来
     List<EventHandlerItem> eventHandlerItems = STORE.get(target);
     if (eventHandlerItems != null) STORE.put(alias, eventHandlerItems);
+    // 将别名与权限对应起来
+    FunctionId.registerAlias(target, alias);
   }
 }

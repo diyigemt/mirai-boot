@@ -14,7 +14,7 @@ import org.miraiboot.permission.CheckPermission;
 public class TestFilter {
 
   @EventHandler(target = "filter1")
-  @CheckPermission(isAdminOnly = true)
+  @CheckPermission(isAdminOnly = true, permissionIndex = 3)
   @MessageFilter(accounts = "1355247243")
   public void testFilter1(MessageEvent event, PreProcessorData data) {
     event.getSubject().sendMessage("filter1");

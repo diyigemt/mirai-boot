@@ -42,6 +42,12 @@ public class FunctionId {
         return null;
     }
 
+    public static void registerAlias(String target, String alias) {
+        Integer permissionIndex = getMap(target);
+        if (permissionIndex == null) return;
+        map.put(alias, permissionIndex);
+    }
+
     // 默认permissionIndex
     public static final int DEFAULT_INDEX = 0;
 

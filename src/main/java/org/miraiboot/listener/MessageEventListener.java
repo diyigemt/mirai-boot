@@ -34,7 +34,7 @@ public class MessageEventListener implements Consumer<MessageEvent> {
 		if (command.equals("")) return;
 		// 执行指令对应的EventHandler
 		res = EventHandlerManager.getInstance().emit(command, messageEvent, source);
-		if (res != null) {
+		if (res != null && eventLoggerEnable) {
 			MiraiMain.logger.error(res);
 		}
 	}

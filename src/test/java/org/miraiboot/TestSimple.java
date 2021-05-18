@@ -4,10 +4,7 @@ import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.Timer;
-import java.util.TimerTask;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -61,6 +58,12 @@ public class TestSimple {
         System.out.println("hello world");
       }
     }, 2000);
+  }
+
+  @Test
+  public void testMap() {
+    Map<String, Integer> map = new HashMap<>();
+    System.out.println(map.get("Aaa"));
   }
 
   public void testA(String a) {
