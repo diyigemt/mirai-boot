@@ -11,8 +11,9 @@ public class PermissionItem {
   private int commandId;
   @DatabaseField(columnName = "sender_id")
   private String senderId;
-  @DatabaseField(columnName = "permit", defaultValue = "false")
-  private boolean permit;
+//  @DatabaseField(columnName = "permit", defaultValue = "false")
+//  private boolean permit;
+  @DatabaseField(columnName = "permit", defaultValue = "-1")
   private int permits = 0;
   @DatabaseField(columnName = "remain")
   private int remain = -1;
@@ -29,16 +30,23 @@ public class PermissionItem {
     this.commandId = Integer.parseInt(commandId);
   }
 
-  public PermissionItem(long senderId, int commandId, boolean permit) {
-    this.senderId = String.valueOf(senderId);
-    this.commandId = commandId;
-    this.permit = permit;
-  }
+//  public PermissionItem(long senderId, int commandId, boolean permit) {
+//    this.senderId = String.valueOf(senderId);
+//    this.commandId = commandId;
+//    this.permit = permit;
+//  }
 
   public PermissionItem(long senderId, int commandId, int permits) {
     this.senderId = String.valueOf(senderId);
     this.commandId = commandId;
     this.permits = permits;
+  }
+
+  public PermissionItem(long senderId, int commandId, int permits, int remain) {
+    this.senderId = String.valueOf(senderId);
+    this.commandId = commandId;
+    this.permits = permits;
+    this.remain = remain;
   }
 
   public int getId() {
@@ -65,13 +73,13 @@ public class PermissionItem {
     this.senderId = senderId;
   }
 
-  public String isPermit() {
-    return this.permit ? "true" : "false";
-  }
-
-  public void setPermit(boolean permit) {
-    this.permit = permit;
-  }
+//  public String isPermit() {
+//    return this.permit ? "true" : "false";
+//  }
+//
+//  public void setPermit(boolean permit) {
+//    this.permit = permit;
+//  }
 
   public int getRemain() {
     return remain;
@@ -87,11 +95,6 @@ public class PermissionItem {
 
   public void setPermits(int permits) {
     this.permits = permits;
-    if(permits == 0){
-      this.permit = false;
-    }else{
-      this.permit = true;
-    }
   }
 }
 

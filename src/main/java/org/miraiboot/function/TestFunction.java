@@ -12,7 +12,7 @@ import org.miraiboot.permission.CheckPermission;
 public class TestFunction{
 
   @EventHandler(target = "reply")
-  @CheckPermission(isAdminOnly = true, permissionIndex = FunctionId.reply)
+  @CheckPermission(isAdminOnly = true, permissionIndex = FunctionId.reply, blocks = "1328343252")
   public void testReply(MessageEvent event, PreProcessorData data) {
     event.getSubject().sendMessage(event.getMessage());
   }

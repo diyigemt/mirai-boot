@@ -13,6 +13,7 @@ import org.miraiboot.entity.EventHandlerItem;
 import org.miraiboot.entity.PermissionItem;
 import org.miraiboot.entity.PreProcessorData;
 import org.miraiboot.mirai.MiraiMain;
+import org.miraiboot.utils.EventHandlerManager;
 import org.miraiboot.utils.PermissionUtil;
 
 import java.lang.reflect.Method;
@@ -38,14 +39,27 @@ public class PermissionCheck {
     try{
       permissionItem = PermissionUtil.getInstance().getPermissionItem(event.getSender().getId(), String.valueOf(commandId));
       if(permissionItem.getPermits() > 0){//被授予临时权限
+        if(permissionItem.getRemain() > 0){//存在次数限制
+          int remain = permissionItem.getRemain();
+          if(remain - 1 == 0){
+            //次数没了
+            PermissionUtil.getInstance().removePermissionItem(permissionItem.getSenderId(), permissionItem.getCommandId());
+            MiraiMain.getInstance().quickReply(event, "提示：本次操作是最后一次, 使用完成后系统将回收您的使用权");
+            return true;
+          }
+          permissionItem.setRemain(permissionItem.getRemain() - 1);
+          PermissionUtil.getInstance().updatePermissionItem(permissionItem);
+          return true;
+        }
         return true;
       }
     }catch (NullPointerException e){//数据库没相关记录，说明没有任何禁用和授权
       return false;
     }
     if(permissionItem.getPermits() <= 0){
+      EventHandlerManager.SQLNonTempAuth = true;
       MiraiMain.getInstance().quickReply(event, "您的管理员已禁止您使用该功能");
-      return false;
+      return true;
     }
 //    else if(permissionItem.getPermits() > 0){//被授予临时权限
 //      return true;

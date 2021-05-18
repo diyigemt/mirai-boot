@@ -27,6 +27,8 @@ public class EventHandlerManager {
     return INSTANCE;
   }
 
+  public static boolean SQLNonTempAuth = false;
+
   public void on(String target, Class<?> invoker, Method handler) {
     List<EventHandlerItem> eventHandlerItems = STORE.get(target);
     if (eventHandlerItems == null) eventHandlerItems = new ArrayList<EventHandlerItem>();
@@ -67,6 +69,9 @@ public class EventHandlerManager {
         }
         int commandId = method.getAnnotation(CheckPermission.class).permissionIndex();
         if(PermissionCheck.checkGroupPermission((GroupMessageEvent) event, commandId)){
+          if(SQLNonTempAuth){
+            return "您的管理员已禁止您使用该功能";
+          }
           flag = false;
         }
         if(!PermissionCheck.individualAuthCheck(handler, (GroupMessageEvent) event) && flag){
