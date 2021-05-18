@@ -1,5 +1,7 @@
 package org.miraiboot.utils;
 
+import com.j256.ormlite.stmt.query.In;
+import net.mamoe.mirai.Mirai;
 import net.mamoe.mirai.event.events.GroupMessageEvent;
 import net.mamoe.mirai.event.events.MessageEvent;
 import net.mamoe.mirai.message.data.Image;
@@ -7,9 +9,11 @@ import net.mamoe.mirai.message.data.MessageChain;
 import net.mamoe.mirai.message.data.MessageChainBuilder;
 import net.mamoe.mirai.message.data.Voice;
 import net.mamoe.mirai.utils.ExternalResource;
+import org.miraiboot.mirai.MiraiMain;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 
 public class SendMessageUtil {
 
@@ -141,11 +145,37 @@ public class SendMessageUtil {
     }
 
     public static void VoiceMsgSender(MessageEvent event, String path){
-        File file = new File(path);
-        resource = ExternalResource.create(file);
+        String name = "sounds";
+        try{
+            if(path.contains("https")){
+                InputStream inputStream = HttpUtil.getInputStream_https(path);
+                resource = InpStreamReceiver(path);
+
+            }else if(path.contains("http")){
+                InputStream inputStream = HttpUtil.getInputStream_https(path);
+                resource = InpStreamReceiver(path);
+            }else {
+                File file = new File(path);
+                resource = ExternalResource.create(file);
+            }
+        }catch (IOException e){
+            MiraiMain.getInstance().quickReply(event, "联网获取语音失败");
+            e.printStackTrace();
+            return;
+        }
+//        File file = new File(path);
+//        resource = ExternalResource.create(file);
         GroupMessageEvent groupMessageEvent = (GroupMessageEvent) event;
         Voice voice = ExternalResource.Companion.uploadAsVoice(resource, groupMessageEvent.getGroup());
         event.getSubject().sendMessage(voice);
         Close();
+    }
+
+    private static ExternalResource InpStreamReceiver(String path) throws IOException {
+        String name = "sounds";
+        ExternalResource externalResource = null;
+        InputStream inputStream = HttpUtil.getInputStream(path);
+        externalResource = Mirai.getInstance().getFileCacheStrategy().newCache(inputStream, name);
+        return externalResource;
     }
 }
