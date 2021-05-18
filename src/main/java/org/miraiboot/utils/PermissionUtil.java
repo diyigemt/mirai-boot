@@ -2,7 +2,6 @@ package org.miraiboot.utils;
 
 import org.miraiboot.dao.PermissionDAO;
 import org.miraiboot.entity.PermissionItem;
-import org.miraiboot.mapper.PermissionMapper;
 
 import java.util.HashMap;
 import java.util.List;
@@ -37,7 +36,6 @@ public class PermissionUtil {
   public void removePermissionItem(long targetId, int commandId) {
     PermissionItem item = new PermissionItem(targetId, String.valueOf(commandId));
     PermissionDAO.getInstance().delete(item);
-//    MybatisUtil.getInstance().removeData(PermissionMapper.class, "removePermission", item);
   }
 
   public void enablePermissionItem(long targetId, int commandId) {
@@ -60,8 +58,7 @@ public class PermissionUtil {
     updatePermissionItem(item);
   }
 
-  public void updatePermissionItem(PermissionItem item) {//对外用
+  public void updatePermissionItem(PermissionItem item) {
     PermissionDAO.getInstance().insert(item);
-//    MybatisUtil.getInstance().insetData(PermissionMapper.class, Integer.class, "updatePermission", item);
   }
 }
