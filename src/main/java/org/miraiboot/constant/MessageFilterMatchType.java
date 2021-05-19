@@ -2,6 +2,9 @@ package org.miraiboot.constant;
 
 /**
  * <h2>消息过滤类型</h2>
+ * @author diyigemt
+ * @since 1.0.0
+ * @see org.miraiboot.annotation.MessageFilter
  */
 public enum MessageFilterMatchType {
   /**

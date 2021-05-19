@@ -17,6 +17,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * <h2>sqlite数据库权限管理的DAO</h2>
+ * 一般并不需要关心
+ * @author diyigemt
+ * @author Heythem723
+ */
 @AutoInit
 public class PermissionDAO {
   private static final PermissionDAO INSTANCE = new PermissionDAO();

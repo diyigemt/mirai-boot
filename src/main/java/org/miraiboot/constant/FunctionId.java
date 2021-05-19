@@ -8,8 +8,9 @@ import java.util.*;
  * 建用 管理员功能使用负数ID
  * 对外开放功能使用正数ID<br/>
  * 极值±127（Tinyint），需要扩充请去修改permission表属性，记得注释也更新一下<br/>
- * (不用尝试枚举了，注解里不会生效的233)
- * @author Haythem
+ * (不用尝试枚举了，注解里不会生效的233)<br/>
+ * ⬆大概是指注解里不能用枚举?
+ * @author Haythem723
  * @author diyigemt
  */
 
