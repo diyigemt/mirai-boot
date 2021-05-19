@@ -23,3 +23,4 @@ miraiboot:
   alias: # 指令别名
   configs: # 全局配置
     DEFAULT_COMMAND_START: "" # 默认指令开头 当@EventHandler中没有指定start时使用改配置
+    DEFAULT_EVENT_NET_TIMEOUT: 300000 # 默认的上下文监听超时时间 5分钟

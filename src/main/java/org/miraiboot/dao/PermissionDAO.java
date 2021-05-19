@@ -8,6 +8,7 @@ import com.j256.ormlite.stmt.QueryBuilder;
 import com.j256.ormlite.stmt.Where;
 import org.miraiboot.annotation.AutoInit;
 import org.miraiboot.constant.ConstantSQL;
+import org.miraiboot.entity.ConfigFile;
 import org.miraiboot.entity.PermissionItem;
 import org.miraiboot.sql.DatabaseHelper;
 
@@ -21,7 +22,7 @@ public class PermissionDAO {
   private static final PermissionDAO INSTANCE = new PermissionDAO();
   private static Dao<PermissionItem, Integer> dao;
 
-  public static void init(Class<?> mainClass) {
+  public static void init(ConfigFile config) {
     dao = DatabaseHelper.getInstance().getDAO("permission", PermissionItem.class, Integer.class);
   }
 

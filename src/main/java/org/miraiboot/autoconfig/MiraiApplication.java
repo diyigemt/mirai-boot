@@ -27,9 +27,33 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Scanner;
 
+/**
+ * <h2>主实现逻辑</h2>
+ * @author diyigemt
+ * @since 1.0.0
+ */
 public class MiraiApplication {
   public static void run(Class<?> mainClass, String... args) {
-    // TODO AutoConfiguration
+    // 打印banner
+    InputStream banner = mainClass.getResourceAsStream("/banner.txt");
+    if (banner != null) {
+      BufferedReader bannerReader = new BufferedReader(new InputStreamReader(banner));
+      String line = null;
+      try {
+        while ((line = bannerReader.readLine()) != null) {
+          System.out.println(line);
+        }
+      } catch (IOException e) {
+        e.printStackTrace();
+      } finally {
+        try {
+          banner.close();
+        } catch (IOException e) {
+          e.printStackTrace();
+        }
+      }
+    }
+    // AutoConfiguration
     // 打印描述
     MiraiBootApplication miraiBootApplication = mainClass.getAnnotation(MiraiBootApplication.class);
     if (miraiBootApplication == null) {
@@ -41,10 +65,10 @@ public class MiraiApplication {
     FileUtil.init(mainClass);
     // 尝试读取配置文件
     MiraiMain.logger.info("开始读取配置文件");
-    File configFile = FileUtil.getInstance().getConfigFile(mainClass);
+    File configFile = FileUtil.getInstance().getConfigFile();
     if (configFile == null) {
       MiraiMain.logger.warning("未找到配置文件, 请自行在新创建的配置文件中修改");
-      configFile = FileUtil.getInstance().createConfigFile(mainClass);
+      configFile = FileUtil.getInstance().createConfigFile();
       if (configFile == null) {
         MiraiMain.logger.error("配置文件创建失败");
       }
@@ -117,7 +141,7 @@ public class MiraiApplication {
     Collections.sort(inits);
     for (AutoInitItem item : inits) {
       try {
-        item.getHandler().invoke(null, mainClass);
+        item.getHandler().invoke(null, config);
       } catch (IllegalAccessException | InvocationTargetException e) {
         e.printStackTrace();
       }
@@ -141,7 +165,7 @@ public class MiraiApplication {
    */
   private static void handleAutoInit(Class<?> clazz, List<AutoInitItem> res) {
     try {
-      Method init = clazz.getMethod("init", Class.class);
+      Method init = clazz.getMethod("init", ConfigFile.class);
       AutoInit annotation = clazz.getAnnotation(AutoInit.class);
       AutoInitItem item = new AutoInitItem(annotation.value(), init);
       res.add(item);

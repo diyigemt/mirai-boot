@@ -16,6 +16,6 @@ public class AutoInitItem implements Comparable<AutoInitItem> {
 
   @Override
   public int compareTo(@NotNull AutoInitItem o) {
-    return Integer.compare(this.priority, o.priority);
+    return -Integer.compare(this.priority, o.priority);
   }
 }

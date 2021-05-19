@@ -3,9 +3,10 @@ package org.miraiboot.annotation;
 import java.lang.annotation.*;
 
 /**
- * 将受到注解的类扫描事件handler
+ * <h2>在受到注解的类中扫描事件handler</h2>
+ * <h2>未受到该注解的类 扫描时将会被忽略</h2>
  * @author diyigemt
- * @since 3.0.0
+ * @since 1.0.0
  */
 @Target({ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)

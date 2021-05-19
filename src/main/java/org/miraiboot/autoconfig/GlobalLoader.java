@@ -4,7 +4,6 @@ import java.io.FileFilter;
 import java.io.File;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.JarURLConnection;
 import java.net.URL;
@@ -16,6 +15,11 @@ import java.util.List;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
+/**
+ * <h2>全局加载器 用于包扫描</h2>
+ * @author diyigemt
+ * @since 1.0.0
+ */
 public class GlobalLoader {
   private static final char SYSTEM_PATH_DIV = File.separatorChar;
   /**

@@ -5,11 +5,14 @@ import java.lang.annotation.*;
 /**
  * 开玩笑的 没什么用
  * @author diyigemt
- * @since 3.0.0
+ * @since 1.0.0
  */
 @Target({ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
 public @interface MiraiBootApplication {
+  /**
+   * 初始化时控制台打印信息
+   */
   String description() default "";
 }

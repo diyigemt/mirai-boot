@@ -5,6 +5,7 @@ import net.mamoe.mirai.event.events.FriendMessageEvent;
 import net.mamoe.mirai.event.events.GroupMessageEvent;
 import net.mamoe.mirai.event.events.MessageEvent;
 import org.miraiboot.annotation.*;
+import org.miraiboot.constant.ConstantGlobal;
 import org.miraiboot.constant.EventHandlerType;
 import org.miraiboot.constant.FunctionId;
 import org.miraiboot.entity.EventHandlerItem;
@@ -19,6 +20,9 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
 
+import static org.miraiboot.constant.ConstantGlobal.DEFAULT_EVENT_NET_TIMEOUT;
+import static org.miraiboot.constant.ConstantGlobal.DEFAULT_EVENT_NET_TIMEOUT_TIME;
+
 public class EventHandlerManager {
   private static final EventHandlerManager INSTANCE = new EventHandlerManager();
   private static final Map<String, List<EventHandlerItem>> STORE = new HashMap<String, List<EventHandlerItem>>();
@@ -27,7 +31,7 @@ public class EventHandlerManager {
   public static EventHandlerManager getInstance() {
     return INSTANCE;
   }
-  
+
   public static boolean SQLNonTempAuth = false;
 
   public void on(String target, Class<?> invoker, Method handler) {
@@ -95,7 +99,7 @@ public class EventHandlerManager {
       Object[] parameters = null;
       PreProcessorData processorData = new PreProcessorData();
       // 如果是多参数handler
-      if (parameterCount != 1) {
+      if (parameterCount > 1) {
         parameters = new Object[parameterCount];
         parameters[0] = event;
         processorData = CommandUtil.getInstance().parseArgs(plainText, target, method, processorData);
@@ -109,7 +113,9 @@ public class EventHandlerManager {
       }
       Class<?> invoker = handler.getInvoker();
       try {
-        if (parameterCount != 1) {
+        if (parameterCount == 0) {
+          method.invoke(invoker.getDeclaredConstructor().newInstance());
+        } else if (parameterCount > 1) {
           method.invoke(invoker.getDeclaredConstructor().newInstance(), parameters);
         } else {
           method.invoke(invoker.getDeclaredConstructor().newInstance(), event);
@@ -132,7 +138,9 @@ public class EventHandlerManager {
   }
 
   public void onNext(long target, EventHandlerNext onNext) {
-    onNext(target, onNext, -1L, -1);
+    Long time = (Long) GlobalConfig.getInstance().get(DEFAULT_EVENT_NET_TIMEOUT);
+    if (time == null) time = DEFAULT_EVENT_NET_TIMEOUT_TIME;
+    onNext(target, onNext, time, -1);
   }
 
   public void onNext(long target, EventHandlerNext onNext, long timeOut) {
@@ -140,13 +148,15 @@ public class EventHandlerManager {
   }
 
   public void onNext(long target, EventHandlerNext onNext, int triggerCount) {
-    onNext(target, onNext, -1L, triggerCount);
+    Long time = (Long) GlobalConfig.getInstance().get(DEFAULT_EVENT_NET_TIMEOUT);
+    if (time == null) time = DEFAULT_EVENT_NET_TIMEOUT_TIME;
+    onNext(target, onNext, time, triggerCount);
   }
 
   public void onNext(long target, EventHandlerNext onNext, long timeOut, int triggerCount) {
     List<EventHandlerNextItem> events = LISTENING_STORE.get(target);
     if (events == null) events = new ArrayList<EventHandlerNextItem>();
-    EventHandlerNextItem eventHandlerNextItem = new EventHandlerNextItem(onNext, timeOut, triggerCount);
+    EventHandlerNextItem eventHandlerNextItem = createCheckItem(onNext, timeOut, triggerCount);
     events.add(eventHandlerNextItem);
     LISTENING_STORE.put(target, events);
   }
@@ -154,21 +164,19 @@ public class EventHandlerManager {
   public void onNext(long target, EventHandlerNext onNext, long timeOut, int triggerCount, MessageEvent event, PreProcessorData data) {
     List<EventHandlerNextItem> events = LISTENING_STORE.get(target);
     if (events == null) events = new ArrayList<EventHandlerNextItem>();
-    EventHandlerNextItem eventHandlerNextItem = new EventHandlerNextItem(onNext, timeOut, triggerCount);
-    if (timeOut != -1) {
-      List<EventHandlerNextItem> finalEvents = events;
-      eventHandlerNextItem.setLastEvent(event);
-      eventHandlerNextItem.setLastData(data);
-      eventHandlerNextItem.start(new TimerTask() {
-        @Override
-        public void run() {
-          eventHandlerNextItem.onTimeOut();
-          eventHandlerNextItem.onDestroy();
-          finalEvents.remove(eventHandlerNextItem);
-          if (finalEvents.isEmpty()) LISTENING_STORE.remove(target);
-        }
-      });
-    }
+    EventHandlerNextItem eventHandlerNextItem = createCheckItem(onNext, timeOut, triggerCount);
+    List<EventHandlerNextItem> finalEvents = events;
+    eventHandlerNextItem.setLastEvent(event);
+    eventHandlerNextItem.setLastData(data);
+    eventHandlerNextItem.start(new TimerTask() {
+      @Override
+      public void run() {
+        eventHandlerNextItem.onTimeOut();
+        eventHandlerNextItem.onDestroy();
+        finalEvents.remove(eventHandlerNextItem);
+        if (finalEvents.isEmpty()) LISTENING_STORE.remove(target);
+      }
+    });
     events.add(eventHandlerNextItem);
     LISTENING_STORE.put(target, events);
   }
@@ -237,6 +245,14 @@ public class EventHandlerManager {
   public void registerAlias(Map<String, String> alias) {
     if (alias == null) return;
     alias.forEach(this::registerAlias);
+  }
+
+  private EventHandlerNextItem createCheckItem(EventHandlerNext onNext, long timeOut, int triggerCount) {
+    if (timeOut < -1) {
+      Long time = (Long) GlobalConfig.getInstance().get(DEFAULT_EVENT_NET_TIMEOUT);
+      timeOut = time == null ? DEFAULT_EVENT_NET_TIMEOUT_TIME : time;
+    }
+    return new EventHandlerNextItem(onNext, timeOut, triggerCount);
   }
 
   private void handlerNextEnd(List<EventHandlerNextItem> events, EventHandlerNextItem next) {

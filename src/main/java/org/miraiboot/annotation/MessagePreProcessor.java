@@ -5,7 +5,17 @@ import org.miraiboot.constant.MessagePreProcessorMessageType;
 import java.lang.annotation.*;
 
 /**
- * 消息事件预处理器
+ * <h2>消息事件预处理器</h2>
+ * 对收到的消息事件进行预处理<br/>
+ * 例如
+ * <pre>
+ * {@code
+ * 以下配置将会响应 搜图 指令 并将消息中的图片过滤至 data.classified中
+ * @EventHandler(target = "搜图")
+ * @MessagePreProcessor(filterType = MessagePreProcessorMessageType.IMAGE)
+ * public void searchImage(MessageEvent event, PreProcessData data) { your code }
+ * }
+ * </pre>
  * @author diyigemt
  * @since 1.0.0
  */
@@ -16,7 +26,8 @@ import java.lang.annotation.*;
 public @interface MessagePreProcessor {
   /**
    * 将所有纯文本消息提取出来
-   * 保存在PreProcessorData.text中
+   * 保存在PreProcessorData.text中<br/>
+   * 其实无论是true还是false此项均会起作用
    * @see org.miraiboot.entity.PreProcessorData
    * @since 1.0.0
    */

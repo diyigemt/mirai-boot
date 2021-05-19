@@ -1,5 +1,8 @@
 package org.miraiboot.constant;
 
+/**
+ * <h2>消息过滤类型</h2>
+ */
 public enum MessageFilterMatchType {
   /**
    * 忽略

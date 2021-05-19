@@ -5,7 +5,10 @@ import org.miraiboot.constant.MessageFilterMatchType;
 import java.lang.annotation.*;
 
 /**
- * 消息事件过滤器
+ * <h2>消息事件过滤器</h2>
+ * 在所有规则通过时EventHandler才会被触发<br/>
+ * 其实和@EventHandler有点重复了<br/>
+ * 可以重复注解 此时将会对所有进行匹配 (更多匹配规则在做了)
  * @author diyigemt
  * @since 1.0.0
  */

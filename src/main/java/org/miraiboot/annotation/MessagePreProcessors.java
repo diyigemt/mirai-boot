@@ -3,7 +3,8 @@ package org.miraiboot.annotation;
 import java.lang.annotation.*;
 
 /**
- * 消息事件预处理器组
+ * 消息事件预处理器组<br/>
+ * coming soon
  * @author diyigemt
  * @since 1.0.0
  * @see MessagePreProcessor

@@ -65,12 +65,12 @@ public class FileUtil {
     return s + SYSTEM_PATH_DIV + deviceFileName;
   }
 
-  public File getConfigFile(Class<?> target) {
+  public File getConfigFile() {
     File configFile = new File(CONFIG_ROOT_FOLDER_PATH + "/application.yml");
     return configFile.exists() ? configFile : null;
   }
 
-  public File createConfigFile(Class<?> target) {
+  public File createConfigFile() {
     File configFile = new File(CONFIG_ROOT_FOLDER_PATH + "/application.yml");
     if (!configFile.exists()) {
       try {
