@@ -25,7 +25,7 @@ public class TestNext {
     List<SingleMessage> filter = data.getClassified();
     if (filter.isEmpty()) {
       MiraiMain.getInstance().quickReply(event, "图呢");
-      EventHandlerManager.getInstance().onNext(event.getSender().getId(), new EventHandlerNext() {
+      EventHandlerManager.getInstance().onNextNow(event.getSender().getId(), new EventHandlerNext() {
         @Override
         @MessagePreProcessor(filterType = MessagePreProcessorMessageType.Image)
         public ListeningStatus onNext(MessageEvent nextEvent, PreProcessorData nextData) {

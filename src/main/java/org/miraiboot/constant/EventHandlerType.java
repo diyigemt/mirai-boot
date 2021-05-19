@@ -6,6 +6,7 @@ package org.miraiboot.constant;
  * 更多消息类型在做了
  * @author diyigemt
  * @since 1.0.0
+ * @see org.miraiboot.annotation.EventHandler
  */
 public enum EventHandlerType {
   /**

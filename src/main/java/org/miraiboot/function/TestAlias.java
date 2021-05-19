@@ -9,6 +9,9 @@ import org.miraiboot.utils.EventHandlerManager;
 
 import java.util.List;
 
+/**
+ *
+ */
 @EventHandlerComponent
 public class TestAlias {
 

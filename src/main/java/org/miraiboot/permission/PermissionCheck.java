@@ -5,10 +5,6 @@ import net.mamoe.mirai.event.events.GroupMessageEvent;
 import net.mamoe.mirai.message.data.At;
 import net.mamoe.mirai.message.data.MessageChain;
 import net.mamoe.mirai.message.data.SingleMessage;
-import org.jetbrains.annotations.Nullable;
-import org.miraiboot.annotation.MessagePreProcessor;
-import org.miraiboot.constant.FunctionId;
-import org.miraiboot.constant.MessagePreProcessorMessageType;
 import org.miraiboot.entity.EventHandlerItem;
 import org.miraiboot.entity.PermissionItem;
 import org.miraiboot.entity.PreProcessorData;
@@ -21,18 +17,24 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
+/**
+ * <h2>权限检查工具类</h2>
+ * @author diyigemt, Haythem
+ * @since 1.0.0
+ */
+
 public class PermissionCheck {
 
-  public static boolean checkGroupPermission(GroupMessageEvent event, int commandId) {
-//    Method handler = item.getHandler();
-//    Class<?> aClass = item.getInvoker();
-//    CheckPermission classAnnotation = aClass.getAnnotation(CheckPermission.class);
-//    CheckPermission methodAnnotation = null;
-//    if (handler != null) methodAnnotation = handler.getAnnotation(CheckPermission.class);
-//    Permission permission = PermissionCheck.getGroupPermission(methodAnnotation, classAnnotation);
-//    long botId = event.getBot().getId();
-    // 判断是否为At
-//    if (permission.isAt() && !event.getMessage().contains(new At(botId))) return false;
+  /**
+   * <h2>数据库权限检查</h2>
+   * <p>此检查优先级最高，可以覆盖所有其它限制的检查(除了permit)</p>
+   * @param event 消息事件，私聊或群聊
+   * @param commandId 命令ID
+   * @return 查询结果 false为通过，true为拦截
+   * @author Haythem
+   * @since 1.0.0
+   */
+  public static boolean checkGroupPermission(GroupMessageEvent event, int commandId) { ;
     // 数据库动态权限检查
     if(commandId == 0) return false;//默认值不查
     PermissionItem permissionItem;
@@ -61,18 +63,18 @@ public class PermissionCheck {
       MiraiMain.getInstance().quickReply(event, "您的管理员已禁止您使用该功能");
       return true;
     }
-//    else if(permissionItem.getPermits() > 0){//被授予临时权限
-//      return true;
-//    }
-//    PermissionItem permissionItem = PermissionUtil.getInstance().getPermissionItem(event.getSender().getId(), command.getType().getIndex());
-//    if (permissionItem != null) {
-//      return Boolean.parseBoolean(permissionItem.isPermit());
-//    }
-    // 判断数据库中的权限和@Annotation写死的权限
-//    if (!checkList(permission, event, command)) return false;
     return false;
   }
 
+  /**
+   * <h2>群员身份权限检查</h2>
+   * <p>isAdminOnly和isGroupOwnerOnly的实现方法</p>
+   * @param event 消息事件，私聊或群聊
+   * @param item 信息存储类
+   * @return 查询结果 true为通过，false为拦截
+   * @author diyigemt
+   * @since 1.0.0
+   */
   public static boolean identityCheck(EventHandlerItem item, GroupMessageEvent event){//群员身份检查，优先级低
     MemberPermission memberPermission = event.getSender().getPermission();
     Method handler = item.getHandler();
@@ -86,7 +88,15 @@ public class PermissionCheck {
     return true;
   }
 
-  public static Permission getGroupPermission(CheckPermission methodAnnotation, CheckPermission classAnnotation) {
+  /**
+   * <h2>权限检查信息存储构造器</h2>
+   * @param methodAnnotation 方法注解
+   * @param classAnnotation 类注解
+   * @return 构造完成的Permission类
+   * @author diyigemt
+   * @since 1.0.0
+   */
+  private static Permission getGroupPermission(CheckPermission methodAnnotation, CheckPermission classAnnotation) {
     Permission permission = new Permission();
     CheckPermission check = methodAnnotation != null ? methodAnnotation : classAnnotation;
     if (check != null) {
@@ -98,6 +108,14 @@ public class PermissionCheck {
     return permission;
   }
 
+  /**
+   * <h2>严格模式工作流程</h2>
+   * <p>isStrictRestricted的实现方法</p>
+   * @param event 消息事件，群聊或私聊
+   * @return 检查结果, true为通过，false为拦截
+   * @author Haythem
+   * @since 1.0.0
+   */
   public static boolean strictRestrictedCheck(GroupMessageEvent event){
     MemberPermission senderPermissions = event.getSender().getPermission();
     int senderAuthLevel = senderPermissions.ordinal();
@@ -117,6 +135,18 @@ public class PermissionCheck {
     return true;
   }
 
+  /**
+   * <h2>个例权限检查工作流程</h2>
+   * <p>blocks和allows的实现方法</p>
+   * <p></p>
+   * <p>注：</p>
+   * <p>优先级：allows -> blocks</p>
+   * @param event 消息事件，群聊或私聊
+   * @param item 信息存储类
+   * @return 检查结果, true为通过，false为拦截
+   * @author Haythem
+   * @since 1.0.0
+   */
   public static boolean individualAuthCheck(EventHandlerItem item, GroupMessageEvent event){
     Method method = item.getHandler();
     String[] allows = method.getAnnotation(CheckPermission.class).allows();
@@ -142,6 +172,14 @@ public class PermissionCheck {
     return true;
   }
 
+  /**
+   * <h2>@成员合法性检查（固定检查，无法取消）</h2>
+   * <p>@成员合法性检查的实现方法</p>
+   * @param data 消息预处理器，获得消息中所有@元素
+   * @return 检查结果, true为通过，false为拦截
+   * @author Haythem
+   * @since 1.0.0
+   */
   public static boolean atValidationCheck(PreProcessorData data){
     List<SingleMessage> args = data.getClassified();
     if(args.size() == 0) return true;

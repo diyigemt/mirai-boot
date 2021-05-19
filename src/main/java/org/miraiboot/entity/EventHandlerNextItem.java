@@ -8,14 +8,45 @@ import org.miraiboot.interfaces.EventHandlerNext;
 import java.util.Timer;
 import java.util.TimerTask;
 
+/**
+ * <h2>上下文监听信息存储类</h2>
+ * 在计时中如果被触发 将会重新开始计时
+ * @author diyigemt
+ * @since 1.0.0
+ */
 @Data
 public class EventHandlerNextItem {
+  /**
+   * 超时时间
+   * @see org.miraiboot.constant.ConstantGlobal -> DEFAULT_EVENT_NET_TIMEOUT_TIME
+   */
   private long timeOut;
+  /**
+   * 最高触发次数
+   */
   private int triggerCount;
+  /**
+   * 存储信息的handler类
+   * @see EventHandlerNext
+   */
   private EventHandlerNext handler;
+  /**
+   * timer用
+   */
   private TimerTask task;
+  /**
+   * 计时的timer
+   */
   private Timer timer;
+  /**
+   * 最后一次被触发时的event<br/>
+   * 给超时函数 次数耗尽函数 和销毁函数用
+   */
   private MessageEvent lastEvent;
+  /**
+   * 最后一次触发时的data内容<br/>
+   * 给超时函数 次数耗尽函数 和销毁函数用
+   */
   private PreProcessorData lastData;
 
   public EventHandlerNextItem() {

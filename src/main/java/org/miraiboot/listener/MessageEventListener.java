@@ -1,5 +1,7 @@
 package org.miraiboot.listener;
 
+import net.mamoe.mirai.event.events.FriendMessageEvent;
+import net.mamoe.mirai.event.events.GroupMemberEvent;
 import net.mamoe.mirai.event.events.MessageEvent;
 import net.mamoe.mirai.message.data.PlainText;
 import net.mamoe.mirai.message.data.SingleMessage;
@@ -11,10 +13,18 @@ import java.util.List;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
+/**
+ * <h2>处理消息事件的监听器 目前只能处理群消息和好友消息</h2>
+ * 其他消息处理在做了
+ * @author diyigemt
+ * @since 1.0.0
+ */
 public class MessageEventListener implements Consumer<MessageEvent> {
 	public static boolean eventLoggerEnable = true;
 	@Override
 	public void accept(MessageEvent messageEvent) {
+		// 目前只能处理群消息和好友消息
+		if (!(messageEvent instanceof GroupMemberEvent || messageEvent instanceof FriendMessageEvent)) return;
 		// 提取纯文本
 		List<SingleMessage> collect = messageEvent.getMessage().stream().filter(message -> message instanceof PlainText).collect(Collectors.toList());
 		StringBuffer sb = new StringBuffer();

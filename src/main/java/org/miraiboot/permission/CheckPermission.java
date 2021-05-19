@@ -34,7 +34,7 @@ public @interface CheckPermission {
   String[] blocks() default {};
 
   //是否严格检查身份（群主和管理员之间的权限将严格划分）防止下克上
-  boolean isStrictRestricted() default false;
+  boolean isStrictRestricted() default true;
 
   //是否只允许群主
   boolean isGroupOwnerOnly() default false;

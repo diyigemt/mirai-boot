@@ -3,6 +3,11 @@ package org.miraiboot.entity;
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
 
+/**
+ * <h2>用于权限操作的数据类</h2>
+ * @author diyigemt
+ * @since 1.0.0
+ */
 @DatabaseTable(tableName = "permission")
 public class PermissionItem {
   @DatabaseField(generatedId = true, columnName = "id", unique = true)

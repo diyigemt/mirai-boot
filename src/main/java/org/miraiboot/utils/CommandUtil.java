@@ -87,6 +87,7 @@ public class CommandUtil {
 		String remove = start + command;
 		String s = source.substring(source.indexOf(remove) + remove.length()).trim();
 		String split = eventHandlerAnnotation.split();
+		if (split.equals("")) split = "\\s+";
 		String[] res = s.split(split);
 		data.addArgs(res);
 		data.setCommandText(s);
