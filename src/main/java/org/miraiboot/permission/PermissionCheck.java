@@ -5,10 +5,6 @@ import net.mamoe.mirai.event.events.GroupMessageEvent;
 import net.mamoe.mirai.message.data.At;
 import net.mamoe.mirai.message.data.MessageChain;
 import net.mamoe.mirai.message.data.SingleMessage;
-import org.jetbrains.annotations.Nullable;
-import org.miraiboot.annotation.MessagePreProcessor;
-import org.miraiboot.constant.FunctionId;
-import org.miraiboot.constant.MessagePreProcessorMessageType;
 import org.miraiboot.entity.EventHandlerItem;
 import org.miraiboot.entity.PermissionItem;
 import org.miraiboot.entity.PreProcessorData;
@@ -23,16 +19,7 @@ import java.util.Objects;
 
 public class PermissionCheck {
 
-  public static boolean checkGroupPermission(GroupMessageEvent event, int commandId) {
-//    Method handler = item.getHandler();
-//    Class<?> aClass = item.getInvoker();
-//    CheckPermission classAnnotation = aClass.getAnnotation(CheckPermission.class);
-//    CheckPermission methodAnnotation = null;
-//    if (handler != null) methodAnnotation = handler.getAnnotation(CheckPermission.class);
-//    Permission permission = PermissionCheck.getGroupPermission(methodAnnotation, classAnnotation);
-//    long botId = event.getBot().getId();
-    // 判断是否为At
-//    if (permission.isAt() && !event.getMessage().contains(new At(botId))) return false;
+  public static boolean checkGroupPermission(GroupMessageEvent event, int commandId) { ;
     // 数据库动态权限检查
     if(commandId == 0) return false;//默认值不查
     PermissionItem permissionItem;
@@ -61,15 +48,6 @@ public class PermissionCheck {
       MiraiMain.getInstance().quickReply(event, "您的管理员已禁止您使用该功能");
       return true;
     }
-//    else if(permissionItem.getPermits() > 0){//被授予临时权限
-//      return true;
-//    }
-//    PermissionItem permissionItem = PermissionUtil.getInstance().getPermissionItem(event.getSender().getId(), command.getType().getIndex());
-//    if (permissionItem != null) {
-//      return Boolean.parseBoolean(permissionItem.isPermit());
-//    }
-    // 判断数据库中的权限和@Annotation写死的权限
-//    if (!checkList(permission, event, command)) return false;
     return false;
   }
 

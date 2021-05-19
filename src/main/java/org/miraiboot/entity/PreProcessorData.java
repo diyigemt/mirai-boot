@@ -8,7 +8,10 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * 用于存放参数之类的预处理信息
+ * <h2>用于存放参数之类的预处理信息</h2>
+ * @see org.miraiboot.annotation.MessagePreProcessor
+ * @author diyigemt
+ * @since 1.0.0
  */
 @Data
 public class PreProcessorData {

@@ -16,8 +16,10 @@ import java.util.Set;
 import java.util.regex.Pattern;
 
 /**
- * 用于保存MessageFilter的参数
+ * <h2>用于保存MessageFilter的参数</h2>
  * @see org.miraiboot.annotation.MessageFilter
+ * @author diyiegmt
+ * @since 1.0.0
  */
 @Data
 public class MessageFilterItem {

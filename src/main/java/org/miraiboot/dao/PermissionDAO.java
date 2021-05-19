@@ -22,6 +22,7 @@ import java.util.Map;
  * 一般并不需要关心
  * @author diyigemt
  * @author Heythem723
+ * @since 1.0.0
  */
 @AutoInit
 public class PermissionDAO {

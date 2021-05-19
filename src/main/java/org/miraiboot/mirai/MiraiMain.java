@@ -7,8 +7,9 @@ import net.mamoe.mirai.message.data.*;
 import net.mamoe.mirai.utils.MiraiLogger;
 
 /**
- * 全局实例 用于回复消息
+ * <h2>全局实例 用于回复消息和打印log</h2>
  * @author diyigemt
+ * @since 1.0.0
  */
 public class MiraiMain {
 	public static final MiraiLogger logger = MiraiLogger.create("mirai-boot-status");
@@ -16,7 +17,7 @@ public class MiraiMain {
 	public static final MiraiMain INSTANCE = new MiraiMain();
 
 	/**
-	 * 获取实例
+	 * <h2>获取实例</h2>
 	 * @return 全局实例
 	 */
 	public static MiraiMain getInstance() {
@@ -24,7 +25,7 @@ public class MiraiMain {
 	}
 
 	/**
-	 * 快速回复消息
+	 * <h2>快速回复消息</h2>
 	 * @param event 消息事件
 	 * @param msg 要回复的消息内容
 	 */
@@ -41,6 +42,11 @@ public class MiraiMain {
 		this.quickReply(event, chain);
 	}
 
+	/**
+	 * <h2>快速回复消息</h2>
+	 * @param event 消息事件
+	 * @param messages 消息数组
+	 */
 	public void quickReply (MessageEvent event, SingleMessage... messages) {
 		MessageChainBuilder builder = new MessageChainBuilder();
 		if (event instanceof GroupMessageEvent) {
@@ -54,19 +60,12 @@ public class MiraiMain {
 		this.quickReply(event, builder.build());
 	}
 
+	/**
+	 * <h2>快速回复消息</h2>
+	 * @param event 消息事件
+	 * @param chain 消息链
+	 */
 	public void quickReply(MessageEvent event, MessageChain chain) {
 		event.getSubject().sendMessage(chain);
-		// 在非部署模式下 猜测可能会由于回复太快导致消息无法显示 先等待一下
-		// 好像修复了 由于Promise引起的 暂时不去掉
-//		if (DEVELOPMENT) {
-//			try {
-//				Thread.sleep(1000);
-//				event.getSubject().sendMessage(chain);
-//			} catch (InterruptedException e) {
-//				e.printStackTrace();
-//			}
-//		} else {
-//			event.getSubject().sendMessage(chain);
-//		}
 	}
 }

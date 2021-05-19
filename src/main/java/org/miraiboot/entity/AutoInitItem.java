@@ -7,6 +7,11 @@ import org.jetbrains.annotations.NotNull;
 
 import java.lang.reflect.Method;
 
+/**
+ * <h2>自动初始化信息存储类</h2>
+ * @author diyigem
+ * @see org.miraiboot.annotation.AutoInit
+ */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

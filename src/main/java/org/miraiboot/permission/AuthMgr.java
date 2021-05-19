@@ -1,6 +1,5 @@
 package org.miraiboot.permission;
 
-import net.mamoe.mirai.event.events.GroupMessageEvent;
 import net.mamoe.mirai.event.events.MessageEvent;
 import net.mamoe.mirai.message.data.At;
 import net.mamoe.mirai.message.data.SingleMessage;
@@ -17,7 +16,7 @@ import org.miraiboot.utils.PermissionUtil;
 import java.util.List;
 
 /**
- * 权限控制台
+ * <h2>权限控制台</h2>
  * @author Haythem
  */
 
@@ -25,7 +24,7 @@ import java.util.List;
 public class AuthMgr {
 
     @EventHandler(target = "permit")
-    @CheckPermission(isAdminOnly = true, permissionIndex = FunctionId.permit, isStrictRestricted = true)
+    @CheckPermission(isAdminOnly = true, permissionIndex = FunctionId.permit)
     @MessagePreProcessor(filterType = MessagePreProcessorMessageType.At)
     public void authorityManager(MessageEvent event, PreProcessorData data){
         List<String> args = data.getArgs();
@@ -46,7 +45,7 @@ public class AuthMgr {
         try{
             remain = Integer.parseInt(args.get(2));
             if(remain == 0 || remain < 0){
-                MiraiMain.getInstance().quickReply(event, "参数：次数限制必须 ＞ 0");
+                MiraiMain.getInstance().quickReply(event, "参数：次数限制必须 > 0");
                 return;
             }
         }catch (IndexOutOfBoundsException e){}

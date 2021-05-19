@@ -7,6 +7,12 @@ import org.miraiboot.constant.MessagePreProcessorMessageType;
 
 import java.util.*;
 
+/**
+ * <h2>用于保存MessagePreProcessor的参数</h2>
+ * @see org.miraiboot.annotation.MessagePreProcessor
+ * @author diyiegmt
+ * @since 1.0.0
+ */
 @Data
 public class MessagePreProcessorItem {
   private boolean isTextProcessor;

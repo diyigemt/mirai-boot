@@ -23,9 +23,29 @@ import java.util.*;
 import static org.miraiboot.constant.ConstantGlobal.DEFAULT_EVENT_NET_TIMEOUT;
 import static org.miraiboot.constant.ConstantGlobal.DEFAULT_EVENT_NET_TIMEOUT_TIME;
 
+/**
+ * <h2>事件总处理器</h2>
+ * 管理着所有注册的事件 包括消息事件和上下文监听事件和强制触发事件<be/>
+ * @author diyigemt
+ * @author Heythem723
+ * @since 1.0.0
+ */
 public class EventHandlerManager {
+  /**
+   * 单列
+   */
   private static final EventHandlerManager INSTANCE = new EventHandlerManager();
+  /**
+   * <h2>存储所有@EventHandler注册的指令</h2>
+   * String: 指令开头与指令名<br/>
+   * EventHandlerItem: 存储Handler的信息类
+   */
   private static final Map<String, List<EventHandlerItem>> STORE = new HashMap<String, List<EventHandlerItem>>();
+  /**
+   * <h2>存储所有上下文监听注册的指令</h2>
+   * Long: 监听的qq号<br/>
+   * EventHandlerNextItem: 存储Handler的信息类
+   */
   private static final Map<Long, List<EventHandlerNextItem>> LISTENING_STORE = new HashMap<Long, List<EventHandlerNextItem>>();
 
   public static EventHandlerManager getInstance() {
@@ -137,22 +157,47 @@ public class EventHandlerManager {
     return false;
   }
 
+  /**
+   * <h2>注册一个上下文事件监听器</h2>
+   * @param target 监听目标qq号
+   * @param onNext 事件handler
+   */
   public void onNext(long target, EventHandlerNext onNext) {
     Long time = (Long) GlobalConfig.getInstance().get(DEFAULT_EVENT_NET_TIMEOUT);
     if (time == null) time = DEFAULT_EVENT_NET_TIMEOUT_TIME;
     onNext(target, onNext, time, -1);
   }
 
+  /**
+   * <h2>注册一个上下文事件监听器</h2>
+   * @param target 监听目标qq号
+   * @param onNext 事件handler
+   * @param timeOut 超时时间
+   */
   public void onNext(long target, EventHandlerNext onNext, long timeOut) {
     onNext(target, onNext, timeOut, -1);
   }
 
+  /**
+   * <h2>注册一个上下文事件监听器</h2>
+   * @param target 监听目标qq号
+   * @param onNext 事件handler
+   * @param triggerCount 监听次数
+   */
   public void onNext(long target, EventHandlerNext onNext, int triggerCount) {
     Long time = (Long) GlobalConfig.getInstance().get(DEFAULT_EVENT_NET_TIMEOUT);
     if (time == null) time = DEFAULT_EVENT_NET_TIMEOUT_TIME;
     onNext(target, onNext, time, triggerCount);
   }
 
+  /**
+   * <h2>注册一个上下文事件监听器</h2>
+   * <strong>注意 超时时间将会在该事件被触发后才开始计时 也就是注册监听器时不会计时 如果需要计时请使用onNextNow方法</strong>
+   * @param target 监听目标qq号
+   * @param onNext 事件handler
+   * @param timeOut 超时时间 不合法将使用配置文件中的超时时间或者默认的5min
+   * @param triggerCount 监听次数 不合法将设置为-1 表示无限监听
+   */
   public void onNext(long target, EventHandlerNext onNext, long timeOut, int triggerCount) {
     List<EventHandlerNextItem> events = LISTENING_STORE.get(target);
     if (events == null) events = new ArrayList<EventHandlerNextItem>();
@@ -161,7 +206,16 @@ public class EventHandlerManager {
     LISTENING_STORE.put(target, events);
   }
 
-  public void onNext(long target, EventHandlerNext onNext, long timeOut, int triggerCount, MessageEvent event, PreProcessorData data) {
+  /**
+   * <h2>注册一个上下文事件监听器并开始超时时间计时</h2>
+   * @param target 监听目标qq号
+   * @param onNext 事件handler
+   * @param timeOut 超时时间 不合法将使用配置文件中的超时时间或者默认的5min
+   * @param triggerCount 监听次数 不合法将设置为-1 表示无限监听
+   * @param event 当前MessageEvent用于给onDestroy之类的用
+   * @param data 当前PreProcessorData用于给onDestroy之类的用
+   */
+  public void onNextNow(long target, EventHandlerNext onNext, long timeOut, int triggerCount, MessageEvent event, PreProcessorData data) {
     List<EventHandlerNextItem> events = LISTENING_STORE.get(target);
     if (events == null) events = new ArrayList<EventHandlerNextItem>();
     EventHandlerNextItem eventHandlerNextItem = createCheckItem(onNext, timeOut, triggerCount);
@@ -234,6 +288,19 @@ public class EventHandlerManager {
     }
   }
 
+  /**
+   * <h2>为一个指令注册别名</h2>
+   * <strong>由于多指令开头的存在 注册时请为目标指令加上开头 别名可以不带开头</strong><br/>
+   * <strong>如果别名带了开头 请将开头限定在已经注册了的指令开头中</strong><br/>
+   * 例如: 假设全局开头为"/"
+   * <per>
+   * {@code
+   *    /alias /搜图 search
+   * }
+   * </per>
+   * @param target 要注册别名的指令
+   * @param alias 要注册的别名
+   */
   public void registerAlias(String target, String alias) {
     // 将别名与方法对应起来
     List<EventHandlerItem> eventHandlerItems = STORE.get(target);
@@ -242,16 +309,29 @@ public class EventHandlerManager {
     FunctionId.registerAlias(target, alias);
   }
 
+  /**
+   * <h2>统一注册别名</h2>
+   * 读取配置初始化时调用
+   * @param alias 所有别名
+   */
   public void registerAlias(Map<String, String> alias) {
     if (alias == null) return;
     alias.forEach(this::registerAlias);
   }
 
+  /**
+   * <h2>将监听超时时间和次数合法化</h2>
+   * @param onNext 事件handler
+   * @param timeOut 超时时间 不合法将使用配置文件中的超时时间或者默认的5min
+   * @param triggerCount 监听次数 不合法将设置为-1 表示无限监听
+   * @return 合法的监听信息存储类
+   */
   private EventHandlerNextItem createCheckItem(EventHandlerNext onNext, long timeOut, int triggerCount) {
     if (timeOut < -1) {
       Long time = (Long) GlobalConfig.getInstance().get(DEFAULT_EVENT_NET_TIMEOUT);
       timeOut = time == null ? DEFAULT_EVENT_NET_TIMEOUT_TIME : time;
     }
+    if (triggerCount < 1 ) triggerCount = -1;
     return new EventHandlerNextItem(onNext, timeOut, triggerCount);
   }
 

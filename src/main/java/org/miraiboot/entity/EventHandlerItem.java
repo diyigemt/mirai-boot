@@ -6,6 +6,12 @@ import org.miraiboot.constant.EventHandlerType;
 
 import java.lang.reflect.Method;
 
+/**
+ * <h2>EventHandler信息存储类</h2>
+ * @see org.miraiboot.annotation.EventHandler
+ * @author diyigemt
+ * @since 1.0.0
+ */
 @Data
 @AllArgsConstructor
 public class EventHandlerItem {

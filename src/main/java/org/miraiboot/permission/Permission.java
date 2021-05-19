@@ -4,8 +4,11 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * 用于存储@接口信息
+ * <h2>用于存储@CheckPermission信息</h2>
  * 优先级 at-> permission table -> blocks -> allows -> isStrictRestricted -> isGroupOwnerOnly -> isAdminOnly
+ * @author diyigemt
+ * @since 1.0.0
+ * @see CheckPermission
  */
 public class Permission {
 
