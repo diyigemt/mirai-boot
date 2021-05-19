@@ -10,10 +10,7 @@ import org.miraiboot.annotation.MiraiBootApplication;
 import org.miraiboot.constant.ConstantGlobal;
 import org.miraiboot.constant.FunctionId;
 import org.miraiboot.dao.PermissionDAO;
-import org.miraiboot.entity.ConfigFile;
-import org.miraiboot.entity.ConfigFileBot;
-import org.miraiboot.entity.ConfigFileBotConfiguration;
-import org.miraiboot.entity.ConfigFileMain;
+import org.miraiboot.entity.*;
 import org.miraiboot.function.TestAlias;
 import org.miraiboot.listener.MessageEventListener;
 import org.miraiboot.mirai.MiraiMain;
@@ -25,6 +22,8 @@ import org.yaml.snakeyaml.Yaml;
 import java.io.*;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Scanner;
 
@@ -71,11 +70,12 @@ public class MiraiApplication {
     classes.add(AuthMgr.class);
     // 初始化permission数据库
     classes.add(PermissionDAO.class);
-    // 开始处理事件handler
+    // 开始处理事件handler和autoInit
+    List<AutoInitItem> inits = new ArrayList<AutoInitItem>();
     if (!classes.isEmpty()) {
       for (Class<?> clazz : classes) {
         if (clazz.isAnnotationPresent(AutoInit.class)) {
-          handleAutoInit(mainClass, clazz);
+          handleAutoInit(clazz, inits);
         }
         if (clazz.isAnnotationPresent(EventHandlerComponent.class)) {
           handleEventHandler(clazz);
@@ -113,6 +113,15 @@ public class MiraiApplication {
     MiraiMain.logger.info("bot登录成功 系统启动完成");
     // 注册配置文件中的指令别名
     EventHandlerManager.getInstance().registerAlias(miraiboot.getAlias());
+    // 开始自动初始化
+    Collections.sort(inits);
+    for (AutoInitItem item : inits) {
+      try {
+        item.getHandler().invoke(null, mainClass);
+      } catch (IllegalAccessException | InvocationTargetException e) {
+        e.printStackTrace();
+      }
+    }
     // 阻塞主线程
     Scanner scanner = new Scanner(System.in);
     while (true) {
@@ -126,15 +135,17 @@ public class MiraiApplication {
   }
 
   /**
-   * 初始化带有@AutoInit的类
-   * @param mainClass 主类
+   * 初始化被@AutoInit注释的类
+   * @param res 暂存 等候排序
    * @param clazz 目标类
    */
-  private static void handleAutoInit(Class<?> mainClass, Class<?> clazz) {
+  private static void handleAutoInit(Class<?> clazz, List<AutoInitItem> res) {
     try {
       Method init = clazz.getMethod("init", Class.class);
-      init.invoke(null, mainClass);
-    } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
+      AutoInit annotation = clazz.getAnnotation(AutoInit.class);
+      AutoInitItem item = new AutoInitItem(annotation.value(), init);
+      res.add(item);
+    } catch (NoSuchMethodException e) {
       e.printStackTrace();
     }
   }

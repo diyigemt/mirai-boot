@@ -76,6 +76,6 @@ public class TestNext {
       public void onTimeOut(MessageEvent event, PreProcessorData data) {
         MiraiMain.getInstance().quickReply(event, "已经超时 停止监听");
       }
-    }, 10 * 1000L, 3);
+    }, -1, 3);
   }
 }

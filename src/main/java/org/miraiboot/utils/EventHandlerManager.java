@@ -27,7 +27,7 @@ public class EventHandlerManager {
   public static EventHandlerManager getInstance() {
     return INSTANCE;
   }
-
+  
   public static boolean SQLNonTempAuth = false;
 
   public void on(String target, Class<?> invoker, Method handler) {
@@ -36,7 +36,7 @@ public class EventHandlerManager {
     EventHandler annotation = handler.getAnnotation(EventHandler.class);
     EventHandlerType[] type = annotation.type();
     EventHandlerItem eventHandlerItem = new EventHandlerItem(target, invoker, handler, type);
-    eventHandlerItems.add(eventHandlerItem);
+    if (!eventHandlerItems.contains(eventHandlerItem)) eventHandlerItems.add(eventHandlerItem);
     STORE.put(target, eventHandlerItems);
   }
 
@@ -191,9 +191,7 @@ public class EventHandlerManager {
       if (next.check()) {
         ListeningStatus status = next.onNext(event, data);
         if (status == ListeningStatus.STOPPED) {
-          next.cancel();
-          next.onDestroy();
-          events.remove(next);
+          handlerNextEnd(events, next);
           i--;
         } else {
           next.start(new TimerTask() {
@@ -206,9 +204,11 @@ public class EventHandlerManager {
           });
         }
       } else {
-        next.cancel();
-        next.onDestroy();
-        events.remove(next);
+        if (next.getTriggerCount() == 0) {
+          next.onNext(event, data);
+          next.onTriggerOut();
+        }
+        handlerNextEnd(events, next);
         i--;
       }
     }
@@ -237,5 +237,11 @@ public class EventHandlerManager {
   public void registerAlias(Map<String, String> alias) {
     if (alias == null) return;
     alias.forEach(this::registerAlias);
+  }
+
+  private void handlerNextEnd(List<EventHandlerNextItem> events, EventHandlerNextItem next) {
+    next.cancel();
+    next.onDestroy();
+    events.remove(next);
   }
 }

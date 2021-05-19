@@ -57,15 +57,14 @@ public class EventHandlerNextItem {
 
   public boolean check() {
     if (this.triggerCount == -1 && this.timeOut == -1) return true;
+    if (this.triggerCount != -1) this.triggerCount--;
     if (this.triggerCount == 0) {
-      onTriggerOut();
       return false;
     }
     if (this.timeOut != -1) {
       this.timer.cancel();
       this.timer = new Timer();
     }
-    if (this.triggerCount != -1) this.triggerCount--;
     return true;
   }
 
