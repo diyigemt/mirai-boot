@@ -19,6 +19,7 @@ miraiboot:
   logger:
     network: false # 是否在控制台显示bot的网络信息
     eventStatus: true # 是否在控制台打印事件执行失败信息
+    debug: false # 是否在控制台打印事件解析信息
+  alias: # 指令别名
   configs: # 全局配置
     DEFAULT_COMMAND_START: "" # 默认指令开头 当@EventHandler中没有指定start时使用改配置
-  alias: # 指令别名

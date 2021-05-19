@@ -118,6 +118,7 @@ public class MiraiApplication {
     while (true) {
       String command = scanner.next();
       if (command.equals("exit")) {
+        EventHandlerManager.getInstance().cancelAll();
         BotManager.getInstance().logoutAll();
         break;
       }

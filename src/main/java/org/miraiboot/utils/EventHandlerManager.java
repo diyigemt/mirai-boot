@@ -216,6 +216,16 @@ public class EventHandlerManager {
     return null;
   }
 
+  public void cancelAll() {
+    if (LISTENING_STORE.isEmpty()) return;;
+    for (List<EventHandlerNextItem> listeners : LISTENING_STORE.values()) {
+      if (listeners.isEmpty()) continue;
+      for (EventHandlerNextItem item : listeners) {
+        item.cancel();
+      }
+    }
+  }
+
   public void registerAlias(String target, String alias) {
     // 将别名与方法对应起来
     List<EventHandlerItem> eventHandlerItems = STORE.get(target);

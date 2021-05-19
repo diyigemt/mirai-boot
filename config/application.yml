@@ -11,6 +11,6 @@ miraiboot:
   logger:
     network: false
     eventStatus: false
+  alias:
   configs: # 全局配置
     DEFAULT_COMMAND_START: ""
-  alias:

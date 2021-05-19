@@ -77,8 +77,10 @@ public class MessagePreProcessorItem {
     }
     List<SingleMessage> res = new ArrayList<SingleMessage>();
     for (SingleMessage message : event.getMessage()) {
-      Class<? extends SingleMessage> clazz = message.getClass();
-      if (classes.contains(clazz)) res.add(message);
+      Class<?> clazz = message.getClass();
+      for (Class<? extends SingleMessage> messageClass : classes) {
+        if (messageClass.isAssignableFrom(clazz)) res.add(message);
+      }
     }
     return res;
   }

@@ -1,5 +1,6 @@
 package org.miraiboot;
 
+import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.InvocationTargetException;
@@ -64,6 +65,11 @@ public class TestSimple {
   public void testMap() {
     Map<String, Integer> map = new HashMap<>();
     System.out.println(map.get("Aaa"));
+  }
+
+  @Test
+  public void testInstance() {
+
   }
 
   public void testA(String a) {
