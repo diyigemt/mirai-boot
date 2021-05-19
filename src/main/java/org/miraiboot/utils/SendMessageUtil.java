@@ -16,16 +16,42 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Method;
 
+/**
+ * <h2>图片和语音功能消息工具类</h2>
+ * <p>用来构造图片和语音消息，选择合适的方法引用并提供素材和文字即可。会自动构造和发送消息</p>
+ * @author Haythem
+ * @since 1.0.0
+ */
+
 public class SendMessageUtil {
 
     private static ExternalResource resource = null;
 
+    /**
+     * <h2>单张图片消息构造器</h2>
+     * <p>提供图片素材，自动构造和发送消息</p>
+     * <p>本机路径和URL均可</p>
+     * <p>注：当使用URL素材时，如果网络不佳未能获得素材会发送以下纯文本消息:</p>
+     * <p>"联网获取素材失败"</p>
+     * @param event 消息事件，群聊或私聊
+     * @param ImgPath 图片来源
+     */
     public static void ImageMessageSender(MessageEvent event, String ImgPath){
         Image image = ImgMsgBuilder(event,ImgPath);
         event.getSubject().sendMessage(image);
         Close();
     }
 
+    /**
+     * <h2>单张图片消息连接器</h2>
+     * <p>提供图片素材和您写好的MessageChain，自动连接和发送消息</p>
+     * <p>本机路径和URL均可</p>
+     * <p>注：当使用URL素材时，如果网络不佳未能获得素材会发送以下纯文本消息:</p>
+     * <p>"联网获取素材失败"</p>
+     * @param event 消息事件，群聊或私聊
+     * @param messages 消息链
+     * @param ImgPath 图片来源
+     */
     public static void ImageMessageSender(MessageEvent event, MessageChain messages, String ImgPath){
         Image image = ImgMsgBuilder(event,ImgPath);
         MessageChain messageChain = messages;
@@ -34,6 +60,21 @@ public class SendMessageUtil {
         Close();
     }
 
+    /**
+     * <h2>带文字的单张图片消息构造器(正序)</h2>
+     * <p>提供图片素材和文本消息，自动构造和发送消息</p>
+     * <p>样例：</p>
+     * <p></p>
+     * <p>文字消息</p>
+     * <p>图片</p>
+     * <p></p>
+     * <p>本机路径和URL均可</p>
+     * <p>注：当使用URL素材时，如果网络不佳未能获得素材会发送以下纯文本消息:</p>
+     * <p>"联网获取素材失败"</p>
+     * @param event 消息事件，群聊或私聊
+     * @param messages 纯文本消息
+     * @param ImgPath 图片来源
+     */
     public static void ImageMessageSender_asc(MessageEvent event, String messages, String ImgPath){
         Image image = ImgMsgBuilder(event,ImgPath);
         MessageChain messageChain = new MessageChainBuilder()
@@ -44,6 +85,21 @@ public class SendMessageUtil {
         Close();
     }
 
+    /**
+     * <h2>带文字的单张图片消息构造器(倒序)</h2>
+     * <p>提供图片素材和文本消息，自动构造和发送消息</p>
+     * <p>样例：</p>
+     * <p></p>
+     * <p>图片</p>
+     * <p>文字消息</p>
+     * <p></p>
+     * <p>本机路径和URL均可</p>
+     * <p>注：当使用URL素材时，如果网络不佳未能获得素材会发送以下纯文本消息:</p>
+     * <p>"联网获取素材失败"</p>
+     * @param event 消息事件，群聊或私聊
+     * @param messages 纯文本消息
+     * @param ImgPath 图片来源
+     */
     public static void ImageMessageSender_desc(MessageEvent event, String messages, String ImgPath){
         Image image = ImgMsgBuilder(event,ImgPath);
         MessageChain messageChain = new MessageChainBuilder()
@@ -54,6 +110,23 @@ public class SendMessageUtil {
         Close();
     }
 
+    /**
+     * <h2>带文字的单张图片消息构造器(文字环绕)</h2>
+     * <p>提供图片素材和文本消息，自动构造和发送消息</p>
+     * <p>样例：</p>
+     * <p></p>
+     * <p>文字消息</p>
+     * <p>图片</p>
+     * <p>文字消息</p>
+     * <p></p>
+     * <p>本机路径和URL均可</p>
+     * <p>注：当使用URL素材时，如果网络不佳未能获得素材会发送以下纯文本消息:</p>
+     * <p>"联网获取素材失败"</p>
+     * @param event 消息事件，群聊或私聊
+     * @param message_before 前文
+     * @param message_after 后文
+     * @param ImgPath 图片来源
+     */
     public static void ImageMessageSender_surround(MessageEvent event, String message_before, String message_after, String ImgPath){
         Image image = ImgMsgBuilder(event,ImgPath);
         MessageChain messageChain = new MessageChainBuilder()
@@ -65,6 +138,15 @@ public class SendMessageUtil {
         Close();
     }
 
+    /**
+     * <h2>多张图片消息构造器</h2>
+     * <p>提供图片素材，自动构造和发送消息</p>
+     * <p>本机路径和URL均可</p>
+     * <p>注：当使用URL素材时，如果网络不佳未能获得素材会发送以下纯文本消息:</p>
+     * <p>"联网获取素材失败"</p>
+     * @param event 消息事件，群聊或私聊
+     * @param ImgPath 图片来源数组
+     */
     public static void ImageMessageSender_multiImg(MessageEvent event, String[] ImgPath){
         MessageChain messageChain = new MessageChainBuilder()
                 .append(MultiImgMsgBuilder(event, ImgPath))
@@ -74,6 +156,24 @@ public class SendMessageUtil {
         Close();
     }
 
+    /**
+     * <h2>带文字的多张图片消息构造器(正序)</h2>
+     * <p>提供图片素材和文本消息，自动构造和发送消息</p>
+     * <p>样例：</p>
+     * <p></p>
+     * <p>文字消息</p>
+     * <p>图片1</p>
+     * <p>图片2</p>
+     * <p>图片3</p>
+     * <p>...</p>
+     * <p></p>
+     * <p>本机路径和URL均可</p>
+     * <p>注：当使用URL素材时，如果网络不佳未能获得素材会发送以下纯文本消息:</p>
+     * <p>"联网获取素材失败"</p>
+     * @param event 消息事件，群聊或私聊
+     * @param messages 纯文本消息
+     * @param ImgPath 图片来源数组
+     */
     public static void ImageMessageSender_multiImg_msgAsc(MessageEvent event, String messages, String[] ImgPath){
         MessageChain messageChain = new MessageChainBuilder()
                 .append(messages)
@@ -83,6 +183,24 @@ public class SendMessageUtil {
         Close();
     }
 
+    /**
+     * <h2>带文字的多张图片消息构造器(倒序)</h2>
+     * <p>提供图片素材和文本消息，自动构造和发送消息</p>
+     * <p>样例：</p>
+     * <p></p>
+     * <p>图片1</p>
+     * <p>图片2</p>
+     * <p>图片3</p>
+     * <p>文字消息</p>
+     * <p>...</p>
+     * <p></p>
+     * <p>本机路径和URL均可</p>
+     * <p>注：当使用URL素材时，如果网络不佳未能获得素材会发送以下纯文本消息:</p>
+     * <p>"联网获取素材失败"</p>
+     * @param event 消息事件，群聊或私聊
+     * @param messages 纯文本消息
+     * @param ImgPath 图片来源数组
+     */
     public static void ImageMessageSender_multiImg_msgDesc(MessageEvent event, String messages, String[] ImgPath){
         MessageChain messageChain = new MessageChainBuilder()
                 .append(MultiImgMsgBuilder(event, ImgPath))
@@ -92,16 +210,51 @@ public class SendMessageUtil {
         Close();
     }
 
-    public static void ImageMessageSender_multiImg_msgSurround(MessageEvent event, String messages_before, String messages_after, String[] ImgPath){
+    /**
+     * <h2>带文字的多张图片消息构造器(文字环绕)</h2>
+     * <p>提供图片素材和文本消息，自动构造和发送消息</p>
+     * <p>样例：</p>
+     * <p></p>
+     * <p>文字消息</p>
+     * <p>图片</p>
+     * <p>文字消息</p>
+     * <p></p>
+     * <p>本机路径和URL均可</p>
+     * <p>注：当使用URL素材时，如果网络不佳未能获得素材会发送以下纯文本消息:</p>
+     * <p>"联网获取素材失败"</p>
+     * @param event 消息事件，群聊或私聊
+     * @param message_before 前文
+     * @param message_after 后文
+     * @param ImgPath 图片来源数组
+     */
+    public static void ImageMessageSender_multiImg_msgSurround(MessageEvent event, String message_before, String message_after, String[] ImgPath){
         MessageChain messageChain = new MessageChainBuilder()
-                .append(messages_before)
+                .append(message_before)
                 .append(MultiImgMsgBuilder(event, ImgPath))
-                .append(messages_after)
+                .append(message_after)
                 .build();
         event.getSubject().sendMessage(messageChain);
         Close();
     }
 
+    /**
+     * <h2>带文字的多张图片消息构造器(文字环绕)</h2>
+     * <p>提供图片素材和文本消息，自动构造和发送消息</p>
+     * <p>样例：</p>
+     * <p></p>
+     * <p>图片</p>
+     * <p>文字消息</p>
+     * <p>图片</p>
+     * <p>文字消息</p>
+     * <p>...</p>
+     * <p></p>
+     * <p>本机路径和URL均可</p>
+     * <p>注：当使用URL素材时，如果网络不佳未能获得素材会发送以下纯文本消息:</p>
+     * <p>"联网获取素材失败"</p>
+     * @param event 消息事件，群聊或私聊
+     * @param messages 文字消息数组
+     * @param ImgPath 图片来源数组
+     */
     public static void ImageMessageSender_multiImgMsgList(MessageEvent event, String[] messages, String[] ImgPath){
         MessageChain messageChain = new MessageChainBuilder().build();
         for(int i = 0; i < messages.length; i++){
@@ -132,7 +285,7 @@ public class SendMessageUtil {
         return messageChain;
     }
 
-    public static void Close(){
+    private static void Close(){
         try{
             resource.close();
         }catch (IOException e){
@@ -140,6 +293,15 @@ public class SendMessageUtil {
         }
     }
 
+    /**
+     * <h2>语音消息构造器</h2>
+     * <p>提供语音素材，自动构造和发送消息</p>
+     * <p>本机路径和URL均可</p>
+     * <p>注：当使用URL素材时，如果网络不佳未能获得素材会发送以下纯文本消息:</p>
+     * <p>"联网获取素材失败"</p>
+     * @param event 消息事件，群聊或私聊
+     * @param path 语音来源
+     */
     public static void VoiceMsgSender(MessageEvent event, String path){
         resource = ExtResBuilder(event, path);
         GroupMessageEvent groupMessageEvent = (GroupMessageEvent) event;
@@ -175,7 +337,7 @@ public class SendMessageUtil {
                 externalResource = ExternalResource.create(file);
             }
         }catch (IOException e){
-            MiraiMain.getInstance().quickReply(event, "联网获取语音失败");
+            MiraiMain.getInstance().quickReply(event, "联网获取素材失败");
         }catch (Exception e){
             e.printStackTrace();
         }

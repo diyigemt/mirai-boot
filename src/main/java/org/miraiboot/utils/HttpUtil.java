@@ -8,8 +8,21 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 
+/**
+ * <p>HTTP请求工具类</p>
+ * @author Haythem
+ * @since 1.0.0
+ */
+
 public class HttpUtil {
 
+	/**
+	 * <h2>带高级设置的HTTP请求</h2>
+	 * <p>通过实例化注解或添加注解来增加HOST等设置</p>
+	 * @param urlString 目标URL
+	 * @param properties 注解实例化结果
+	 * @return 目标文件输入流
+	 */
 	public static InputStream getInputStream_advanced(String urlString, HttpsProperties properties) {
 		InputStream inputStream = null;
 		try {
@@ -28,6 +41,12 @@ public class HttpUtil {
 		return inputStream;
 	}
 
+	/**
+	 * <h2>使用默认配置的HTTP请求</h2>
+	 * <p>此为裸连请求，不适合用来请求外网资源</p>
+	 * @param urlString 目标URL
+	 * @return 目标文件输入流
+	 */
 	public static InputStream getInputStream(String urlString) {
 		InputStream inputStream = null;
 		try {

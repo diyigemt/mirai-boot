@@ -18,7 +18,11 @@ import java.util.List;
 
 /**
  * 权限控制台
+ * <p>此功能仅限群主和管理员使用，普通群员没有足够权限使用该命令</p>
+ * <p>此功能强制开启严格限制模式</p>
+ * <p>此功能不能通过临时权限授权</p>
  * @author Haythem
+ * @since 1.0.0
  */
 
 @EventHandlerComponent

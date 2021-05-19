@@ -7,7 +7,32 @@ import org.miraiboot.entity.PermissionItem;
 import org.miraiboot.mirai.MiraiMain;
 import org.miraiboot.utils.PermissionUtil;
 
+/**
+ * 临时权限授权和处理类
+ * @author Haythem
+ * @since 1.0.0
+ */
+
 public class TempPermission {
+
+    /**
+     * <h2>临时权限授权方法</h2>
+     * <p>临时权限分为两种：</p>
+     * <p>带次数限制的临时权限</p>
+     * <p>permit assign 命令名称/别名 限制次数 @目标成员</p>
+     * <p></p>
+     * <p>无次数限制的临时权限</p>
+     * <p>permit assign 命令名称/别名 @目标成员</p>
+     * <p></p>
+     * <p>注：</p>
+     * <p>1. 临时权限的权限级别低于permit off的权限级别，如果管理员使用了permit off会自动解除临时权限</p>
+     * <p>2. 当管理员使用assign授予临时权限时，也会自动解除permit off的限制</p>
+     * <p>3. assign允许提升或降级临时权限级别，从有限次数升为无限次数或从无限次数降为有限次数，只需执行对应的有限或无限次数的assign指令即可</p>
+     * <p>4. assign不能授予permit命令使用权，如有需求请联系群主设置目标为管理员</p>
+     * @param event 消息事件，私聊或群聊
+     * @param commandId 命令ID
+     * @param remain 规定的次数，默认为-1，即为无限制次数
+     */
     public static void tempAuthProcess(MessageEvent event, int commandId, int remain){
         if (!(event instanceof GroupMessageEvent)) return;
         long senderId = event.getSender().getId();
@@ -39,6 +64,16 @@ public class TempPermission {
         }
     }
 
+    /**
+     * <h2>解除临时权限授权方法</h2>
+     * <p>解除目标用户的临时使用权</p>
+     * <p>permit cancel 命令名称/别名 @目标成员</p>
+     * <p></p>
+     * <p>注：</p>
+     * <p>解除临时权限不会解除permit off的限制</p>
+     * @param event 消息事件，私聊或群聊
+     * @param commandId 命令ID
+     */
     public static void cancelAuthProcess(MessageEvent event, int commandId){
         if (!(event instanceof GroupMessageEvent)) return;
         long senderId = event.getSender().getId();
