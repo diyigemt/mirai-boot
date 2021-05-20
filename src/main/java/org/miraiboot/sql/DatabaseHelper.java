@@ -22,6 +22,9 @@ public class DatabaseHelper {
 
   /**
    * <h2>获取指定数据库名字的文件存放相对位置</h2>
+   * <p>当数据库文件或者表不存在时会自动创建
+   * <p>使用例子请百度或@see
+   * @see org.miraiboot.entity.PermissionItem
    * @param dBName 数据库文件吗名
    * @return 一个连接池
    * @throws SQLException 连接池创建失败
