@@ -26,6 +26,7 @@ public class MiraiMain {
 
 	/**
 	 * <h2>快速回复消息</h2>
+	 * 使用列
 	 * @param event 消息事件
 	 * @param msg 要回复的消息内容
 	 */

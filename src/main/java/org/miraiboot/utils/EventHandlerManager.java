@@ -48,12 +48,22 @@ public class EventHandlerManager {
    */
   private static final Map<Long, List<EventHandlerNextItem>> LISTENING_STORE = new HashMap<Long, List<EventHandlerNextItem>>();
 
+  /**
+   * <h2>获取单列对象</h2>
+   * @return EventHandlerManager
+   */
   public static EventHandlerManager getInstance() {
     return INSTANCE;
   }
 
   public static boolean SQLNonTempAuth = false;
 
+  /**
+   * <h2>注册指令名和与之对应的Handler</h2>
+   * @param target 指令
+   * @param invoker Handler所在的类
+   * @param handler Handler
+   */
   public void on(String target, Class<?> invoker, Method handler) {
     List<EventHandlerItem> eventHandlerItems = STORE.get(target);
     if (eventHandlerItems == null) eventHandlerItems = new ArrayList<EventHandlerItem>();
@@ -64,6 +74,11 @@ public class EventHandlerManager {
     STORE.put(target, eventHandlerItems);
   }
 
+  /**
+   * <h2>根据指令移除Handler</h2>
+   * @param target 指令
+   * @return 被移除的Handler列表
+   */
   public List<EventHandlerItem> remove(String target) {
     return STORE.remove(target);
   }
@@ -235,6 +250,14 @@ public class EventHandlerManager {
     LISTENING_STORE.put(target, events);
   }
 
+  /**
+   * <h2>触发上下文监听事件</h2>
+   * 一般由MessageEventListener调用
+   * @param target 被监听的qq号
+   * @param event 触发事件
+   * @param plainText 事件内容纯文本
+   * @return 结果 为null表示一切正常
+   */
   public String emitNext(long target, MessageEvent event, String plainText) {
     List<EventHandlerNextItem> events = LISTENING_STORE.get(target);
     if (events == null) return null;
@@ -278,6 +301,10 @@ public class EventHandlerManager {
     return null;
   }
 
+  /**
+   * <h2>取消所有正在监听的上下文事件</h2>
+   * 退出是调用
+   */
   public void cancelAll() {
     if (LISTENING_STORE.isEmpty()) return;;
     for (List<EventHandlerNextItem> listeners : LISTENING_STORE.values()) {
@@ -335,6 +362,11 @@ public class EventHandlerManager {
     return new EventHandlerNextItem(onNext, timeOut, triggerCount);
   }
 
+  /**
+   * <h2>上下文监听收尾工作</h2>
+   * @param events 监听事件列表
+   * @param next 事件本身
+   */
   private void handlerNextEnd(List<EventHandlerNextItem> events, EventHandlerNextItem next) {
     next.cancel();
     next.onDestroy();

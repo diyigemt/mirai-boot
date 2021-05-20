@@ -10,16 +10,21 @@ import com.j256.ormlite.table.DatabaseTable;
  */
 @DatabaseTable(tableName = "permission")
 public class PermissionItem {
+  // 主键id
   @DatabaseField(generatedId = true, columnName = "id", unique = true)
   private int id;
+  // EventHandler注解中的permissionIndex
   @DatabaseField(columnName = "command_id")
   private int commandId;
+  // 发送者qq号
   @DatabaseField(columnName = "sender_id")
   private String senderId;
 //  @DatabaseField(columnName = "permit", defaultValue = "false")
 //  private boolean permit;
+  // 权限等级
   @DatabaseField(columnName = "permit", defaultValue = "-1")
   private int permits = 0;
+  // 剩余使用次数 默认-1代表无限次 用于临时权限
   @DatabaseField(columnName = "remain")
   private int remain = -1;
 
@@ -35,11 +40,6 @@ public class PermissionItem {
     this.commandId = Integer.parseInt(commandId);
   }
 
-//  public PermissionItem(long senderId, int commandId, boolean permit) {
-//    this.senderId = String.valueOf(senderId);
-//    this.commandId = commandId;
-//    this.permit = permit;
-//  }
 
   public PermissionItem(long senderId, int commandId, int permits) {
     this.senderId = String.valueOf(senderId);

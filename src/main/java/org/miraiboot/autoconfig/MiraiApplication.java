@@ -131,10 +131,6 @@ public class MiraiApplication {
       bot.getEventChannel().subscribeAlways(MessageEvent.class, new MessageEventListener());
       BotManager.getInstance().register(configFileBot.getAccount(), bot);
     }
-    // 注册完成 统一登录
-    MiraiMain.logger.info("初始化完成 开始登录bot");
-    BotManager.getInstance().loginAll();
-    MiraiMain.logger.info("bot登录成功 系统启动完成");
     // 注册配置文件中的指令别名
     EventHandlerManager.getInstance().registerAlias(miraiboot.getAlias());
     // 开始自动初始化
@@ -146,6 +142,10 @@ public class MiraiApplication {
         e.printStackTrace();
       }
     }
+    // 初始化完成 统一登录
+    MiraiMain.logger.info("初始化完成 开始登录bot");
+    BotManager.getInstance().loginAll();
+    MiraiMain.logger.info("bot登录成功 系统启动完成");
     // 阻塞主线程
     Scanner scanner = new Scanner(System.in);
     while (true) {
