@@ -17,7 +17,7 @@ import java.io.InputStream;
 import java.lang.reflect.Method;
 
 /**
- * <h2>图片和语音功能消息工具类</h2>
+ * <h2>图片和语音消息模板</h2>
  * <p>用来构造图片和语音消息，选择合适的方法引用并提供素材和文字即可。会自动构造和发送消息</p>
  * @author Haythem
  * @since 1.0.0

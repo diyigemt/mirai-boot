@@ -19,16 +19,16 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * <h2>自定义语音消息构造器</h2>
+ * <h2>自定义群文件消息构造器</h2>
  * <p>样例：</p>
- * <p>List<MessageChain> = new VoiceMessageBuilder(MessageEventPack eventPack).build();</p>
+ * <p>List<MessageChain> = new FileMessageBuilder(MessageEventPack eventPack).build();</p>
  * <p></p>
  * <p><b>注：请不要用此类创建变量</b></p>
  * @author Haythem
  * @since 1.0.0
  */
 
-public class VoiceMessageBuilder {
+public class FileMessageBuilder {
 
     private final Pattern windowsPattern = Pattern.compile("[A-z]:\\\\([A-Za-z0-9_\u4e00-\u9fa5]+\\\\)*");
 
@@ -42,11 +42,14 @@ public class VoiceMessageBuilder {
 
     private boolean isUTTPRequestSuccess = true;
 
+    public static String FileName = null;
+
+
     /**
      * <h2>自定义语音消息构造器</h2>
      * <p>可以自定义语音和文字消息构成</p>
      * <p>样例:</p>
-     * <p>List<MessageChain> chains = new VoiceMessageBuilder(eventPack)</p>
+     * <p>List<MessageChain> chains = new FileMessageBuilder(eventPack)</p>
      * <p>&nbsp;&nbsp;.add("1234\n")</p>
      * <p>&nbsp;&nbsp;.add("1234\n", "5678\n")</p>
      * <p>&nbsp;&nbsp;.add(LocalFilePath)</p>
@@ -58,13 +61,13 @@ public class VoiceMessageBuilder {
      * @author Haythem
      * @since 1.0.0
      */
-    public VoiceMessageBuilder(MessageEventPack eventPack){
+    public FileMessageBuilder(MessageEventPack eventPack){
         this.messageEventPack = eventPack;
-        this.event = messageEventPack.getEvent();
+        this.event = eventPack.getEvent();
     }
 
     /**
-     * <h2>添加语音消息方法</h2>
+     * <h2>添加群文件消息方法</h2>
      * <p>支持以下类型输入:</p>
      * <p></p>
      * <p>1: MessageChain消息链</p>
@@ -72,18 +75,17 @@ public class VoiceMessageBuilder {
      * <p>3: File 打开的文件类</p>
      * <p></p>
      * <p>注:</p>
-     * <p>1: 请不要插入和语音无关的素材，如有需求，请使用与素材类型对应的其它Builder</p>
-     * <p>2: 当使用URL素材时，如果网络不佳未能获得素材会发送以下纯文本消息:</p>
-     * <p>&nbsp;&nbsp;"联网获取素材失败"</p>
-     * @param messageChain 当前类型: MessageChain 消息链
+     * <p>1: 请勿上传大小为0字节的文件</p>
+     * <p>2: URL支持重定向</p>
+     * @param chain 当前类型: MessageChain 消息链
      */
-    public VoiceMessageBuilder add(MessageChain messageChain){
-        this.chains.add(messageChain);
+    public FileMessageBuilder add(MessageChain chain){
+        this.chains.add(chain);
         return this;
     }
 
     /**
-     * <h2>添加语音消息方法</h2>
+     * <h2>添加群文件消息方法</h2>
      * <p>支持以下类型输入:</p>
      * <p></p>
      * <p>1: MessageChain消息链</p>
@@ -91,12 +93,34 @@ public class VoiceMessageBuilder {
      * <p>3: File 打开的文件类</p>
      * <p></p>
      * <p>注:</p>
-     * <p>请不要插入和语音无关的素材，如有需求，请使用与素材类型对应的其它Builder</p>
-     * <p>2: 当使用URL素材时，如果网络不佳未能获得素材会发送以下纯文本消息:</p>
-     * <p>&nbsp;&nbsp;"联网获取素材失败"</p>
-     * @param s 当前类型: String... 可变长字符串
+     * <p>1: 请勿上传大小为0字节的文件</p>
+     * <p>2: URL支持重定向</p>
+     * @param file 当前类型: File 打开的文件类
      */
-    public VoiceMessageBuilder add(String... s){
+    public FileMessageBuilder add(File file){
+        ExternalResource resource = ExternalResource.create(file);
+        MessageChain chain = new MessageChainBuilder().build();
+        chain = chain.plus(ExternalResource.uploadAsFile(resource, messageEventPack.getGroup(), "/" + file.getName()));
+        this.chains.add(chain);
+        return this;
+    }
+
+    /**
+     * <h2>添加群文件消息方法</h2>
+     * <p>支持以下类型输入:</p>
+     * <p></p>
+     * <p>1: MessageChain消息链</p>
+     * <p>2: String...可变长字符串，字符串支持本地路径、URL和文字消息</p>
+     * <p>3: File 打开的文件类</p>
+     * <p></p>
+     * <p>注:</p>
+     * <p>1: 请勿上传大小为0字节的文件</p>
+     * <p>2: URL支持重定向</p>
+     * <p>3: 当使用URL素材时，如果网络不佳未能获得素材会发送以下纯文本消息:</p>
+     * <p>&nbsp;&nbsp;"联网获取素材失败"</p>
+     * @param s 当前类型: String...可变长字符串
+     */
+    public FileMessageBuilder add(String... s){
         for(String i : s){
             MessageChain chain = new MessageChainBuilder().build();
             Matcher windowsMatcher = windowsPattern.matcher(i);
@@ -107,7 +131,7 @@ public class VoiceMessageBuilder {
             }else {
                 ExternalResource resource = ExtResBuilder(i);
                 if(isUTTPRequestSuccess){
-                    chain = chain.plus(ExternalResource.Companion.uploadAsVoice(resource, event.getSubject()));
+                    chain = chain.plus(ExternalResource.uploadAsFile(resource, messageEventPack.getGroup(), "/" + FileName));
                     this.chains.add(chain);
                 }else {
                     chain = chain.plus("联网获取数据失败");
@@ -115,27 +139,6 @@ public class VoiceMessageBuilder {
                 }
             }
         }
-        return this;
-    }
-
-    /**
-     * <h2>添加语音消息方法</h2>
-     * <p>支持以下类型输入:</p>
-     * <p></p>
-     * <p>1: MessageChain消息链</p>
-     * <p>2: String...可变长字符串，字符串支持本地路径、URL和文字消息</p>
-     * <p>3: File 打开的文件类</p>
-     * <p></p>
-     * <p>注:</p>
-     * <p>请不要插入和语音无关的素材，如有需求，请使用与素材类型对应的其它Builder</p>
-     * <p>2: 当使用URL素材时，如果网络不佳未能获得素材会发送以下纯文本消息:</p>
-     * <p>&nbsp;&nbsp;"联网获取素材失败"</p>
-     * @param file 当前类型: File 打开的文件类
-     */
-    public VoiceMessageBuilder add(File file){
-        MessageChain chain = new MessageChainBuilder().build();
-        chain = chain.plus(ExternalResource.uploadAsVoice(ExternalResource.create(file), event.getSubject()));
-        chains.add(chain);
         return this;
     }
 
@@ -187,6 +190,7 @@ public class VoiceMessageBuilder {
             }else {//LOCAL
                 File file = new File(path);
                 externalResource = ExternalResource.create(file);
+                FileName = file.getName();
             }
         }catch (IOException e){
             isUTTPRequestSuccess = false;

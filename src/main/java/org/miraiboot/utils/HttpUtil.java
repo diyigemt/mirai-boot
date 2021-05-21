@@ -2,11 +2,13 @@ package org.miraiboot.utils;
 
 import org.miraiboot.annotation.HttpsProperties;
 import org.miraiboot.constant.ConstantHttp;
+import org.miraiboot.utils.builder.FileMessageBuilder;
 
 import javax.net.ssl.HttpsURLConnection;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.util.StringTokenizer;
 
 /**
  * <p>HTTP请求工具类</p>
@@ -35,6 +37,9 @@ public class HttpUtil {
 			}
 			connection.connect();
 			inputStream = connection.getInputStream();
+			URL su = connection.getURL();
+			FileMessageBuilder.FileName = GetFileName(su.getPath());
+			connection.disconnect();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -53,9 +58,22 @@ public class HttpUtil {
 			URL url = new URL(urlString);
 			HttpsURLConnection connection = (HttpsURLConnection) url.openConnection();
 			inputStream = connection.getInputStream();
+			URL su = connection.getURL();
+			FileMessageBuilder.FileName = GetFileName(su.getPath());
+			connection.disconnect();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 		return inputStream;
+	}
+
+	private static String GetFileName(String file)
+	{
+		StringTokenizer st=new StringTokenizer(file,"/");
+		while(st.hasMoreTokens())
+		{
+			file=st.nextToken();
+		}
+		return file;
 	}
 }

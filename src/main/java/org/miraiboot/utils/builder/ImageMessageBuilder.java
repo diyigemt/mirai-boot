@@ -70,7 +70,9 @@ public class ImageMessageBuilder {
      * <p>3: File 打开的文件类</p>
      * <p></p>
      * <p>注:</p>
-     * <p>请不要插入和图片无关的素材，如有需求，请使用与素材类型对应的其它Builder</p>
+     * <p>1: 请不要插入和图片无关的素材，如有需求，请使用与素材类型对应的其它Builder</p>
+     * <p>2: 当使用URL素材时，如果网络不佳未能获得素材会发送以下纯文本消息:</p>
+     * <p>&nbsp;&nbsp;"联网获取素材失败"</p>
      * @param messages 当前类型: 消息链
      */
     public ImageMessageBuilder add(MessageChain messages){
@@ -87,7 +89,9 @@ public class ImageMessageBuilder {
      * <p>3: File 打开的文件类</p>
      * <p></p>
      * <p>注:</p>
-     * <p>请不要插入和图片无关的素材，如有需求，请使用与素材类型对应的其它Builder</p>
+     * <p>1: 请不要插入和图片无关的素材，如有需求，请使用与素材类型对应的其它Builder</p>
+     * <p>2: 当使用URL素材时，如果网络不佳未能获得素材会发送以下纯文本消息:</p>
+     * <p>&nbsp;&nbsp;"联网获取素材失败"</p>
      * @param s 当前类型: String... 可变长字符串
      */
     public ImageMessageBuilder add(String... s){
@@ -118,7 +122,9 @@ public class ImageMessageBuilder {
      * <p>3: File 打开的文件类</p>
      * <p></p>
      * <p>注:</p>
-     * <p>请不要插入和图片无关的素材，如有需求，请使用与素材对应的其它Builder</p>
+     * <p>1: 请不要插入和图片无关的素材，如有需求，请使用与素材类型对应的其它Builder</p>
+     * <p>2: 当使用URL素材时，如果网络不佳未能获得素材会发送以下纯文本消息:</p>
+     * <p>&nbsp;&nbsp;"联网获取素材失败"</p>
      * @param file 当前类型: 文件类
      */
     public ImageMessageBuilder add(File file){
@@ -138,6 +144,8 @@ public class ImageMessageBuilder {
     /**
      * <h2>构造器结尾</h2>
      * <p>该方法返回并自动发送构造完成的消息链</p>
+     * <p>注：当使用URL素材时，如果网络不佳未能获得素材会发送以下纯文本消息:</p>
+     * <p>"联网获取素材失败"</p>
      * @return MessageChain 消息链
      */
     public MessageChain send(){
