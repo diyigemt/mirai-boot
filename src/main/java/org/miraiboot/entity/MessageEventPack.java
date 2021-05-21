@@ -13,6 +13,7 @@ import net.mamoe.mirai.message.data.OnlineMessageSource.Incoming;
 import net.mamoe.mirai.message.data.SingleMessage;
 import org.miraiboot.constant.EventType;
 import org.miraiboot.interfaces.EventHandlerNext;
+import org.miraiboot.mirai.MiraiMain;
 import org.miraiboot.utils.EventHandlerManager;
 
 import java.util.List;
@@ -37,6 +38,56 @@ public class MessageEventPack {
 		if (event instanceof GroupMessageEvent) this.eventType = EventType.GROUP_MESSAGE_EVENT;
 		if (event instanceof FriendMessageEvent) this.eventType = EventType.FRIEND_MESSAGE_EVENT;
 		this.event = event;
+	}
+
+	/**
+	 * <h2>回复一串文本消息并at发送者</h2>
+	 * @param s 一串文本
+	 */
+	public void reply(String... s) {
+		MiraiMain.getInstance().reply(this, s);
+	}
+
+	/**
+	 * <h2>回复一串文本消息不at发送者</h2>
+	 * @param s 一串文本
+	 */
+	public void replyNotAt(String... s) {
+		MiraiMain.getInstance().replyNotAt(this, s);
+	}
+
+	/**
+	 * <h2>回复一串文本消息并at发送者</h2>
+	 * @param msg 一串消息
+	 */
+	public void reply(SingleMessage... msg) {
+		MiraiMain.getInstance().reply(this, msg);
+	}
+
+
+	/**
+	 * <h2>回复一串文本消息不at发送者</h2>
+	 * @param msg 一串消息
+	 */
+	public void replyNotAt(SingleMessage... msg) {
+		MiraiMain.getInstance().replyNotAt(this, msg);
+	}
+
+	/**
+	 * <h2>回复一串文本消息并at发送者</h2>
+	 * @param chain 构建好的消息链
+	 */
+	public void reply(MessageChain chain) {
+		MiraiMain.getInstance().reply(this, chain);
+	}
+
+
+	/**
+	 * <h2>回复一串文本消息不at发送者</h2>
+	 * @param chain 构建好的消息链
+	 */
+	public void replyNotAt(MessageChain chain) {
+		MiraiMain.getInstance().replyNotAt(this, chain);
 	}
 
 	/**
