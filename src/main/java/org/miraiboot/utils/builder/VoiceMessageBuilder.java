@@ -13,19 +13,22 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * <h2>自定义图片消息构造器</h2>
+ * <h2>自定义语音消息构造器</h2>
  * <p>样例：</p>
- * <p>MessageChain chain = new ImageMessageBuilder(MessageEventPack eventPack).build();</p>
+ * <p>List<MessageChain> = new VoiceMessageBuilder(MessageEventPack eventPack).build();</p>
  * <p></p>
  * <p><b>注：请不要用此类创建变量</b></p>
  * @author Haythem
  * @since 1.0.0
  */
-public class ImageMessageBuilder {
+
+public class VoiceMessageBuilder {
 
     private final Pattern windowsPattern = Pattern.compile("[A-z]:\\\\([A-Za-z0-9_\u4e00-\u9fa5]+\\\\)*");
 
@@ -35,16 +38,15 @@ public class ImageMessageBuilder {
 
     private MessageEventPack messageEventPack = null;
 
-    private MessageChain chain = new MessageChainBuilder().build();
+    private List<MessageChain> chains = new ArrayList<>();
 
     private boolean isUTTPRequestSuccess = true;
 
     /**
-     * <h2>自定义图片消息构造器</h2>
-     * <p>可以自定义图文消息构成</p>
+     * <h2>自定义语音消息构造器</h2>
+     * <p>可以自定义语音和文字消息构成</p>
      * <p>样例:</p>
-     * <p>MessageChain chain = new ImageMessageBuilder(MessageEventPack)</p>
-     * <p>&nbsp;&nbsp;.add(messageChain)</p>
+     * <p>List<MessageChain> chains = new VoiceMessageBuilder(eventPack)</p>
      * <p>&nbsp;&nbsp;.add("1234\n")</p>
      * <p>&nbsp;&nbsp;.add("1234\n", "5678\n")</p>
      * <p>&nbsp;&nbsp;.add(LocalFilePath)</p>
@@ -56,30 +58,18 @@ public class ImageMessageBuilder {
      * @author Haythem
      * @since 1.0.0
      */
-    public ImageMessageBuilder(MessageEventPack eventPack){
+    public VoiceMessageBuilder(MessageEventPack eventPack){
         this.messageEventPack = eventPack;
-        this.event = eventPack.getEvent();
+        this.event = messageEventPack.getEvent();
     }
 
-    /**
-     * <h2>添加图文消息方法</h2>
-     * <p>支持以下类型输入:</p>
-     * <p></p>
-     * <p>1: MessageChain消息链</p>
-     * <p>2: String...可变长字符串，字符串支持本地路径、URL和文字消息</p>
-     * <p>3: File 打开的文件类</p>
-     * <p></p>
-     * <p>注:</p>
-     * <p>请不要插入和图片无关的素材，如有需求，请使用与素材类型对应的其它Builder</p>
-     * @param messages 当前类型: 消息链
-     */
-    public ImageMessageBuilder add(MessageChain messages){
-        chain = chain.plus(messages);
+    public VoiceMessageBuilder add(MessageChain messageChain){
+        this.chains.add(messageChain);
         return this;
     }
 
     /**
-     * <h2>添加图文消息方法</h2>
+     * <h2>添加语音消息方法</h2>
      * <p>支持以下类型输入:</p>
      * <p></p>
      * <p>1: MessageChain消息链</p>
@@ -87,62 +77,69 @@ public class ImageMessageBuilder {
      * <p>3: File 打开的文件类</p>
      * <p></p>
      * <p>注:</p>
-     * <p>请不要插入和图片无关的素材，如有需求，请使用与素材类型对应的其它Builder</p>
+     * <p>请不要插入和语音无关的素材，如有需求，请使用与素材类型对应的其它Builder</p>
      * @param s 当前类型: String... 可变长字符串
      */
-    public ImageMessageBuilder add(String... s){
+    public VoiceMessageBuilder add(String... s){
         for(String i : s){
+            MessageChain chain = new MessageChainBuilder().build();
             Matcher windowsMatcher = windowsPattern.matcher(i);
             Matcher linuxMatcher = linuxPattern.matcher(i);
             if(!(windowsMatcher.find() || linuxMatcher.find()) && !i.contains("http")){
                 chain = chain.plus(i);
+                this.chains.add(chain);
             }else {
                 ExternalResource resource = ExtResBuilder(i);
                 if(isUTTPRequestSuccess){
-                    chain = chain.plus(ExternalResource.Companion.uploadAsImage(resource, event.getSubject()));
+                    chain = chain.plus(ExternalResource.Companion.uploadAsVoice(resource, event.getSubject()));
+                    this.chains.add(chain);
                 }else {
                     chain = chain.plus("联网获取数据失败");
+                    this.chains.add(chain);
                 }
             }
         }
-
         return this;
     }
 
     /**
-     * <h2>添加图文消息方法</h2>
+     * <h2>添加语音消息方法</h2>
      * <p>支持以下类型输入:</p>
      * <p></p>
      * <p>1: MessageChain消息链</p>
-     * <p>2: String...可变长字符串，字符串支持本地路径和URL和文字消息</p>
+     * <p>2: String...可变长字符串，字符串支持本地路径、URL和文字消息</p>
      * <p>3: File 打开的文件类</p>
      * <p></p>
      * <p>注:</p>
-     * <p>请不要插入和图片无关的素材，如有需求，请使用与素材对应的其它Builder</p>
-     * @param file 当前类型: 文件类
+     * <p>请不要插入和语音无关的素材，如有需求，请使用与素材类型对应的其它Builder</p>
+     * @param file 当前类型: File 打开的文件类
      */
-    public ImageMessageBuilder add(File file){
-        chain = chain.plus(ExternalResource.Companion.uploadAsImage(file, event.getSubject()));
+    public VoiceMessageBuilder add(File file){
+        MessageChain chain = new MessageChainBuilder().build();
+        chain = chain.plus(ExternalResource.uploadAsVoice(ExternalResource.create(file), event.getSubject()));
+        chains.add(chain);
         return this;
     }
 
     /**
      * <h2>构造器结尾</h2>
-     * <p>该方法返回构造完成的消息链</p>
-     * @return MessageChain 消息链
+     * <p>该方法返回构造完成的消息链List</p>
+     * @return List<MessageChain> 消息链List
      */
-    public MessageChain build(){
-        return chain;
+    public List<MessageChain> build(){
+        return this.chains;
     }
 
     /**
      * <h2>构造器结尾</h2>
-     * <p>该方法返回并自动发送构造完成的消息链</p>
-     * @return MessageChain 消息链
+     * <p>该方法返回并自动发送构造完成的消息链List</p>
+     * @return List<MessageChain> 消息链List
      */
-    public MessageChain send(){
-        event.getSubject().sendMessage(chain);
-        return chain;
+    public List<MessageChain> send(){
+        for (MessageChain messageChain : chains){
+            event.getSubject().sendMessage(messageChain);
+        }
+        return this.chains;
     }
 
     private ExternalResource ExtResBuilder(String path){
