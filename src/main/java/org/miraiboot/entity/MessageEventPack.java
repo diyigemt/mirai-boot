@@ -1,10 +1,7 @@
 package org.miraiboot.entity;
 
 import net.mamoe.mirai.Bot;
-import net.mamoe.mirai.contact.Contact;
-import net.mamoe.mirai.contact.Group;
-import net.mamoe.mirai.contact.MemberPermission;
-import net.mamoe.mirai.contact.User;
+import net.mamoe.mirai.contact.*;
 import net.mamoe.mirai.event.events.FriendMessageEvent;
 import net.mamoe.mirai.event.events.GroupMessageEvent;
 import net.mamoe.mirai.event.events.MessageEvent;
@@ -91,11 +88,161 @@ public class MessageEventPack {
 		MiraiMain.getInstance().replyNotAt(this, chain);
 	}
 
-
+	/**
+	 * <h2>向指定的群发送消息</h2>
+	 * @param groupId 指定的群号
+	 * @param msg 消息
+	 * @return 群不存在时(机器人不在群中)返回false
+	 */
 	public boolean sendGroupMessage(long groupId, String... msg) {
-		Group group = getBot().getGroup(groupId);
+		Group group = getGroup(groupId);
 		if (group == null) return false;
 		MiraiMain.getInstance().sendGroupMessage(group, msg);
+		return true;
+	}
+
+	/**
+	 * <h2>向指定的群发送消息</h2>
+	 * @param groupId 指定的群号
+	 * @param msg 消息
+	 * @return 群不存在时(机器人不在群中)返回false
+	 */
+	public boolean sendGroupMessage(long groupId, SingleMessage... msg) {
+		Group group = getGroup(groupId);
+		if (group == null) return false;
+		MiraiMain.getInstance().sendGroupMessage(group, msg);
+		return true;
+	}
+
+	/**
+	 * <h2>向指定的群发送消息</h2>
+	 * @param groupId 指定的群号
+	 * @param chain 构建好的消息链
+	 * @return 群不存在时(机器人不在群中)返回false
+	 */
+	public boolean sendGroupMessage(long groupId, MessageChain chain) {
+		Group group = getGroup(groupId);
+		if (group == null) return false;
+		MiraiMain.getInstance().sendGroupMessage(group, chain);
+		return true;
+	}
+
+	/**
+	 * <h2>向指定的群发送消息</h2>
+	 * @param groupId 指定的群号
+	 * @param chains 构建好的消息链列表
+	 * @return 群不存在时(机器人不在群中)返回false 消息为空返回false
+	 */
+	public boolean sendGroupMessage(long groupId, List<MessageChain> chains) {
+		if (chains == null || chains.size() == 0) return false;
+		Group group = getGroup(groupId);
+		if (group == null) return false;
+		for (MessageChain chain : chains) {
+			MiraiMain.getInstance().sendGroupMessage(group, chain);
+		}
+		return true;
+	}
+
+	/**
+	 * <h2>向群中指定的人发送临时消息</h2>
+	 * @param groupId 指定的群号
+	 * @param targetId 指定人的qq号
+	 * @param msg 消息
+	 * @return 群不存在时(机器人不在群中) 或者目标不在群中时返回false
+	 */
+	public boolean sendTempMessage(long groupId, long targetId, String... msg) {
+		Group group = getGroup(groupId);
+		if (group == null) return false;
+		NormalMember member = group.get(targetId);
+		if (member == null) return false;
+		MiraiMain.getInstance().sendTempMessage(member, msg);
+		return true;
+	}
+
+	/**
+	 * <h2>向群中指定的人发送临时消息</h2>
+	 * @param groupId 指定的群号
+	 * @param targetId 指定人的qq号
+	 * @param msg 消息
+	 * @return 群不存在时(机器人不在群中) 或者目标不在群中时返回false
+	 */
+	public boolean sendTempMessage(long groupId, long targetId, SingleMessage... msg) {
+		Group group = getGroup(groupId);
+		if (group == null) return false;
+		NormalMember member = group.get(targetId);
+		if (member == null) return false;
+		MiraiMain.getInstance().sendTempMessage(member, msg);
+		return true;
+	}
+
+	/**
+	 * <h2>向群中指定的人发送临时消息</h2>
+	 * @param groupId 指定的群号
+	 * @param targetId 指定人的qq号
+	 * @param chain 构建好的消息链
+	 * @return 群不存在时(机器人不在群中) 或者目标不在群中时返回false
+	 */
+	public boolean sendTempMessage(long groupId, long targetId, MessageChain chain) {
+		Group group = getGroup(groupId);
+		if (group == null) return false;
+		NormalMember member = group.get(targetId);
+		if (member == null) return false;
+		MiraiMain.getInstance().sendTempMessage(member, chain);
+		return true;
+	}
+
+	/**
+	 * <h2>向指定的好友发送消息</h2>
+	 * @param friendId 指定的好友qq号
+	 * @param msg 消息
+	 * @return 好友不存在时返回false
+	 */
+	public boolean sendFriendMessage(long friendId, String... msg) {
+		Friend friend = getFriend(friendId);
+		if (friend == null) return false;
+		MiraiMain.getInstance().sendFriendMessage(friend, msg);
+		return true;
+	}
+
+	/**
+	 * <h2>向指定的好友发送消息</h2>
+	 * @param friendId 指定的好友qq号
+	 * @param msg 消息
+	 * @return 好友不存在时返回false
+	 */
+	public boolean sendFriendMessage(long friendId, SingleMessage... msg) {
+		Friend friend = getFriend(friendId);
+		if (friend == null) return false;
+		MiraiMain.getInstance().sendFriendMessage(friend, msg);
+		return true;
+	}
+
+	/**
+	 * <h2>向指定的好友发送消息</h2>
+	 * @param friendId 指定的好友qq号
+	 * @param chain 构建好的消息链
+	 * @return 好友不存在时返回false
+	 */
+	public boolean sendFriendMessage(long friendId, MessageChain chain) {
+		Friend friend = getFriend(friendId);
+		if (friend == null) return false;
+		MiraiMain.getInstance().sendFriendMessage(friend, chain);
+		return true;
+	}
+
+	/**
+	 * <h2>向指定的好友发送消息</h2>
+	 * @param friendId 指定的好友qq号
+	 * @param chains 构建好的消息链列表
+	 * @return 好友不存在时返回false 消息为空返回false
+	 */
+	public boolean sendFriendMessage(long friendId, List<MessageChain> chains) {
+		if (chains == null || chains.size() == 0) return false;
+		Friend friend = getFriend(friendId);
+		if (friend == null) return false;
+		for (MessageChain chain : chains) {
+			MiraiMain.getInstance().sendFriendMessage(friend, chain);
+		}
 		return true;
 	}
 
@@ -341,7 +488,25 @@ public class MessageEventPack {
 
 	public Group getGroup() {
 		if (!isGroup()) return null;
-		return  ((GroupMessageEvent) event).getGroup();
+		return ((GroupMessageEvent) event).getGroup();
+	}
+
+	/**
+	 * <h2>由群号获取群对象</h2>
+	 * @param groupId 群号
+	 * @return 群对象
+	 */
+	public Group getGroup(long groupId) {
+		return getBot().getGroup(groupId);
+	}
+
+	/**
+	 * <h2>由qq号获取好友对象</h2>
+	 * @param friendId 好友qq号
+	 * @return 好友对象
+	 */
+	public Friend getFriend(long friendId) {
+		return getBot().getFriend(friendId);
 	}
 
 	/**

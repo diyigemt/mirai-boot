@@ -2,6 +2,7 @@ package org.miraiboot.mirai;
 
 import net.mamoe.mirai.contact.Friend;
 import net.mamoe.mirai.contact.Group;
+import net.mamoe.mirai.contact.NormalMember;
 import net.mamoe.mirai.event.events.FriendMessageEvent;
 import net.mamoe.mirai.event.events.GroupMessageEvent;
 import net.mamoe.mirai.event.events.MessageEvent;
@@ -142,7 +143,7 @@ public class MiraiMain {
 	}
 
 	/**
-	 * <h2>向指定的好友送消息</h2>
+	 * <h2>向指定的好友发送消息</h2>
 	 * @param friend 指定的好友
 	 * @param msg 消息
 	 */
@@ -154,7 +155,7 @@ public class MiraiMain {
 
 
 	/**
-	 * <h2>向指定的好友送消息</h2>
+	 * <h2>向指定的好友发送消息</h2>
 	 * @param friend 指定的好友
 	 * @param msg 消息
 	 */
@@ -165,11 +166,11 @@ public class MiraiMain {
 	}
 
 	/**
-	 * <h2>向指定的好友送消息</h2>
+	 * <h2>向指定的好友发送消息</h2>
 	 * @param friend 指定的好友
 	 * @param chain 构造好的消息链
 	 */
-	private void sendFriendMessage(Friend friend, MessageChain chain) {
+	public void sendFriendMessage(Friend friend, MessageChain chain) {
 		friend.sendMessage(chain);
 	}
 
@@ -201,8 +202,40 @@ public class MiraiMain {
 	 * @param group 指定的群
 	 * @param chain 构造好的消息链
 	 */
-	private void sendGroupMessage(Group group, MessageChain chain) {
+	public void sendGroupMessage(Group group, MessageChain chain) {
 		group.sendMessage(chain);
+	}
+
+	/**
+	 * <h2>向群中指定的人发送临时消息</h2>
+	 * @param member 指定的人
+	 * @param msg 消息
+	 */
+	public void sendTempMessage(NormalMember member, String... msg) {
+		MessageChainBuilder builder = new MessageChainBuilder();
+		Arrays.asList(msg).forEach(builder::append);
+		sendTempMessage(member, builder.build());
+	}
+
+
+	/**
+	 * <h2>向群中指定的人发送临时消息</h2>
+	 * @param member 指定的人
+	 * @param msg 消息
+	 */
+	public void sendTempMessage(NormalMember member, SingleMessage... msg) {
+		MessageChainBuilder builder = new MessageChainBuilder();
+		Arrays.asList(msg).forEach(builder::append);
+		sendTempMessage(member, builder.build());
+	}
+
+	/**
+	 * <h2>向群中指定的人发送临时消息</h2>
+	 * @param member 指定的人
+	 * @param chain 构造好的消息链
+	 */
+	public void sendTempMessage(NormalMember member, MessageChain chain) {
+		member.sendMessage(chain);
 	}
 
 	/**
