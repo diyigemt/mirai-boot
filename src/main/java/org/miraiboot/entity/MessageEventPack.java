@@ -9,6 +9,7 @@ import net.mamoe.mirai.event.events.FriendMessageEvent;
 import net.mamoe.mirai.event.events.GroupMessageEvent;
 import net.mamoe.mirai.event.events.MessageEvent;
 import net.mamoe.mirai.message.data.MessageChain;
+import net.mamoe.mirai.message.data.MessageChainBuilder;
 import net.mamoe.mirai.message.data.OnlineMessageSource.Incoming;
 import net.mamoe.mirai.message.data.SingleMessage;
 import org.miraiboot.constant.EventType;
@@ -88,6 +89,14 @@ public class MessageEventPack {
 	 */
 	public void replyNotAt(MessageChain chain) {
 		MiraiMain.getInstance().replyNotAt(this, chain);
+	}
+
+
+	public boolean sendGroupMessage(long groupId, String... msg) {
+		Group group = getBot().getGroup(groupId);
+		if (group == null) return false;
+		MiraiMain.getInstance().sendGroupMessage(group, msg);
+		return true;
 	}
 
 	/**
@@ -220,11 +229,27 @@ public class MessageEventPack {
 	}
 
 	/**
+	 * <h2>判断消息是否来源于群聊</h2>
+	 * @return 消息是否来源于群聊 true: 消息来源于群聊
+	 */
+	public boolean isGroup() {
+		return eventType == EventType.GROUP_MESSAGE_EVENT;
+	}
+
+	/**
+	 * <h2>判断消息是否来源于好友</h2>
+	 * @return 消息是否来源于好友 true: 消息来源于好友
+	 */
+	public boolean isFriend() {
+		return eventType == EventType.FRIEND_MESSAGE_EVENT;
+	}
+
+	/**
 	 * <h2>获取群消息发送者的权限</h2>
 	 * @return 群权限 当消息不是群消息时返回普通群员权限
 	 */
 	public MemberPermission getSenderPermission() {
-		if (!(eventType == EventType.GROUP_MESSAGE_EVENT)) return MemberPermission.MEMBER;
+		if (!isGroup()) return MemberPermission.MEMBER;
 		return ((GroupMessageEvent) event).getPermission();
 	}
 
@@ -315,7 +340,7 @@ public class MessageEventPack {
 	}
 
 	public Group getGroup() {
-		if (eventType != EventType.GROUP_MESSAGE_EVENT) return null;
+		if (!isGroup()) return null;
 		return  ((GroupMessageEvent) event).getGroup();
 	}
 

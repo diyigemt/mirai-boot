@@ -1,5 +1,7 @@
 package org.miraiboot.mirai;
 
+import net.mamoe.mirai.contact.Friend;
+import net.mamoe.mirai.contact.Group;
 import net.mamoe.mirai.event.events.FriendMessageEvent;
 import net.mamoe.mirai.event.events.GroupMessageEvent;
 import net.mamoe.mirai.event.events.MessageEvent;
@@ -7,6 +9,8 @@ import net.mamoe.mirai.message.data.*;
 import net.mamoe.mirai.utils.MiraiLogger;
 import org.miraiboot.constant.EventType;
 import org.miraiboot.entity.MessageEventPack;
+
+import java.util.Arrays;
 
 /**
  * <h2>全局实例 用于回复消息和打印log</h2>
@@ -88,11 +92,7 @@ public class MiraiMain {
 	 */
 	private void reply(MessageEventPack eventPack, boolean at, SingleMessage... msg) {
 		MessageChainBuilder builder = new MessageChainBuilder();
-		for (int i = 0; i < msg.length; i++) {
-			builder.append(msg[i]);
-			if (i + 1 == msg.length) break;
-			builder.append("\n");
-		}
+		Arrays.asList(msg).forEach(builder::append);
 		reply(eventPack, builder.build(), at);
 	}
 
@@ -104,11 +104,7 @@ public class MiraiMain {
 	 */
 	private void reply(MessageEventPack eventPack, boolean at, String... msg) {
 		MessageChainBuilder builder = new MessageChainBuilder();
-		for (int i = 0; i < msg.length; i++) {
-			builder.append(msg[i]);
-			if (i + 1 == msg.length) break;
-			builder.append("\n");
-		}
+		Arrays.asList(msg).forEach(builder::append);
 		reply(eventPack, builder.build(), at);
 	}
 
@@ -143,6 +139,70 @@ public class MiraiMain {
 	 */
 	private void replySelfNotAt(MessageEventPack eventPack, MessageChain chain) {
 		eventPack.getSubject().sendMessage(chain);
+	}
+
+	/**
+	 * <h2>向指定的好友送消息</h2>
+	 * @param friend 指定的好友
+	 * @param msg 消息
+	 */
+	public void sendFriendMessage(Friend friend, String... msg) {
+		MessageChainBuilder builder = new MessageChainBuilder();
+		Arrays.asList(msg).forEach(builder::append);
+		sendFriendMessage(friend, builder.build());
+	}
+
+
+	/**
+	 * <h2>向指定的好友送消息</h2>
+	 * @param friend 指定的好友
+	 * @param msg 消息
+	 */
+	public void sendFriendMessage(Friend friend, SingleMessage... msg) {
+		MessageChainBuilder builder = new MessageChainBuilder();
+		Arrays.asList(msg).forEach(builder::append);
+		sendFriendMessage(friend, builder.build());
+	}
+
+	/**
+	 * <h2>向指定的好友送消息</h2>
+	 * @param friend 指定的好友
+	 * @param chain 构造好的消息链
+	 */
+	private void sendFriendMessage(Friend friend, MessageChain chain) {
+		friend.sendMessage(chain);
+	}
+
+	/**
+	 * <h2>向指定的群发送消息</h2>
+	 * @param group 指定的群
+	 * @param msg 消息
+	 */
+	public void sendGroupMessage(Group group, String... msg) {
+		MessageChainBuilder builder = new MessageChainBuilder();
+		Arrays.asList(msg).forEach(builder::append);
+		sendGroupMessage(group, builder.build());
+	}
+
+
+	/**
+	 * <h2>向指定的群发送消息</h2>
+	 * @param group 指定的群
+	 * @param msg 消息
+	 */
+	public void sendGroupMessage(Group group, SingleMessage... msg) {
+		MessageChainBuilder builder = new MessageChainBuilder();
+		Arrays.asList(msg).forEach(builder::append);
+		sendGroupMessage(group, builder.build());
+	}
+
+	/**
+	 * <h2>向指定的群发送消息</h2>
+	 * @param group 指定的群
+	 * @param chain 构造好的消息链
+	 */
+	private void sendGroupMessage(Group group, MessageChain chain) {
+		group.sendMessage(chain);
 	}
 
 	/**
