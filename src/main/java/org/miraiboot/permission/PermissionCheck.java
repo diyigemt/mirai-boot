@@ -130,7 +130,7 @@ public class PermissionCheck {
         targetId = ((At) s).getTarget();
       }
     }
-    MemberPermission targetPermission = Objects.requireNonNull(eventPack.getGroup().get(targetId)).getPermission();
+    MemberPermission targetPermission = eventPack.getGroup().get(targetId).getPermission();
     int targetAuthLevel = targetPermission.ordinal();
     if(senderAuthLevel <= targetAuthLevel){
       return false;
