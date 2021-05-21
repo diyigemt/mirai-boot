@@ -26,30 +26,66 @@ public class MiraiMain {
 		return INSTANCE;
 	}
 
+	/**
+	 * <h2>回复消息并at发送者</h2>
+	 * @param eventPack 消息封装
+	 * @param messages 消息文本内容
+	 */
 	public void reply(MessageEventPack eventPack, String... messages) {
 		reply(eventPack, true, messages);
 	}
 
+	/**
+	 * <h2>回复消息并at发送者</h2>
+	 * @param eventPack 消息封装
+	 * @param messages 消息内容
+	 */
 	public void reply(MessageEventPack eventPack, SingleMessage... messages) {
 		reply(eventPack, true, messages);
 	}
 
+	/**
+	 * <h2>回复消息并at发送者</h2>
+	 * @param eventPack 消息封装
+	 * @param chain 构建好的消息链
+	 */
 	public void reply(MessageEventPack eventPack, MessageChain chain) {
 		reply(eventPack, chain, true);
 	}
 
+	/**
+	 * <h2>回复消息不at发送者</h2>
+	 * @param eventPack 消息封装
+	 * @param messages 消息文本内容
+	 */
 	public void replyNotAt(MessageEventPack eventPack, String... messages) {
 		reply(eventPack, false, messages);
 	}
 
+	/**
+	 * <h2>回复消息不at发送者</h2>
+	 * @param eventPack 消息封装
+	 * @param messages 消息内容
+	 */
 	public void replyNotAt(MessageEventPack eventPack, SingleMessage... messages) {
 		reply(eventPack, false, messages);
 	}
 
+	/**
+	 * <h2>回复消息不at发送者</h2>
+	 * @param eventPack 消息封装
+	 * @param chain 构建好的消息链
+	 */
 	public void replyNotAt(MessageEventPack eventPack, MessageChain chain) {
 		reply(eventPack, chain, false);
 	}
 
+	/**
+	 * <h2>构建回复消息并根据at判断是否at发送者</h2>
+	 * @param eventPack 消息封装
+	 * @param at 是否at
+	 * @param msg 消息内容
+	 */
 	private void reply(MessageEventPack eventPack, boolean at, SingleMessage... msg) {
 		MessageChainBuilder builder = new MessageChainBuilder();
 		for (int i = 0; i < msg.length; i++) {
@@ -60,6 +96,12 @@ public class MiraiMain {
 		reply(eventPack, builder.build(), at);
 	}
 
+	/**
+	 * <h2>构建回复消息并根据at判断是否at发送者</h2>
+	 * @param eventPack 消息封装
+	 * @param at 是否at
+	 * @param msg 消息文本内容
+	 */
 	private void reply(MessageEventPack eventPack, boolean at, String... msg) {
 		MessageChainBuilder builder = new MessageChainBuilder();
 		for (int i = 0; i < msg.length; i++) {
@@ -70,11 +112,22 @@ public class MiraiMain {
 		reply(eventPack, builder.build(), at);
 	}
 
+	/**
+	 * <h2>用构建好的消息回复</h2>
+	 * @param eventPack 消息封装
+	 * @param chain 构建好的消息链
+	 * @param at 是否at
+	 */
 	private void reply(MessageEventPack eventPack, MessageChain chain, boolean at) {
 		if (at && eventPack.getEventType() == EventType.GROUP_MESSAGE_EVENT) replySelf(eventPack, chain);
 		else replySelfNotAt(eventPack, chain);
 	}
 
+	/**
+	 * <h2>用构建好的消息回复并at发送者</h2>
+	 * @param eventPack 消息封装
+	 * @param chain 构建好的消息链
+	 */
 	private void replySelf(MessageEventPack eventPack, MessageChain chain) {
 		MessageChainBuilder builder = new MessageChainBuilder()
 				.append(new At(eventPack.getSenderId()))
@@ -83,6 +136,11 @@ public class MiraiMain {
 		eventPack.getSubject().sendMessage(builder.build());
 	}
 
+	/**
+	 * <h2>用构建好的消息回复不at发送者</h2>
+	 * @param eventPack 消息封装
+	 * @param chain 构建好的消息链
+	 */
 	private void replySelfNotAt(MessageEventPack eventPack, MessageChain chain) {
 		eventPack.getSubject().sendMessage(chain);
 	}
