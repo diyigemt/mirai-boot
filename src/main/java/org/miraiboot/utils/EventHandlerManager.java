@@ -1,15 +1,13 @@
 package org.miraiboot.utils;
 
 import net.mamoe.mirai.event.ListeningStatus;
-import net.mamoe.mirai.event.events.FriendMessageEvent;
-import net.mamoe.mirai.event.events.GroupMessageEvent;
-import net.mamoe.mirai.event.events.MessageEvent;
 import org.miraiboot.annotation.*;
-import org.miraiboot.constant.ConstantGlobal;
 import org.miraiboot.constant.EventHandlerType;
+import org.miraiboot.constant.EventType;
 import org.miraiboot.constant.FunctionId;
 import org.miraiboot.entity.EventHandlerItem;
 import org.miraiboot.entity.EventHandlerNextItem;
+import org.miraiboot.entity.MessageEventPack;
 import org.miraiboot.entity.PreProcessorData;
 import org.miraiboot.interfaces.EventHandlerNext;
 import org.miraiboot.mirai.MiraiMain;
@@ -83,12 +81,12 @@ public class EventHandlerManager {
     return STORE.remove(target);
   }
 
-  public String emit(String target, MessageEvent event, String plainText) {
+  public String emit(String target, MessageEventPack eventPack, String plainText) {
     List<EventHandlerItem> eventHandlerItems = STORE.get(target);
     if (eventHandlerItems == null) return null;
     for (EventHandlerItem handler : eventHandlerItems) {
       EventHandlerType[] type = handler.getType();
-      if (!checkEventType(type, event)) return null;
+      if (!checkEventType(type, eventPack)) return null;
       Method method = handler.getHandler();
 
       // TODO 处理权限
@@ -98,29 +96,29 @@ public class EventHandlerManager {
         PreProcessorData processorData = new PreProcessorData();
         processorData = CommandUtil.getInstance().parseArgs(plainText, target, method, processorData);
         if(!PermissionCheck.atValidationCheck(processorData)){
-          MiraiMain.getInstance().quickReply(event, "目标成员不存在");
+          MiraiMain.getInstance().quickReply(eventPack.getEvent(), "目标成员不存在");
           return "目标成员不存在";
         }
         if(method.getAnnotation(CheckPermission.class).isStrictRestricted()){
-          if(!PermissionCheck.strictRestrictedCheck((GroupMessageEvent) event)){
-            MiraiMain.getInstance().quickReply(event, "您当前的权限不足以对目标用户操作");
+          if(!PermissionCheck.strictRestrictedCheck(eventPack)){
+            MiraiMain.getInstance().quickReply(eventPack.getEvent(), "您当前的权限不足以对目标用户操作");
             return "您当前的权限不足以对目标用户操作";
           }
         }
         int commandId = method.getAnnotation(CheckPermission.class).permissionIndex();
-        if(PermissionCheck.checkGroupPermission((GroupMessageEvent) event, commandId)){
+        if(PermissionCheck.checkGroupPermission(eventPack, commandId)){
           if(SQLNonTempAuth){
             return "您的管理员已禁止您使用该功能";
           }
           flag = false;
         }
-        if(!PermissionCheck.individualAuthCheck(handler, (GroupMessageEvent) event) && flag){
-          MiraiMain.getInstance().quickReply(event, "您没有权限使用该功能");
+        if(!PermissionCheck.individualAuthCheck(handler, eventPack) && flag){
+          MiraiMain.getInstance().quickReply(eventPack.getEvent(), "您没有权限使用该功能");
           return "您没有权限使用该功能";
         }
         else {
-          if(!PermissionCheck.identityCheck(handler, (GroupMessageEvent) event) && flag){
-            MiraiMain.getInstance().quickReply(event, "权限不足");
+          if(!PermissionCheck.identityCheck(handler, eventPack) && flag){
+            MiraiMain.getInstance().quickReply(eventPack.getEvent(), "权限不足");
             return "权限不足";
           }
         }
@@ -128,7 +126,7 @@ public class EventHandlerManager {
       // 开始处理@Filter 和 @PreProcessor
       // 判断Filter
       if (method.isAnnotationPresent(MessageFilter.class) || method.isAnnotationPresent(MessageFilters.class)) {
-        if (!CommandUtil.getInstance().checkFilter(event, method, plainText)) return "filter 未通过";
+        if (!CommandUtil.getInstance().checkFilter(eventPack, method, plainText)) return "filter 未通过";
       }
       int parameterCount = method.getParameterCount();
       Object[] parameters = null;
@@ -136,13 +134,13 @@ public class EventHandlerManager {
       // 如果是多参数handler
       if (parameterCount > 1) {
         parameters = new Object[parameterCount];
-        parameters[0] = event;
+        parameters[0] = eventPack;
         processorData = CommandUtil.getInstance().parseArgs(plainText, target, method, processorData);
         processorData.setText(plainText);
         parameters[1] = processorData;
         // 开始预处理 分离参数之类的
         if (method.isAnnotationPresent(MessagePreProcessor.class) || method.isAnnotationPresent(MessagePreProcessors.class)) {
-          processorData = CommandUtil.getInstance().parsePreProcessor(event, method, processorData);
+          processorData = CommandUtil.getInstance().parsePreProcessor(eventPack, method, processorData);
           parameters[1] = processorData;
         }
       }
@@ -153,7 +151,7 @@ public class EventHandlerManager {
         } else if (parameterCount > 1) {
           method.invoke(invoker.getDeclaredConstructor().newInstance(), parameters);
         } else {
-          method.invoke(invoker.getDeclaredConstructor().newInstance(), event);
+          method.invoke(invoker.getDeclaredConstructor().newInstance(), eventPack);
         }
       } catch (IllegalAccessException | InvocationTargetException | InstantiationException | NoSuchMethodException e) {
         e.printStackTrace();
@@ -163,11 +161,11 @@ public class EventHandlerManager {
     return null;
   }
 
-  private boolean checkEventType(EventHandlerType[] types, MessageEvent event) {
+  private boolean checkEventType(EventHandlerType[] types, MessageEventPack eventPack) {
     for (EventHandlerType type : types) {
       if (type == EventHandlerType.MESSAGE_HANDLER_ALL) return true;
-      if (event instanceof FriendMessageEvent && type == EventHandlerType.MESSAGE_HANDLER_FRIEND) return true;
-      if (event instanceof GroupMessageEvent && type == EventHandlerType.MESSAGE_HANDLER_GROUP) return true;
+      if (eventPack.getEventType() == EventType.FRIEND_MESSAGE_EVENT && type == EventHandlerType.MESSAGE_HANDLER_FRIEND) return true;
+      if (eventPack.getEventType() == EventType.GROUP_MESSAGE_EVENT && type == EventHandlerType.MESSAGE_HANDLER_GROUP) return true;
     }
     return false;
   }
@@ -227,15 +225,15 @@ public class EventHandlerManager {
    * @param onNext 事件handler
    * @param timeOut 超时时间 不合法将使用配置文件中的超时时间或者默认的5min
    * @param triggerCount 监听次数 不合法将设置为-1 表示无限监听
-   * @param event 当前MessageEvent用于给onDestroy之类的用
+   * @param eventPack 当前MessageEvent用于给onDestroy之类的用
    * @param data 当前PreProcessorData用于给onDestroy之类的用
    */
-  public void onNextNow(long target, EventHandlerNext onNext, long timeOut, int triggerCount, MessageEvent event, PreProcessorData data) {
+  public void onNextNow(long target, EventHandlerNext onNext, long timeOut, int triggerCount, MessageEventPack eventPack, PreProcessorData data) {
     List<EventHandlerNextItem> events = LISTENING_STORE.get(target);
     if (events == null) events = new ArrayList<EventHandlerNextItem>();
     EventHandlerNextItem eventHandlerNextItem = createCheckItem(onNext, timeOut, triggerCount);
     List<EventHandlerNextItem> finalEvents = events;
-    eventHandlerNextItem.setLastEvent(event);
+    eventHandlerNextItem.setLastEventPack(eventPack);
     eventHandlerNextItem.setLastData(data);
     eventHandlerNextItem.start(new TimerTask() {
       @Override
@@ -254,11 +252,11 @@ public class EventHandlerManager {
    * <h2>触发上下文监听事件</h2>
    * 一般由MessageEventListener调用
    * @param target 被监听的qq号
-   * @param event 触发事件
+   * @param eventPack 触发事件
    * @param plainText 事件内容纯文本
    * @return 结果 为null表示一切正常
    */
-  public String emitNext(long target, MessageEvent event, String plainText) {
+  public String emitNext(long target, MessageEventPack eventPack, String plainText) {
     List<EventHandlerNextItem> events = LISTENING_STORE.get(target);
     if (events == null) return null;
     for (int i = 0; i < events.size(); i++) {
@@ -267,14 +265,14 @@ public class EventHandlerManager {
       PreProcessorData data = new PreProcessorData();
       data.setText(plainText);
       try {
-        Method onNext = handler.getClass().getMethod("onNext", MessageEvent.class, PreProcessorData.class);
-        data = CommandUtil.getInstance().parsePreProcessor(event, onNext, data);
+        Method onNext = handler.getClass().getMethod("onNext", MessageEventPack.class, PreProcessorData.class);
+        data = CommandUtil.getInstance().parsePreProcessor(eventPack, onNext, data);
       } catch (NoSuchMethodException e) {
         e.printStackTrace();
         return "没有找到该方法!";
       }
       if (next.check()) {
-        ListeningStatus status = next.onNext(event, data);
+        ListeningStatus status = next.onNext(eventPack, data);
         if (status == ListeningStatus.STOPPED) {
           handlerNextEnd(events, next);
           i--;
@@ -290,7 +288,7 @@ public class EventHandlerManager {
         }
       } else {
         if (next.getTriggerCount() == 0) {
-          next.onNext(event, data);
+          next.onNext(eventPack, data);
           next.onTriggerOut();
         }
         handlerNextEnd(events, next);

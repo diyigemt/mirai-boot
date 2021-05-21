@@ -1,11 +1,12 @@
 package org.miraiboot.permission;
 
 import net.mamoe.mirai.contact.MemberPermission;
-import net.mamoe.mirai.event.events.GroupMessageEvent;
 import net.mamoe.mirai.message.data.At;
 import net.mamoe.mirai.message.data.MessageChain;
 import net.mamoe.mirai.message.data.SingleMessage;
+import org.miraiboot.constant.EventType;
 import org.miraiboot.entity.EventHandlerItem;
+import org.miraiboot.entity.MessageEventPack;
 import org.miraiboot.entity.PermissionItem;
 import org.miraiboot.entity.PreProcessorData;
 import org.miraiboot.mirai.MiraiMain;
@@ -28,25 +29,25 @@ public class PermissionCheck {
   /**
    * <h2>数据库权限检查</h2>
    * <p>此检查优先级最高，可以覆盖所有其它限制的检查(除了permit)</p>
-   * @param event 消息事件，私聊或群聊
+   * @param eventPack 消息事件，私聊或群聊
    * @param commandId 命令ID
    * @return 查询结果 false为通过，true为拦截
    * @author Haythem
    * @since 1.0.0
    */
-  public static boolean checkGroupPermission(GroupMessageEvent event, int commandId) { ;
+  public static boolean checkGroupPermission(MessageEventPack eventPack, int commandId) { ;
     // 数据库动态权限检查
     if(commandId == 0) return false;//默认值不查
     PermissionItem permissionItem;
     try{
-      permissionItem = PermissionUtil.getInstance().getPermissionItem(event.getSender().getId(), String.valueOf(commandId));
+      permissionItem = PermissionUtil.getInstance().getPermissionItem(eventPack.getSenderId(), String.valueOf(commandId));
       if(permissionItem.getPermits() > 0){//被授予临时权限
         if(permissionItem.getRemain() > 0){//存在次数限制
           int remain = permissionItem.getRemain();
           if(remain - 1 == 0){
             //次数没了
             PermissionUtil.getInstance().removePermissionItem(permissionItem.getSenderId(), permissionItem.getCommandId());
-            MiraiMain.getInstance().quickReply(event, "提示：本次操作是最后一次, 使用完成后系统将回收您的使用权");
+            MiraiMain.getInstance().quickReply(eventPack.getEvent(), "提示：本次操作是最后一次, 使用完成后系统将回收您的使用权");
             return true;
           }
           permissionItem.setRemain(permissionItem.getRemain() - 1);
@@ -60,7 +61,7 @@ public class PermissionCheck {
     }
     if(permissionItem.getPermits() <= 0){
       EventHandlerManager.SQLNonTempAuth = true;
-      MiraiMain.getInstance().quickReply(event, "您的管理员已禁止您使用该功能");
+      MiraiMain.getInstance().quickReply(eventPack.getEvent(), "您的管理员已禁止您使用该功能");
       return true;
     }
     return false;
@@ -69,14 +70,15 @@ public class PermissionCheck {
   /**
    * <h2>群员身份权限检查</h2>
    * <p>isAdminOnly和isGroupOwnerOnly的实现方法</p>
-   * @param event 消息事件，私聊或群聊
+   * @param eventPack 消息事件，私聊或群聊
    * @param item 信息存储类
    * @return 查询结果 true为通过，false为拦截
    * @author diyigemt
    * @since 1.0.0
    */
-  public static boolean identityCheck(EventHandlerItem item, GroupMessageEvent event){//群员身份检查，优先级低
-    MemberPermission memberPermission = event.getSender().getPermission();
+  public static boolean identityCheck(EventHandlerItem item, MessageEventPack eventPack){//群员身份检查，优先级低
+    if (eventPack.getEventType() != EventType.GROUP_MESSAGE_EVENT) return false;
+    MemberPermission memberPermission = eventPack.getSenderPermission();
     Method handler = item.getHandler();
     Class<?> aClass = item.getInvoker();
     CheckPermission classAnnotation = aClass.getAnnotation(CheckPermission.class);
@@ -111,23 +113,24 @@ public class PermissionCheck {
   /**
    * <h2>严格模式工作流程</h2>
    * <p>isStrictRestricted的实现方法</p>
-   * @param event 消息事件，群聊或私聊
+   * @param eventPack 消息事件，群聊或私聊
    * @return 检查结果, true为通过，false为拦截
    * @author Haythem
    * @since 1.0.0
    */
-  public static boolean strictRestrictedCheck(GroupMessageEvent event){
-    MemberPermission senderPermissions = event.getSender().getPermission();
+  public static boolean strictRestrictedCheck(MessageEventPack eventPack){
+    if (eventPack.getEventType() != EventType.GROUP_MESSAGE_EVENT) return false;
+    MemberPermission senderPermissions = eventPack.getSenderPermission();
     int senderAuthLevel = senderPermissions.ordinal();
-    MessageChain content = event.getMessage();
-    long botId = event.getBot().getId();
+    MessageChain content = eventPack.getMessage();
+    long botId = eventPack.getBot().getId();
     long targetId = -1L;
     for(SingleMessage s : content){
       if(s instanceof At && ((At) s).getTarget() != botId){
         targetId = ((At) s).getTarget();
       }
     }
-    MemberPermission targetPermission = Objects.requireNonNull(event.getGroup().get(targetId)).getPermission();
+    MemberPermission targetPermission = Objects.requireNonNull(eventPack.getGroup().get(targetId)).getPermission();
     int targetAuthLevel = targetPermission.ordinal();
     if(senderAuthLevel <= targetAuthLevel){
       return false;
@@ -141,17 +144,17 @@ public class PermissionCheck {
    * <p></p>
    * <p>注：</p>
    * <p>优先级：allows -> blocks</p>
-   * @param event 消息事件，群聊或私聊
+   * @param eventPack 消息事件，群聊或私聊
    * @param item 信息存储类
    * @return 检查结果, true为通过，false为拦截
    * @author Haythem
    * @since 1.0.0
    */
-  public static boolean individualAuthCheck(EventHandlerItem item, GroupMessageEvent event){
+  public static boolean individualAuthCheck(EventHandlerItem item, MessageEventPack eventPack){
     Method method = item.getHandler();
     String[] allows = method.getAnnotation(CheckPermission.class).allows();
     String[] blocks = method.getAnnotation(CheckPermission.class).blocks();
-    long senderId = event.getSender().getId();
+    long senderId = eventPack.getSenderId();
     if(allows.length != 0){
       for(String i : allows){
         if(Long.parseLong(i) == senderId){

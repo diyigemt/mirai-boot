@@ -8,6 +8,7 @@ import org.miraiboot.annotation.EventHandlerComponent;
 import org.miraiboot.annotation.MessagePreProcessor;
 import org.miraiboot.constant.FunctionId;
 import org.miraiboot.constant.MessagePreProcessorMessageType;
+import org.miraiboot.entity.MessageEventPack;
 import org.miraiboot.entity.PermissionItem;
 import org.miraiboot.entity.PreProcessorData;
 import org.miraiboot.mirai.MiraiMain;
@@ -30,17 +31,17 @@ public class AuthMgr {
     @EventHandler(target = "permit")
     @CheckPermission(isAdminOnly = true, permissionIndex = FunctionId.permit)
     @MessagePreProcessor(filterType = MessagePreProcessorMessageType.At)
-    public void authorityManager(MessageEvent event, PreProcessorData data){
+    public void authorityManager(MessageEventPack eventPack, PreProcessorData data){
         List<String> args = data.getArgs();
         if(args == null){
-            MiraiMain.getInstance().quickReply(event, "获取参数出错");
+            MiraiMain.getInstance().quickReply(eventPack.getEvent(), "获取参数出错");
             return;
         }
         List<SingleMessage> classified = data.getClassified();
         long senderId = -1L;
         for (SingleMessage message : classified) {
             senderId = ((At) message).getTarget();
-            if (senderId != event.getBot().getId()) break;
+            if (senderId != eventPack.getBotId()) break;
         }
         int commandId = 0;
 
@@ -49,7 +50,7 @@ public class AuthMgr {
         try{
             remain = Integer.parseInt(args.get(2));
             if(remain == 0 || remain < 0){
-                MiraiMain.getInstance().quickReply(event, "参数：次数限制必须 > 0");
+                MiraiMain.getInstance().quickReply(eventPack.getEvent(), "参数：次数限制必须 > 0");
                 return;
             }
         }catch (IndexOutOfBoundsException e){}
@@ -60,7 +61,7 @@ public class AuthMgr {
                 commandId = FunctionId.getMap(args.get(0));
             }
         }catch (NullPointerException e){
-            MiraiMain.getInstance().quickReply(event, "一个或多个参数无效");
+            MiraiMain.getInstance().quickReply(eventPack.getEvent(), "一个或多个参数无效");
             return;
         }
         // 说明指令并没有被CheckPermission注解 不能进行权限判断
@@ -74,15 +75,15 @@ public class AuthMgr {
         }else if(args.get(0).contains("assign") || args.get(0).contains("cancel")){
             if(args.get(0).equals("assign")){
                 permit = -1;
-                TempPermission.tempAuthProcess(event, commandId, remain);
+                TempPermission.tempAuthProcess(eventPack, commandId, remain);
             }
             else if(args.get(0).equals("cancel")){
                 permit = -1;
-                TempPermission.cancelAuthProcess(event, commandId);
+                TempPermission.cancelAuthProcess(eventPack, commandId);
             }
         }
-        if(permit == 2 || (senderId == -1L) || senderId == event.getBot().getId()){
-            MiraiMain.getInstance().quickReply(event, "命令：permit 无法将“permit”项识别为 函数、脚本文件或可运行程序的名称，请检查参数的拼写。");
+        if(permit == 2 || (senderId == -1L) || senderId == eventPack.getBotId()){
+            MiraiMain.getInstance().quickReply(eventPack.getEvent(), "命令：permit 无法将“permit”项识别为 函数、脚本文件或可运行程序的名称，请检查参数的拼写。");
             permit = 2;
             return;
         }
@@ -92,18 +93,18 @@ public class AuthMgr {
                 if(permissionItem.getSenderId() == senderId && permissionItem.getPermits() > 0){//数据库中存在临时权限
                     permissionItem.setPermits(0);
                     PermissionUtil.getInstance().updatePermissionItem(permissionItem);
-                    MiraiMain.getInstance().quickReply(event, "对用户" + senderId + "的" + args.get(0) + "功能，禁用完成，临时权限已取消");
+                    MiraiMain.getInstance().quickReply(eventPack.getEvent(), "对用户" + senderId + "的" + args.get(0) + "功能，禁用完成，临时权限已取消");
                 }else {
-                    MiraiMain.getInstance().quickReply(event, "该用户已被禁用，无需操作");
+                    MiraiMain.getInstance().quickReply(eventPack.getEvent(), "该用户已被禁用，无需操作");
                 }
             }catch (NullPointerException e){//数据库没有记录
                 PermissionUtil.getInstance().addPermissionItem(senderId, commandId);
-                MiraiMain.getInstance().quickReply(event, "对用户" + senderId + "的" + args.get(0) + "功能，禁用完成");
+                MiraiMain.getInstance().quickReply(eventPack.getEvent(), "对用户" + senderId + "的" + args.get(0) + "功能，禁用完成");
             }
 
         }else if(permit == 1){
             PermissionUtil.getInstance().removePermissionItem(senderId, commandId);
-            MiraiMain.getInstance().quickReply(event, "对用户" + senderId + "的" + args.get(0) + "功能，解锁完成");
+            MiraiMain.getInstance().quickReply(eventPack.getEvent(), "对用户" + senderId + "的" + args.get(0) + "功能，解锁完成");
         }
     }
 }

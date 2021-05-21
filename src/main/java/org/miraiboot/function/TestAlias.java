@@ -1,8 +1,8 @@
 package org.miraiboot.function;
 
-import net.mamoe.mirai.event.events.MessageEvent;
 import org.miraiboot.annotation.EventHandler;
 import org.miraiboot.annotation.EventHandlerComponent;
+import org.miraiboot.entity.MessageEventPack;
 import org.miraiboot.entity.PreProcessorData;
 import org.miraiboot.mirai.MiraiMain;
 import org.miraiboot.utils.EventHandlerManager;
@@ -16,12 +16,12 @@ import java.util.List;
 public class TestAlias {
 
   @EventHandler(target = "alias")
-  public void testAlias(MessageEvent event, PreProcessorData data) {
+  public void testAlias(MessageEventPack eventPack, PreProcessorData data) {
     List<String> args = data.getArgs();
-    if (args.isEmpty()) MiraiMain.getInstance().quickReply(event, "参数获取失败");
+    if (args.isEmpty()) MiraiMain.getInstance().quickReply(eventPack.getEvent(), "参数获取失败");
     String target = args.get(0);
     String alias = args.get(1);
     EventHandlerManager.getInstance().registerAlias(target, alias);
-    MiraiMain.getInstance().quickReply(event, "为指令:" + target + " 添加别名:" + alias);
+    MiraiMain.getInstance().quickReply(eventPack.getEvent(), "为指令:" + target + " 添加别名:" + alias);
   }
 }

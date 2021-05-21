@@ -20,11 +20,11 @@ import static org.miraiboot.constant.EventHandlerType.MESSAGE_HANDLER_ALL;
  * public void test1() { your code }
  * 在群消息中发送任何一条含有/aaa的消息就会被触发
  * @EventHandler(start = "/", target = "aaa")
- * public void test1(MessageEvent event) { your code }
+ * public void test1(MessageEventPack eventPack) { your code }
  * 任何消息均会触发该事件处理器
  * !!此时消息中所有纯文本内容均会作为参数被解析后放入data.args中!
  * @EventHandler(isAny = true)
- * public void test1(MessageEvent event, PreProcessData data) { your code }
+ * public void test1(MessageEventPack eventPack, PreProcessData data) { your code }
  * }
  * </pre>
  * </p>

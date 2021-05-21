@@ -2,7 +2,9 @@ package org.miraiboot.utils;
 
 import net.mamoe.mirai.Bot;
 
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -29,6 +31,14 @@ public class BotManager {
    */
   public Bot get(long key) {
     return STORE.get(key);
+  }
+
+  /**
+   * <h2>得到所有注册的Bot实例</h2>
+   * @return 所有注册的Bot实例
+   */
+  public Collection<Bot> getAllBot() {
+    return STORE.values();
   }
 
   /**
