@@ -178,9 +178,7 @@ public class EventHandlerManager {
    * @param onNext 事件handler
    */
   public void onNext(long target, EventHandlerNext onNext) {
-    Long time = (Long) GlobalConfig.getInstance().get(DEFAULT_EVENT_NET_TIMEOUT);
-    if (time == null) time = DEFAULT_EVENT_NET_TIMEOUT_TIME;
-    onNext(target, onNext, time, -1);
+    onNext(target, onNext, -2, -1);
   }
 
   /**
@@ -208,6 +206,7 @@ public class EventHandlerManager {
   /**
    * <h2>注册一个上下文事件监听器</h2>
    * <strong>注意 超时时间将会在该事件被触发后才开始计时 也就是注册监听器时不会计时 如果需要计时请使用onNextNow方法</strong>
+   * <strong>每次监听器被触发时倒计时将重置</strong>
    * @param target 监听目标qq号
    * @param onNext 事件handler
    * @param timeOut 超时时间 不合法将使用配置文件中的超时时间或者默认的5min
@@ -223,6 +222,7 @@ public class EventHandlerManager {
 
   /**
    * <h2>注册一个上下文事件监听器并开始超时时间计时</h2>
+   * <strong>每次监听器被触发时倒计时将重置</strong>
    * @param target 监听目标qq号
    * @param onNext 事件handler
    * @param timeOut 超时时间 不合法将使用配置文件中的超时时间或者默认的5min
