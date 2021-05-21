@@ -5,6 +5,8 @@ import net.mamoe.mirai.event.events.GroupMessageEvent;
 import net.mamoe.mirai.event.events.MessageEvent;
 import net.mamoe.mirai.message.data.*;
 import net.mamoe.mirai.utils.MiraiLogger;
+import org.miraiboot.constant.EventType;
+import org.miraiboot.entity.MessageEventPack;
 
 /**
  * <h2>全局实例 用于回复消息和打印log</h2>
@@ -22,6 +24,67 @@ public class MiraiMain {
 	 */
 	public static MiraiMain getInstance() {
 		return INSTANCE;
+	}
+
+	public void reply(MessageEventPack eventPack, String... messages) {
+		reply(eventPack, true, messages);
+	}
+
+	public void reply(MessageEventPack eventPack, SingleMessage... messages) {
+		reply(eventPack, true, messages);
+	}
+
+	public void reply(MessageEventPack eventPack, MessageChain chain) {
+		reply(eventPack, chain, true);
+	}
+
+	public void replyNotAt(MessageEventPack eventPack, String... messages) {
+		reply(eventPack, false, messages);
+	}
+
+	public void replyNotAt(MessageEventPack eventPack, SingleMessage... messages) {
+		reply(eventPack, false, messages);
+	}
+
+	public void replyNotAt(MessageEventPack eventPack, MessageChain chain) {
+		reply(eventPack, chain, false);
+	}
+
+	private void reply(MessageEventPack eventPack, boolean at, SingleMessage... msg) {
+		MessageChainBuilder builder = new MessageChainBuilder();
+		for (int i = 0; i < msg.length; i++) {
+			builder.append(msg[i]);
+			if (i + 1 == msg.length) break;
+			builder.append("\n");
+		}
+		reply(eventPack, builder.build(), at);
+	}
+
+	private void reply(MessageEventPack eventPack, boolean at, String... msg) {
+		MessageChainBuilder builder = new MessageChainBuilder();
+		for (int i = 0; i < msg.length; i++) {
+			builder.append(msg[i]);
+			if (i + 1 == msg.length) break;
+			builder.append("\n");
+		}
+		reply(eventPack, builder.build(), at);
+	}
+
+	private void reply(MessageEventPack eventPack, MessageChain chain, boolean at) {
+		if (at && eventPack.getEventType() == EventType.GROUP_MESSAGE_EVENT) replySelf(eventPack, chain);
+		else replySelfNotAt(eventPack, chain);
+	}
+
+	private void replySelf(MessageEventPack eventPack, MessageChain chain) {
+		MessageChainBuilder builder = new MessageChainBuilder()
+				.append(new At(eventPack.getSenderId()))
+				.append("\n")
+				.append(chain);
+		eventPack.getSubject().sendMessage(builder.build());
+	}
+
+	private void replySelfNotAt(MessageEventPack eventPack, MessageChain chain) {
+		eventPack.getSubject().sendMessage(chain);
 	}
 
 	/**

@@ -13,6 +13,7 @@ import net.mamoe.mirai.message.data.OnlineMessageSource.Incoming;
 import net.mamoe.mirai.message.data.SingleMessage;
 import org.miraiboot.constant.EventType;
 import org.miraiboot.interfaces.EventHandlerNext;
+import org.miraiboot.mirai.MiraiMain;
 import org.miraiboot.utils.EventHandlerManager;
 
 import java.util.List;
@@ -37,6 +38,10 @@ public class MessageEventPack {
 		if (event instanceof GroupMessageEvent) this.eventType = EventType.GROUP_MESSAGE_EVENT;
 		if (event instanceof FriendMessageEvent) this.eventType = EventType.FRIEND_MESSAGE_EVENT;
 		this.event = event;
+	}
+
+	public void reply(String... s) {
+		MiraiMain.getInstance().reply(this, s);
 	}
 
 	/**
