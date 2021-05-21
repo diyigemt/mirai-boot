@@ -16,7 +16,7 @@ import java.util.List;
 public class TextFileMsgBuilder {
 
     private static final String LocalPath = "";//素材本地路径
-    private static final String URLPath = "";//素材URL
+    private static final String URLPath = "https://api.btstu.cn/sjbz/?lx=dongman";//素材URL
     private static final MessageChain messageChain = new MessageChainBuilder().build();//已经构造好需要接龙的消息链
     private static final File file = new File(LocalPath);
 
