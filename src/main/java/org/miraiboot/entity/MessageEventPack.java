@@ -2,8 +2,10 @@ package org.miraiboot.entity;
 
 import net.mamoe.mirai.Bot;
 import net.mamoe.mirai.contact.Contact;
+import net.mamoe.mirai.contact.Group;
 import net.mamoe.mirai.contact.MemberPermission;
 import net.mamoe.mirai.contact.User;
+import net.mamoe.mirai.event.events.FriendMessageEvent;
 import net.mamoe.mirai.event.events.GroupMessageEvent;
 import net.mamoe.mirai.event.events.MessageEvent;
 import net.mamoe.mirai.message.data.MessageChain;
@@ -30,6 +32,12 @@ public class MessageEventPack {
 	 * 消息事件类型 群消息或者好友消息
 	 */
 	private EventType eventType;
+
+	public MessageEventPack(MessageEvent event) {
+		if (event instanceof GroupMessageEvent) this.eventType = EventType.GROUP_MESSAGE_EVENT;
+		if (event instanceof FriendMessageEvent) this.eventType = EventType.FRIEND_MESSAGE_EVENT;
+		this.event = event;
+	}
 
 	/**
 	 * <h2>注册一个上下文监听器</h2>
@@ -114,7 +122,7 @@ public class MessageEventPack {
 	 * @see EventHandlerNext
 	 */
 	public void onNextNow(EventHandlerNext next, PreProcessorData data) {
-		EventHandlerManager.getInstance().onNextNow(getSenderId(), next, -1, -1, event, data);
+		EventHandlerManager.getInstance().onNextNow(getSenderId(), next, -1, -1, this, data);
 	}
 
 	/**
@@ -130,7 +138,7 @@ public class MessageEventPack {
 	 * @see EventHandlerNext
 	 */
 	public void onNextNow(EventHandlerNext next, PreProcessorData data, long timeOut, int triggerCount) {
-		EventHandlerManager.getInstance().onNextNow(getSenderId(), next, timeOut, triggerCount, event, data);
+		EventHandlerManager.getInstance().onNextNow(getSenderId(), next, timeOut, triggerCount, this, data);
 	}
 
 	/**
@@ -147,7 +155,7 @@ public class MessageEventPack {
 	 * @see EventHandlerNext
 	 */
 	public void onNextNow(long target, EventHandlerNext next, PreProcessorData data, long timeOut, int triggerCount) {
-		EventHandlerManager.getInstance().onNextNow(target, next, timeOut, triggerCount, event, data);
+		EventHandlerManager.getInstance().onNextNow(target, next, timeOut, triggerCount, this, data);
 	}
 
 	/**
@@ -200,7 +208,7 @@ public class MessageEventPack {
 	 * 详细请看 https://github.com/mamoe/mirai/blob/dev/mirai-core-api/src/commonMain/kotlin/message/data/MessageSource.kt
 	 * @return 消息源
 	 */
-	public Incoming get() {
+	public Incoming Incoming() {
 		return event.getSource();
 	}
 
@@ -253,6 +261,11 @@ public class MessageEventPack {
 	 */
 	public MessageChain getMessage() {
 		return event.getMessage();
+	}
+
+	public Group getGroup() {
+		if (eventType != EventType.GROUP_MESSAGE_EVENT) return null;
+		return  ((GroupMessageEvent) event).getGroup();
 	}
 
 	/**

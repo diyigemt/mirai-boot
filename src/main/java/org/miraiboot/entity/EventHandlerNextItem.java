@@ -2,7 +2,6 @@ package org.miraiboot.entity;
 
 import lombok.Data;
 import net.mamoe.mirai.event.ListeningStatus;
-import net.mamoe.mirai.event.events.MessageEvent;
 import org.miraiboot.interfaces.EventHandlerNext;
 
 import java.util.Timer;
@@ -42,7 +41,7 @@ public class EventHandlerNextItem {
    * 最后一次被触发时的event<br/>
    * 给超时函数 次数耗尽函数 和销毁函数用
    */
-  private MessageEvent lastEvent;
+  private MessageEventPack lastEventPack;
   /**
    * 最后一次触发时的data内容<br/>
    * 给超时函数 次数耗尽函数 和销毁函数用
@@ -67,23 +66,23 @@ public class EventHandlerNextItem {
     if (timeOut != -1 || triggerCount != -1) this.timer = new Timer();
   }
 
-  public ListeningStatus onNext(MessageEvent event, PreProcessorData data) {
-    this.lastEvent = event;
+  public ListeningStatus onNext(MessageEventPack eventPack, PreProcessorData data) {
+    this.lastEventPack = eventPack;
     this.lastData = data;
     if (this.triggerCount != -1) data.setTriggerCount(this.triggerCount);
-    return handler.onNext(event, data);
+    return handler.onNext(eventPack, data);
   }
 
   public void onTimeOut() {
-    handler.onTimeOut(this.lastEvent, this.lastData);
+    handler.onTimeOut(this.lastEventPack, this.lastData);
   }
 
   public void onTriggerOut() {
-    handler.onTriggerOut(this.lastEvent, this.lastData);
+    handler.onTriggerOut(this.lastEventPack, this.lastData);
   }
 
   public void onDestroy() {
-    handler.onDestroy(this.lastEvent, this.lastData);
+    handler.onDestroy(this.lastEventPack, this.lastData);
   }
 
   public boolean check() {

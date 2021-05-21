@@ -2,6 +2,7 @@ package org.miraiboot.interfaces;
 
 import net.mamoe.mirai.event.ListeningStatus;
 import net.mamoe.mirai.event.events.MessageEvent;
+import org.miraiboot.entity.MessageEventPack;
 import org.miraiboot.entity.PreProcessorData;
 
 /**
@@ -31,30 +32,30 @@ public abstract class EventHandlerNext {
   /**
    * <h2>上下文监听器方法</h2>
    * 该方法可以使用@MessageEventFilter注解来过滤信息
-   * @param event 事件本身
+   * @param eventPack 事件本身
    * @param data 预处理器
    * @return 返回是否继续监听事件 ListeningStatus.LISTENING表示继续监听 STOPPED表示停止监听
    */
-  public abstract ListeningStatus onNext(MessageEvent event, PreProcessorData data);
+  public abstract ListeningStatus onNext(MessageEventPack eventPack, PreProcessorData data);
 
   /**
    * <h2>监听器销毁时调用</h2>
-   * @param event 最后一次触发监听器的事件Event
+   * @param eventPack 最后一次触发监听器的事件Event
    * @param data 最后一次触发监听器的PreProcessorData
    */
-  public void onDestroy(MessageEvent event, PreProcessorData data) { }
+  public void onDestroy(MessageEventPack eventPack, PreProcessorData data) { }
 
   /**
    * <h2>监听器超时时调用</h2>
-   * @param event 最后一次触发监听器的事件Event
+   * @param eventPack 最后一次触发监听器的事件Event
    * @param data 最后一次触发监听器的PreProcessorData
    */
-  public void onTimeOut(MessageEvent event, PreProcessorData data) { }
+  public void onTimeOut(MessageEventPack eventPack, PreProcessorData data) { }
 
   /**
    * <h2>监听器触发次数耗尽时调用</h2>
-   * @param event 最后一次触发监听器的事件Event
+   * @param eventPack 最后一次触发监听器的事件Event
    * @param data 最后一次触发监听器的PreProcessorData
    */
-  public void onTriggerOut(MessageEvent event, PreProcessorData data) { }
+  public void onTriggerOut(MessageEventPack eventPack, PreProcessorData data) { }
 }

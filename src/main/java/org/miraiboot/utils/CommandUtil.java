@@ -6,6 +6,7 @@ import org.miraiboot.annotation.EventHandler;
 import org.miraiboot.annotation.MessageFilter;
 import org.miraiboot.annotation.MessagePreProcessor;
 import org.miraiboot.constant.ConstantGlobal;
+import org.miraiboot.entity.MessageEventPack;
 import org.miraiboot.entity.MessageFilterItem;
 import org.miraiboot.entity.MessagePreProcessorItem;
 import org.miraiboot.entity.PreProcessorData;
@@ -137,34 +138,34 @@ public class CommandUtil {
 
 	/**
 	 * <h2>检查@MessageFiler是否通过</h2>
-	 * @param event 要检查的事件
+	 * @param eventPack 要检查的事件
 	 * @param handler 要检查的事件Handler
 	 * @param source 消息纯文本
 	 * @return 是否通过
 	 */
-	public boolean checkFilter(MessageEvent event, Method handler, String source) {
+	public boolean checkFilter(MessageEventPack eventPack, Method handler, String source) {
 		MessageFilter[] filters = handler.getDeclaredAnnotationsByType(MessageFilter.class);
 		for (MessageFilter filter : filters) {
 			MessageFilterItem item = new MessageFilterItem(filter);
-			if (!item.check(event, source)) return false;
+			if (!item.check(eventPack, source)) return false;
 		}
 		return true;
 	}
 
 	/**
 	 * <h2>进行消息预处理</h2>
-	 * @param event 要处理的事件
+	 * @param eventPack 要处理的事件
 	 * @param handler 要处理的事件Handler
 	 * @param data 存放结果
 	 * @return 结果
 	 */
-	public PreProcessorData parsePreProcessor(MessageEvent event, Method handler, PreProcessorData data) {
+	public PreProcessorData parsePreProcessor(MessageEventPack eventPack, Method handler, PreProcessorData data) {
 		MessagePreProcessor[] annotations = handler.getDeclaredAnnotationsByType(MessagePreProcessor.class);
 		MessagePreProcessorItem preProcessorItem = new MessagePreProcessorItem();
 		for (MessagePreProcessor preProcessor : annotations) {
 			preProcessorItem.addFilterType(preProcessor.filterType());
 		}
-		List<SingleMessage> singleMessages = preProcessorItem.parseMessage(event);
+		List<SingleMessage> singleMessages = preProcessorItem.parseMessage(eventPack);
 		data.addClassified(singleMessages);
 		return data;
 	}

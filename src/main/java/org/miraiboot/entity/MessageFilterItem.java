@@ -1,13 +1,11 @@
 package org.miraiboot.entity;
 
 import lombok.Data;
-import lombok.NoArgsConstructor;
-import net.mamoe.mirai.event.events.GroupMessageEvent;
-import net.mamoe.mirai.event.events.MessageEvent;
 import net.mamoe.mirai.message.data.At;
 import net.mamoe.mirai.message.data.AtAll;
 import net.mamoe.mirai.message.data.SingleMessage;
 import org.miraiboot.annotation.MessageFilter;
+import org.miraiboot.constant.EventType;
 import org.miraiboot.constant.MessageFilterMatchType;
 
 import java.util.Arrays;
@@ -62,8 +60,8 @@ public class MessageFilterItem {
     this.bots.addAll(Arrays.asList(bots));
   }
 
-  public boolean check(MessageEvent event, String source) {
-    if (!bots.isEmpty() && !bots.contains(String.valueOf(event.getBot().getId()))) return false;
+  public boolean check(MessageEventPack eventPack, String source) {
+    if (!bots.isEmpty() && !bots.contains(String.valueOf(eventPack.getBotId()))) return false;
     boolean res = false;
     switch (matchType) {
       case NULL:
@@ -94,23 +92,23 @@ public class MessageFilterItem {
         break;
     }
     if (!res) return false;
-    String id = String.valueOf(event.getSender().getId());
+    String id = String.valueOf(eventPack.getSenderId());
     if (!accounts.isEmpty() && !accounts.contains(id)) return false;
-    if (event instanceof GroupMessageEvent) return checkGroup((GroupMessageEvent) event);
+    if (eventPack.getEventType() == EventType.GROUP_MESSAGE_EVENT) return checkGroup(eventPack);
     return true;
   }
 
-  public boolean checkGroup(GroupMessageEvent event) {
-    String group = String.valueOf(event.getSubject().getId());
+  public boolean checkGroup(MessageEventPack pack) {
+    String group = String.valueOf(pack.getSubject().getId());
     if (!groups.isEmpty() && !groups.contains(group)) return false;
     boolean at = false;
     boolean atAll = false;
     boolean atAny = false;
-    for (SingleMessage message : event.getMessage()) {
+    for (SingleMessage message : pack.getMessage()) {
       if (message instanceof At) {
         atAny = true;
         if (at) continue;
-        at = ((At) message).getTarget() == event.getBot().getId();
+        at = ((At) message).getTarget() == pack.getBotId();
       }
       if (message instanceof AtAll) {
         if (atAll) continue;

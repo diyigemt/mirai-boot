@@ -12,7 +12,7 @@ import java.lang.annotation.*;
 @Documented
 public @interface MiraiBootApplication {
   /**
-   * 初始化时控制台打印信息
+   * 初始化时控制台打印信息 将会在banner后打印
    */
   String description() default "";
 }

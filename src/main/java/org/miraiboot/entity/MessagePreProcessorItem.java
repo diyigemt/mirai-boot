@@ -26,8 +26,8 @@ public class MessagePreProcessorItem {
     this.filterType.addAll(Arrays.asList(type));
   }
 
-  public List<SingleMessage> parseMessage(MessageEvent event) {
-    if (this.filterType.isEmpty()) return event.getMessage();
+  public List<SingleMessage> parseMessage(MessageEventPack eventPack) {
+    if (this.filterType.isEmpty()) return eventPack.getMessage();
     List<Class<? extends SingleMessage>> classes = new ArrayList<Class<? extends SingleMessage>>();
     for (MessagePreProcessorMessageType type : filterType) {
       switch (type) {
@@ -82,7 +82,7 @@ public class MessagePreProcessorItem {
       }
     }
     List<SingleMessage> res = new ArrayList<SingleMessage>();
-    for (SingleMessage message : event.getMessage()) {
+    for (SingleMessage message : eventPack.getMessage()) {
       Class<?> clazz = message.getClass();
       for (Class<? extends SingleMessage> messageClass : classes) {
         if (messageClass.isAssignableFrom(clazz)) res.add(message);
