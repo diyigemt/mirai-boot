@@ -2,9 +2,7 @@ package org.miraiboot.entity;
 
 import net.mamoe.mirai.Bot;
 import net.mamoe.mirai.contact.*;
-import net.mamoe.mirai.event.events.FriendMessageEvent;
-import net.mamoe.mirai.event.events.GroupMessageEvent;
-import net.mamoe.mirai.event.events.MessageEvent;
+import net.mamoe.mirai.event.events.*;
 import net.mamoe.mirai.message.data.MessageChain;
 import net.mamoe.mirai.message.data.MessageChainBuilder;
 import net.mamoe.mirai.message.data.OnlineMessageSource.Incoming;
@@ -34,7 +32,9 @@ public class MessageEventPack {
 
 	public MessageEventPack(MessageEvent event) {
 		if (event instanceof GroupMessageEvent) this.eventType = EventType.GROUP_MESSAGE_EVENT;
-		if (event instanceof FriendMessageEvent) this.eventType = EventType.FRIEND_MESSAGE_EVENT;
+		else if (event instanceof FriendMessageEvent) this.eventType = EventType.FRIEND_MESSAGE_EVENT;
+		else if (event instanceof GroupTempMessageEvent) this.eventType = EventType.GROUP_TMP_MESSAGE_EVENT;
+		else this.eventType = EventType.OTHER_EVENT;
 		this.event = event;
 	}
 
@@ -389,6 +389,14 @@ public class MessageEventPack {
 	 */
 	public boolean isFriend() {
 		return eventType == EventType.FRIEND_MESSAGE_EVENT;
+	}
+
+	/**
+	 * <h2>判断消息是否来源于群临时聊天</h2>
+	 * @return 消息是否来源于群临时聊天 true: 消息来源于群临时聊天
+	 */
+	public boolean isGroupTmp() {
+		return eventType == EventType.GROUP_TMP_MESSAGE_EVENT;
 	}
 
 	/**

@@ -1,9 +1,6 @@
 package org.miraiboot.listener;
 
-import net.mamoe.mirai.event.events.FriendMessageEvent;
-import net.mamoe.mirai.event.events.GroupMemberEvent;
-import net.mamoe.mirai.event.events.GroupMessageEvent;
-import net.mamoe.mirai.event.events.MessageEvent;
+import net.mamoe.mirai.event.events.*;
 import net.mamoe.mirai.message.data.PlainText;
 import net.mamoe.mirai.message.data.SingleMessage;
 import org.miraiboot.entity.MessageEventPack;
@@ -25,8 +22,8 @@ public class MessageEventListener implements Consumer<MessageEvent> {
 	public static boolean eventLoggerEnable = true;
 	@Override
 	public void accept(MessageEvent messageEvent) {
-		// 目前只能处理群消息和好友消息
-		if (!(messageEvent instanceof GroupMessageEvent || messageEvent instanceof FriendMessageEvent)) return;
+		// 目前只能处理群消息 好友消息 以及通过群发送的临时会话
+		if (!(messageEvent instanceof GroupMessageEvent || messageEvent instanceof FriendMessageEvent || messageEvent instanceof GroupTempMessageEvent)) return;
 		// 封装
 		MessageEventPack eventPack = new MessageEventPack(messageEvent);
 		// 提取纯文本

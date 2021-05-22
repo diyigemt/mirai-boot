@@ -16,6 +16,11 @@ public enum EventHandlerType {
   MESSAGE_HANDLER_FRIEND,
 
   /**
+   * 处理临时会话
+   */
+  MESSAGE_HANDLER_TEMP,
+
+  /**
    * 处理群消息
    * @since 1.0.0
    */
@@ -25,5 +30,11 @@ public enum EventHandlerType {
    * 处理所有消息
    * @since 1.0.0
    */
-  MESSAGE_HANDLER_ALL;
+  MESSAGE_HANDLER_ALL,
+
+  /**
+   * 处理其他事件
+   * @since 1.0.0
+   */
+  OTHER_HANDLER;
 }

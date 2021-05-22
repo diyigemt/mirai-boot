@@ -5,10 +5,7 @@ import org.miraiboot.annotation.*;
 import org.miraiboot.constant.EventHandlerType;
 import org.miraiboot.constant.EventType;
 import org.miraiboot.constant.FunctionId;
-import org.miraiboot.entity.EventHandlerItem;
-import org.miraiboot.entity.EventHandlerNextItem;
-import org.miraiboot.entity.MessageEventPack;
-import org.miraiboot.entity.PreProcessorData;
+import org.miraiboot.entity.*;
 import org.miraiboot.interfaces.EventHandlerNext;
 import org.miraiboot.mirai.MiraiMain;
 import org.miraiboot.permission.CheckPermission;
@@ -47,6 +44,13 @@ public class EventHandlerManager {
   private static final Map<Long, List<EventHandlerNextItem>> LISTENING_STORE = new HashMap<Long, List<EventHandlerNextItem>>();
 
   /**
+   * <h2>存储所有除了消息事件以外的事件</h2>
+   * String: 有关的内容 暂时没用
+   * EventHandlerItem: 存储Handler的信息类
+   */
+  private static final Map<String, List<EventHandlerItem>> OTHER_EVENT_STORE = new HashMap<String, List<EventHandlerItem>>();
+
+  /**
    * <h2>获取单列对象</h2>
    * @return EventHandlerManager
    */
@@ -57,23 +61,58 @@ public class EventHandlerManager {
   public static boolean SQLNonTempAuth = false;
 
   /**
+   * <h2>注册非消息事件Handler</h2>
+   * @param target 消息事件对应名
+   * @param invoker Handler所在的类
+   * @param handler Handler
+   */
+  public void onOther(String target, Class<?> invoker, Method handler) {
+    // 检查类型
+    EventHandler annotation = handler.getAnnotation(EventHandler.class);
+    EventHandlerType[] type = annotation.type();
+    boolean b = false;
+    for (EventHandlerType aType : type) {
+      if (aType == EventHandlerType.OTHER_HANDLER) {
+        b = true;
+        break;
+      }
+    }
+    if (!b) return;
+    List<EventHandlerItem> eventHandlerItems = OTHER_EVENT_STORE.get(target);
+    if (eventHandlerItems == null) eventHandlerItems = new ArrayList<EventHandlerItem>();
+
+    EventHandlerItem eventHandlerItem = new EventHandlerItem(target, invoker, handler, type);
+    if (!eventHandlerItems.contains(eventHandlerItem)) eventHandlerItems.add(eventHandlerItem);
+    OTHER_EVENT_STORE.put(target, eventHandlerItems);
+  }
+
+  /**
    * <h2>注册指令名和与之对应的Handler</h2>
    * @param target 指令
    * @param invoker Handler所在的类
    * @param handler Handler
    */
   public void on(String target, Class<?> invoker, Method handler) {
-    List<EventHandlerItem> eventHandlerItems = STORE.get(target);
-    if (eventHandlerItems == null) eventHandlerItems = new ArrayList<EventHandlerItem>();
+    // 检查类型
     EventHandler annotation = handler.getAnnotation(EventHandler.class);
     EventHandlerType[] type = annotation.type();
+    boolean b = false;
+    for (EventHandlerType aType : type) {
+      if (aType == EventHandlerType.OTHER_HANDLER) {
+        b = true;
+        break;
+      }
+    }
+    if (b) return;
+    List<EventHandlerItem> eventHandlerItems = STORE.get(target);
+    if (eventHandlerItems == null) eventHandlerItems = new ArrayList<EventHandlerItem>();
     EventHandlerItem eventHandlerItem = new EventHandlerItem(target, invoker, handler, type);
     if (!eventHandlerItems.contains(eventHandlerItem)) eventHandlerItems.add(eventHandlerItem);
     STORE.put(target, eventHandlerItems);
   }
 
   /**
-   * <h2>根据指令移除Handler</h2>
+   * <h2>根据指令移除MessageHandler</h2>
    * @param target 指令
    * @return 被移除的Handler列表
    */
@@ -81,6 +120,44 @@ public class EventHandlerManager {
     return STORE.remove(target);
   }
 
+  /**
+   * <h2>根据指令移除OtherHandler</h2>
+   * @param target 指令
+   * @return 被移除的Handler列表
+   */
+  public List<EventHandlerItem> removeOther(String target) {
+    return OTHER_EVENT_STORE.remove(target);
+  }
+
+  /**
+   * <h2>执行非消息事件Handler</h2>
+   * @param target 指令
+   * @param eventPack 封装事件
+   * @return 结果 为null为无事发生
+   */
+  public String emitOther(String target, BotEventPack eventPack) {
+    List<EventHandlerItem> eventHandlerItems = OTHER_EVENT_STORE.get(target);
+    if (eventHandlerItems == null) return null;
+    for (EventHandlerItem handler: eventHandlerItems) {
+      Method method = handler.getHandler();
+      Class<?> invoker = handler.getInvoker();
+      try {
+        method.invoke(invoker.getDeclaredConstructor().newInstance(), eventPack);
+      } catch (IllegalAccessException | InvocationTargetException | InstantiationException | NoSuchMethodException e) {
+        e.printStackTrace();
+        return "其他事件执行失败: " + target;
+      }
+    }
+    return null;
+  }
+
+  /**
+   * <h2>根据指令触发EventHandler</h2>
+   * @param target 指令(包含指令开头)
+   * @param eventPack 封装事件
+   * @param plainText 内容纯文本
+   * @return 结果 为null为无事发生
+   */
   public String emit(String target, MessageEventPack eventPack, String plainText) {
     List<EventHandlerItem> eventHandlerItems = STORE.get(target);
     if (eventHandlerItems == null) return null;
@@ -164,8 +241,11 @@ public class EventHandlerManager {
   private boolean checkEventType(EventHandlerType[] types, MessageEventPack eventPack) {
     for (EventHandlerType type : types) {
       if (type == EventHandlerType.MESSAGE_HANDLER_ALL) return true;
-      if (eventPack.getEventType() == EventType.FRIEND_MESSAGE_EVENT && type == EventHandlerType.MESSAGE_HANDLER_FRIEND) return true;
-      if (eventPack.getEventType() == EventType.GROUP_MESSAGE_EVENT && type == EventHandlerType.MESSAGE_HANDLER_GROUP) return true;
+      EventType eventType = eventPack.getEventType();
+      if (eventType == EventType.FRIEND_MESSAGE_EVENT && type == EventHandlerType.MESSAGE_HANDLER_FRIEND) return true;
+      if (eventType == EventType.GROUP_MESSAGE_EVENT && type == EventHandlerType.MESSAGE_HANDLER_GROUP) return true;
+      if (eventType == EventType.GROUP_TMP_MESSAGE_EVENT && type == EventHandlerType.MESSAGE_HANDLER_TEMP) return true;
+      if (eventType == EventType.OTHER_EVENT && type == EventHandlerType.OTHER_HANDLER) return false;
     }
     return false;
   }
