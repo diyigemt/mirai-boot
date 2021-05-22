@@ -3,7 +3,9 @@ package org.miraiboot.entity;
 import lombok.Data;
 import net.mamoe.mirai.event.ListeningStatus;
 import org.miraiboot.interfaces.EventHandlerNext;
+import org.miraiboot.utils.ExceptionHandlerManager;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -74,19 +76,36 @@ public class EventHandlerNextItem {
   }
 
   public ListeningStatus onNextSelf(MessageEventPack eventPack, PreProcessorData data) {
-    return handler.onNext(eventPack, data);
+    try {
+      return handler.onNext(eventPack, data);
+    } catch (Throwable e) {
+      handlerException(e);
+    }
+    return ListeningStatus.LISTENING;
   }
 
   public void onTimeOut() {
-    handler.onTimeOut(this.lastEventPack, this.lastData);
+    try {
+      handler.onTimeOut(this.lastEventPack, this.lastData);
+    } catch (Throwable e) {
+      handlerException(e);
+    }
   }
 
   public void onTriggerOut() {
-    handler.onTriggerOut(this.lastEventPack, this.lastData);
+    try {
+      handler.onTriggerOut(this.lastEventPack, this.lastData);
+    } catch (Throwable e) {
+      handlerException(e);
+    }
   }
 
   public void onDestroy() {
-    handler.onDestroy(this.lastEventPack, this.lastData);
+    try {
+      handler.onDestroy(this.lastEventPack, this.lastData);
+    } catch (Throwable e) {
+      handlerException(e);
+    }
   }
 
   public boolean check() {
@@ -111,5 +130,14 @@ public class EventHandlerNextItem {
 
   public void cancel() {
     this.timer.cancel();
+  }
+
+  private void handlerException(Throwable e) {
+    if (e instanceof InvocationTargetException) {
+      Throwable ex = ((InvocationTargetException) e).getTargetException();
+      ExceptionHandlerManager.getInstance().emit(ex.getClass().getCanonicalName(), ex);
+    } else {
+      ExceptionHandlerManager.getInstance().emit(e.getClass().getCanonicalName(), e);
+    }
   }
 }

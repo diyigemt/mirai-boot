@@ -7,6 +7,7 @@ import org.miraiboot.constant.EventType;
 import org.miraiboot.constant.FunctionId;
 import org.miraiboot.entity.*;
 import org.miraiboot.interfaces.EventHandlerNext;
+import org.miraiboot.listener.ExceptionListener;
 import org.miraiboot.mirai.MiraiMain;
 import org.miraiboot.permission.CheckPermission;
 import org.miraiboot.permission.PermissionCheck;
@@ -144,7 +145,6 @@ public class EventHandlerManager {
       try {
         method.invoke(invoker.getDeclaredConstructor().newInstance(), eventPack);
       } catch (IllegalAccessException | InvocationTargetException | InstantiationException | NoSuchMethodException e) {
-        e.printStackTrace();
         handlerException(e);
         return "其他事件执行失败: " + target;
       }
@@ -232,7 +232,6 @@ public class EventHandlerManager {
           method.invoke(invoker.getDeclaredConstructor().newInstance(), eventPack);
         }
       } catch (IllegalAccessException | InvocationTargetException | InstantiationException | NoSuchMethodException e) {
-        e.printStackTrace();
         handlerException(e);
         return "事件执行出错";
       }
@@ -454,6 +453,11 @@ public class EventHandlerManager {
   }
 
   private void handlerException(Throwable e) {
-
+    if (e instanceof InvocationTargetException) {
+      Throwable ex = ((InvocationTargetException) e).getTargetException();
+      ExceptionHandlerManager.getInstance().emit(ex.getClass().getCanonicalName(), ex);
+    } else {
+      ExceptionHandlerManager.getInstance().emit(e.getClass().getCanonicalName(), e);
+    }
   }
 }
