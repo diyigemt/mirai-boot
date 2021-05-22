@@ -4,10 +4,7 @@ import net.mamoe.mirai.Bot;
 import net.mamoe.mirai.BotFactory;
 import net.mamoe.mirai.event.events.BotEvent;
 import net.mamoe.mirai.event.events.MessageEvent;
-import org.miraiboot.annotation.AutoInit;
-import org.miraiboot.annotation.EventHandler;
-import org.miraiboot.annotation.EventHandlerComponent;
-import org.miraiboot.annotation.MiraiBootApplication;
+import org.miraiboot.annotation.*;
 import org.miraiboot.constant.ConstantGlobal;
 import org.miraiboot.constant.EventHandlerType;
 import org.miraiboot.constant.FunctionId;
@@ -15,6 +12,7 @@ import org.miraiboot.dao.PermissionDAO;
 import org.miraiboot.entity.*;
 import org.miraiboot.function.TestAlias;
 import org.miraiboot.listener.BotEventListener;
+import org.miraiboot.listener.ExceptionListener;
 import org.miraiboot.listener.MessageEventListener;
 import org.miraiboot.mirai.MiraiMain;
 import org.miraiboot.permission.AuthMgr;
@@ -57,6 +55,8 @@ public class MiraiApplication {
         }
       }
     }
+    // 注册全局Exception Handler
+    Thread.currentThread().setUncaughtExceptionHandler(new ExceptionListener());
     // AutoConfiguration
     // 打印描述
     MiraiBootApplication miraiBootApplication = mainClass.getAnnotation(MiraiBootApplication.class);
@@ -107,6 +107,9 @@ public class MiraiApplication {
         }
         if (clazz.isAnnotationPresent(EventHandlerComponent.class)) {
           handleEventHandler(clazz);
+        }
+        if (clazz.isAnnotationPresent(ExceptionHandlerComponent.class)) {
+          handleExceptionHandler(clazz);
         }
       }
     }
@@ -187,45 +190,55 @@ public class MiraiApplication {
    */
   private static void handleEventHandler(Class<?> clazz) {
     for (Method method : clazz.getMethods()) {
-      if (method.isAnnotationPresent(EventHandler.class)) {
-        EventHandler methodAnnotation = method.getAnnotation(EventHandler.class);
-        // 注册其他事件Handler
-        AtomicBoolean b = new AtomicBoolean(false);
-        EventHandlerType[] types = methodAnnotation.type();
-        for (EventHandlerType type : types) {
-          if (type == EventHandlerType.OTHER_HANDLER) {
-            EventHandlerManager.getInstance().onOther("", clazz, method);
-            b.set(true);
-            break;
-          }
+      if (!method.isAnnotationPresent(EventHandler.class)) continue;
+      EventHandler methodAnnotation = method.getAnnotation(EventHandler.class);
+      // 注册其他事件Handler
+      AtomicBoolean b = new AtomicBoolean(false);
+      EventHandlerType[] types = methodAnnotation.type();
+      for (EventHandlerType type : types) {
+        if (type == EventHandlerType.OTHER_HANDLER) {
+          EventHandlerManager.getInstance().onOther("", clazz, method);
+          b.set(true);
+          break;
         }
-        // 如果注册为BotEventHandler 将不能被注册为消息事件Handler
-        if (b.get()) continue;
-        // 注册强制触发EventHandler
-        if (methodAnnotation.isAny()) {
-          EventHandlerManager.getInstance().on("", clazz, method);
-          continue;
-        }
-        String targetName = methodAnnotation.target();
-        String start = methodAnnotation.start();
-        if (targetName.equals("")) {
-          targetName = method.getName();
-        }
-        if (start.equals("")) {
-          Object o = GlobalConfig.getInstance().get(ConstantGlobal.DEFAULT_COMMAND_START);
-          if (!o.toString().equals("")) targetName = o + targetName;
-        } else {
-          // 注册指令开头
-          CommandUtil.getInstance().registerCommandStart(start);
-        }
-        // 注册与指令对应的权限id
-        int permissionIndex = 0;
-        if (method.isAnnotationPresent(CheckPermission.class)) {
-          CheckPermission permission = method.getAnnotation(CheckPermission.class);
-          permissionIndex = permission.permissionIndex();
-        }
-        FunctionId.put(targetName, permissionIndex);
-        EventHandlerManager.getInstance().on(targetName, clazz, method);
+      }
+      // 如果注册为BotEventHandler 将不能被注册为消息事件Handler
+      if (b.get()) continue;
+      // 注册强制触发EventHandler
+      if (methodAnnotation.isAny()) {
+        EventHandlerManager.getInstance().on("", clazz, method);
+        continue;
+      }
+      String targetName = methodAnnotation.target();
+      String start = methodAnnotation.start();
+      if (targetName.equals("")) {
+        targetName = method.getName();
+      }
+      if (start.equals("")) {
+        Object o = GlobalConfig.getInstance().get(ConstantGlobal.DEFAULT_COMMAND_START);
+        if (!o.toString().equals("")) targetName = o + targetName;
+      } else {
+        // 注册指令开头
+        CommandUtil.getInstance().registerCommandStart(start);
+      }
+      // 注册与指令对应的权限id
+      int permissionIndex = 0;
+      if (method.isAnnotationPresent(CheckPermission.class)) {
+        CheckPermission permission = method.getAnnotation(CheckPermission.class);
+        permissionIndex = permission.permissionIndex();
+      }
+      FunctionId.put(targetName, permissionIndex);
+      EventHandlerManager.getInstance().on(targetName, clazz, method);
+    }
+  }
+  private static void handleExceptionHandler(Class<?> clazz) {
+    for (Method method : clazz.getMethods()) {
+      if (!method.isAnnotationPresent(ExceptionHandler.class)) continue;
+      ExceptionHandler annotation = method.getAnnotation(ExceptionHandler.class);
+      Class<? extends Exception>[] targets = annotation.targets();
+      for (Class<? extends Exception> c : targets) {
+        String target = c.getCanonicalName();
+        ExceptionHandlerManager.getInstance().on(target, clazz, method, annotation.priority());
       }
     }
   }

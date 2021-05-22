@@ -8,6 +8,7 @@ import org.miraiboot.mirai.MiraiMain;
 import org.miraiboot.utils.CommandUtil;
 import org.miraiboot.utils.EventHandlerManager;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -36,7 +37,8 @@ public class MessageEventListener implements Consumer<MessageEvent> {
 		// 执行监听中的特定对话
 		EventHandlerManager.getInstance().emitNext(eventPack.getSenderId(), eventPack, source);
 		// 执行强制触发EventHandler
-		String res = EventHandlerManager.getInstance().emit("", eventPack, source);
+		String res = null;
+		res = EventHandlerManager.getInstance().emit("", eventPack, source);
 		if (res != null) {
 			MiraiMain.logger.error(res);
 		}

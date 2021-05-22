@@ -70,6 +70,10 @@ public class EventHandlerNextItem {
     this.lastEventPack = eventPack;
     this.lastData = data;
     if (this.triggerCount != -1) data.setTriggerCount(this.triggerCount);
+    return onNextSelf(eventPack, data);
+  }
+
+  public ListeningStatus onNextSelf(MessageEventPack eventPack, PreProcessorData data) {
     return handler.onNext(eventPack, data);
   }
 

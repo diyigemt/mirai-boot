@@ -145,6 +145,7 @@ public class EventHandlerManager {
         method.invoke(invoker.getDeclaredConstructor().newInstance(), eventPack);
       } catch (IllegalAccessException | InvocationTargetException | InstantiationException | NoSuchMethodException e) {
         e.printStackTrace();
+        handlerException(e);
         return "其他事件执行失败: " + target;
       }
     }
@@ -232,6 +233,7 @@ public class EventHandlerManager {
         }
       } catch (IllegalAccessException | InvocationTargetException | InstantiationException | NoSuchMethodException e) {
         e.printStackTrace();
+        handlerException(e);
         return "事件执行出错";
       }
     }
@@ -449,5 +451,9 @@ public class EventHandlerManager {
     next.cancel();
     next.onDestroy();
     events.remove(next);
+  }
+
+  private void handlerException(Throwable e) {
+
   }
 }
