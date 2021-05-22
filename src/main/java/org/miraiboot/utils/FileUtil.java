@@ -43,6 +43,10 @@ public class FileUtil {
     // 初始化资源文件夹
     File resourceFileDir = new File(RESOURCE_ROOT_FOLDER_PATH);
     if (!resourceFileDir.exists()) resourceFileDir.mkdirs();
+    File voicesFileDir = new File(RESOURCE_ROOT_FOLDER_PATH + SYSTEM_PATH_DIV + "voices");
+    if (!voicesFileDir.exists()) voicesFileDir.mkdir();
+    File imagesFileDir = new File(RESOURCE_ROOT_FOLDER_PATH + SYSTEM_PATH_DIV + "images");
+    if (!imagesFileDir.exists()) imagesFileDir.mkdir();
     // 初始化配置文件夹
     File configFileDir = new File(CONFIG_ROOT_FOLDER_PATH);
     if (!configFileDir.exists()) configFileDir.mkdirs();
