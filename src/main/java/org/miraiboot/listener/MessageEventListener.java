@@ -5,6 +5,7 @@ import net.mamoe.mirai.message.data.PlainText;
 import net.mamoe.mirai.message.data.SingleMessage;
 import org.miraiboot.entity.MessageEventPack;
 import org.miraiboot.mirai.MiraiMain;
+import org.miraiboot.utils.BotManager;
 import org.miraiboot.utils.CommandUtil;
 import org.miraiboot.utils.EventHandlerManager;
 
@@ -25,6 +26,8 @@ public class MessageEventListener implements Consumer<MessageEvent> {
 	public void accept(MessageEvent messageEvent) {
 		// 目前只能处理群消息 好友消息 以及通过群发送的临时会话
 		if (!(messageEvent instanceof GroupMessageEvent || messageEvent instanceof FriendMessageEvent || messageEvent instanceof GroupTempMessageEvent)) return;
+		// 如果是机器人自己的消息事件 忽略
+		if (BotManager.getInstance().get(messageEvent.getSender().getId()) != null) return;
 		// 封装
 		MessageEventPack eventPack = new MessageEventPack(messageEvent);
 		// 提取纯文本

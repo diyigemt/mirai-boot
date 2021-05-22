@@ -5,6 +5,22 @@ import java.lang.annotation.*;
 
 /**
  * <h2>将收到注解的方法注册为异常Handler</h2>
+ * <strong>受到注解的方法至多有一个参数 即[Throwable]本身 多余的参数将会被传入null</strong><br/>
+ * 方法返回值可以为void 也可以为boolean 返回boolean且为<strong>true</strong>时将会<strong>阻止</strong>低优先级的异常处理器的触发<br/>
+ * 返回值不正确的方法将不会被注册成异常处理器!!<br/>
+ * 注解的targets为空也不会被注册为异常处理器!!<br/>
+ * <pre>
+ * {@code
+ * @ExceptionHandler
+ * public void testHandler1(Throwable e) {your code}
+ *
+ * @ExceptionHandler(priority = 1)
+ * public boolean testHandler2(Throwable e) {your code}
+ *
+ * @ExceptionHandler(priority = 1)
+ * public boolean testHandler3() {your code}
+ * }
+ * </pre>
  */
 @Target({ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)

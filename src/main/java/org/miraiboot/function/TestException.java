@@ -14,8 +14,25 @@ import org.miraiboot.utils.BotManager;
 @EventHandlerComponent
 public class TestException {
   @ExceptionHandler(targets = IllegalArgumentException.class)
-  public void testException(Throwable e) {
-    BotManager.getInstance().get(1741557205L).getGroup(1002484182L).sendMessage("error: " + e.getMessage());
+  public void testException1(Throwable e) {
+    BotManager.getInstance().get(1741557205L).getGroup(1002484182L).sendMessage("error: " + e.getMessage() + " priority: 0");
+  }
+  @ExceptionHandler(targets = IllegalArgumentException.class, priority = 1)
+  public void testException2(Throwable e) {
+    BotManager.getInstance().get(1741557205L).getGroup(1002484182L).sendMessage("error: " + e.getMessage() + " priority: 1.1");
+  }
+  @ExceptionHandler(targets = IllegalArgumentException.class, priority = 1)
+  public boolean testException4(Throwable e) {
+    BotManager.getInstance().get(1741557205L).getGroup(1002484182L).sendMessage("error: " + e.getMessage() + " priority: 1.2");
+    return true;
+  }
+  @ExceptionHandler(targets = IllegalArgumentException.class, priority = 1)
+  public void testException5(Throwable e) {
+    BotManager.getInstance().get(1741557205L).getGroup(1002484182L).sendMessage("error: " + e.getMessage() + " priority: 1.3");
+  }
+  @ExceptionHandler(targets = IllegalArgumentException.class, priority = 2)
+  public void testException3(Throwable e) {
+    BotManager.getInstance().get(1741557205L).getGroup(1002484182L).sendMessage("error: " + e.getMessage() + " priority: 2");
   }
   @EventHandler(target = "error")
   public void testSendError() {

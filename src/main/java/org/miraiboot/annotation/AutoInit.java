@@ -9,7 +9,7 @@ import java.lang.annotation.*;
  * <p>被注解的类中必须有一个静态方法</p>
  * *@param config 配置文件<br/>
  *  public static void init(ConfigFile config) {//your code}<br/>
- * value指初始化的优先级 数字<strong>越低越先</strong>进行初始化
+ * value指初始化的优先级 数字<strong>越大越先</strong>进行初始化
  * @author diyigemt
  * @since 1.0.0
  */

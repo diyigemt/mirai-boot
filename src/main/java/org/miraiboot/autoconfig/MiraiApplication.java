@@ -234,6 +234,10 @@ public class MiraiApplication {
   private static void handleExceptionHandler(Class<?> clazz) {
     for (Method method : clazz.getMethods()) {
       if (!method.isAnnotationPresent(ExceptionHandler.class)) continue;
+      // 检查返回值类型
+      Class<?> returnType = method.getReturnType();
+      if (!(returnType == void.class || returnType == boolean.class)) continue;
+
       ExceptionHandler annotation = method.getAnnotation(ExceptionHandler.class);
       Class<? extends Exception>[] targets = annotation.targets();
       for (Class<? extends Exception> c : targets) {
