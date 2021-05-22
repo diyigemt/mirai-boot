@@ -76,4 +76,19 @@ public class TestNext {
       }
     }, -1, 3);
   }
+
+  @EventHandler(target = "myhandler")
+  public void test(MessageEventPack eventPack) {
+    eventPack.reply("开始了");
+    eventPack.onNext(new MyEventHandlerNext());
+  }
+
+  class MyEventHandlerNext extends EventHandlerNext {
+    private int index = 1;
+    @Override
+    public ListeningStatus onNext(MessageEventPack eventPack, PreProcessorData data) {
+      eventPack.reply("这是自建的handler" + index);
+      return ListeningStatus.STOPPED;
+    }
+  }
 }

@@ -42,7 +42,7 @@ public class EventHandlerManager {
    * Long: 监听的qq号<br/>
    * EventHandlerNextItem: 存储Handler的信息类
    */
-  private static final Map<Long, List<EventHandlerNextItem>> LISTENING_STORE = new HashMap<Long, List<EventHandlerNextItem>>();
+  private static final Map<Long, List<EventHandlerNextItem<? extends EventHandlerNext>>> LISTENING_STORE = new HashMap<Long, List<EventHandlerNextItem<? extends EventHandlerNext>>>();
 
   /**
    * <h2>存储所有除了消息事件以外的事件</h2>
@@ -166,24 +166,19 @@ public class EventHandlerManager {
       EventHandlerType[] type = handler.getType();
       if (!checkEventType(type, eventPack)) return null;
       Method method = handler.getHandler();
-
       // TODO 处理权限
       if (handler.getHandler().isAnnotationPresent(CheckPermission.class)) {
         boolean flag = true;
+        CheckPermission annotation = method.getAnnotation(CheckPermission.class);
         //获取权限ID
-        PreProcessorData processorData = new PreProcessorData();
-        processorData = CommandUtil.getInstance().parseArgs(plainText, target, method, processorData);
-        if(!PermissionCheck.atValidationCheck(processorData)){
-          MiraiMain.getInstance().quickReply(eventPack.getEvent(), "目标成员不存在");
-          return "目标成员不存在";
-        }
-        if(method.getAnnotation(CheckPermission.class).isStrictRestricted()){
+        if(annotation.isStrictRestricted()){
           if(!PermissionCheck.strictRestrictedCheck(eventPack)){
             MiraiMain.getInstance().quickReply(eventPack.getEvent(), "您当前的权限不足以对目标用户操作");
             return "您当前的权限不足以对目标用户操作";
           }
         }
-        int commandId = method.getAnnotation(CheckPermission.class).permissionIndex();
+        // 改成从FunctionId中获取以适应全局permissionIndex的设置
+        int commandId = FunctionId.getMap(target);
         if(PermissionCheck.checkGroupPermission(eventPack, commandId)){
           if(SQLNonTempAuth){
             return "您的管理员已禁止您使用该功能";
@@ -256,7 +251,7 @@ public class EventHandlerManager {
    * @param target 监听目标qq号
    * @param onNext 事件handler
    */
-  public void onNext(long target, EventHandlerNext onNext) {
+  public <T extends EventHandlerNext> void onNext(long target, T onNext) {
     onNext(target, onNext, -2, -1);
   }
 
@@ -266,7 +261,7 @@ public class EventHandlerManager {
    * @param onNext 事件handler
    * @param timeOut 超时时间
    */
-  public void onNext(long target, EventHandlerNext onNext, long timeOut) {
+  public <T extends EventHandlerNext> void onNext(long target, T onNext, long timeOut) {
     onNext(target, onNext, timeOut, -1);
   }
 
@@ -276,7 +271,7 @@ public class EventHandlerManager {
    * @param onNext 事件handler
    * @param triggerCount 监听次数
    */
-  public void onNext(long target, EventHandlerNext onNext, int triggerCount) {
+  public <T extends EventHandlerNext> void onNext(long target, T onNext, int triggerCount) {
     Long time = (Long) GlobalConfig.getInstance().get(DEFAULT_EVENT_NET_TIMEOUT);
     if (time == null) time = DEFAULT_EVENT_NET_TIMEOUT_TIME;
     onNext(target, onNext, time, triggerCount);
@@ -291,10 +286,10 @@ public class EventHandlerManager {
    * @param timeOut 超时时间 不合法将使用配置文件中的超时时间或者默认的5min
    * @param triggerCount 监听次数 不合法将设置为-1 表示无限监听
    */
-  public void onNext(long target, EventHandlerNext onNext, long timeOut, int triggerCount) {
-    List<EventHandlerNextItem> events = LISTENING_STORE.get(target);
-    if (events == null) events = new ArrayList<EventHandlerNextItem>();
-    EventHandlerNextItem eventHandlerNextItem = createCheckItem(onNext, timeOut, triggerCount);
+  public <T extends EventHandlerNext> void onNext(long target, T onNext, long timeOut, int triggerCount) {
+    List<EventHandlerNextItem<? extends EventHandlerNext>> events = LISTENING_STORE.get(target);
+    if (events == null) events = new ArrayList<EventHandlerNextItem<? extends EventHandlerNext>>();
+    EventHandlerNextItem<? extends EventHandlerNext> eventHandlerNextItem = createCheckItem(onNext, timeOut, triggerCount);
     events.add(eventHandlerNextItem);
     LISTENING_STORE.put(target, events);
   }
@@ -309,11 +304,11 @@ public class EventHandlerManager {
    * @param eventPack 当前MessageEvent用于给onDestroy之类的用
    * @param data 当前PreProcessorData用于给onDestroy之类的用
    */
-  public void onNextNow(long target, EventHandlerNext onNext, long timeOut, int triggerCount, MessageEventPack eventPack, PreProcessorData data) {
-    List<EventHandlerNextItem> events = LISTENING_STORE.get(target);
-    if (events == null) events = new ArrayList<EventHandlerNextItem>();
-    EventHandlerNextItem eventHandlerNextItem = createCheckItem(onNext, timeOut, triggerCount);
-    List<EventHandlerNextItem> finalEvents = events;
+  public <T extends EventHandlerNext> void onNextNow(long target, T onNext, long timeOut, int triggerCount, MessageEventPack eventPack, PreProcessorData data) {
+    List<EventHandlerNextItem<? extends EventHandlerNext>> events = LISTENING_STORE.get(target);
+    if (events == null) events = new ArrayList<EventHandlerNextItem<? extends EventHandlerNext>>();
+    EventHandlerNextItem<? extends EventHandlerNext> eventHandlerNextItem = createCheckItem(onNext, timeOut, triggerCount);
+    List<EventHandlerNextItem<? extends EventHandlerNext>> finalEvents = events;
     eventHandlerNextItem.setLastEventPack(eventPack);
     eventHandlerNextItem.setLastData(data);
     eventHandlerNextItem.start(new TimerTask() {
@@ -338,10 +333,10 @@ public class EventHandlerManager {
    * @return 结果 为null表示一切正常
    */
   public String emitNext(long target, MessageEventPack eventPack, String plainText) {
-    List<EventHandlerNextItem> events = LISTENING_STORE.get(target);
+    List<EventHandlerNextItem<? extends EventHandlerNext>> events = LISTENING_STORE.get(target);
     if (events == null) return null;
     for (int i = 0; i < events.size(); i++) {
-      EventHandlerNextItem next = events.get(i);
+      EventHandlerNextItem<? extends EventHandlerNext> next = events.get(i);
       EventHandlerNext handler = next.getHandler();
       PreProcessorData data = new PreProcessorData();
       data.setText(plainText);
@@ -386,9 +381,9 @@ public class EventHandlerManager {
    */
   public void cancelAll() {
     if (LISTENING_STORE.isEmpty()) return;;
-    for (List<EventHandlerNextItem> listeners : LISTENING_STORE.values()) {
+    for (List<EventHandlerNextItem<? extends EventHandlerNext>> listeners : LISTENING_STORE.values()) {
       if (listeners.isEmpty()) continue;
-      for (EventHandlerNextItem item : listeners) {
+      for (EventHandlerNextItem<? extends EventHandlerNext> item : listeners) {
         item.cancel();
       }
     }
@@ -432,7 +427,7 @@ public class EventHandlerManager {
    * @param triggerCount 监听次数 不合法将设置为-1 表示无限监听
    * @return 合法的监听信息存储类
    */
-  private EventHandlerNextItem createCheckItem(EventHandlerNext onNext, long timeOut, int triggerCount) {
+  private <T extends EventHandlerNext> EventHandlerNextItem<? extends EventHandlerNext> createCheckItem(T onNext, long timeOut, int triggerCount) {
     if (timeOut < -1) {
       Long time = (Long) GlobalConfig.getInstance().get(DEFAULT_EVENT_NET_TIMEOUT);
       timeOut = time == null ? DEFAULT_EVENT_NET_TIMEOUT_TIME : time;
@@ -446,7 +441,7 @@ public class EventHandlerManager {
    * @param events 监听事件列表
    * @param next 事件本身
    */
-  private void handlerNextEnd(List<EventHandlerNextItem> events, EventHandlerNextItem next) {
+  private void handlerNextEnd(List<EventHandlerNextItem<? extends EventHandlerNext>> events, EventHandlerNextItem next) {
     next.cancel();
     next.onDestroy();
     events.remove(next);

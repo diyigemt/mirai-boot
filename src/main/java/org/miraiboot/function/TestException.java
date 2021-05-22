@@ -10,10 +10,14 @@ import org.miraiboot.entity.PreProcessorData;
 import org.miraiboot.interfaces.EventHandlerNext;
 import org.miraiboot.utils.BotManager;
 
-@ExceptionHandlerComponent
+@ExceptionHandlerComponent(value = -1)
 @EventHandlerComponent
 public class TestException {
-  @ExceptionHandler(targets = IllegalArgumentException.class)
+  @ExceptionHandler(targets = IllegalArgumentException.class, priority = 0)
+  public void testException6(Throwable e) {
+    BotManager.getInstance().get(1741557205L).getGroup(1002484182L).sendMessage("error: " + e.getMessage() + " priority: -1");
+  }
+  @ExceptionHandler(targets = IllegalArgumentException.class, priority = 0)
   public void testException1(Throwable e) {
     BotManager.getInstance().get(1741557205L).getGroup(1002484182L).sendMessage("error: " + e.getMessage() + " priority: 0");
   }
@@ -24,7 +28,7 @@ public class TestException {
   @ExceptionHandler(targets = IllegalArgumentException.class, priority = 1)
   public boolean testException4(Throwable e) {
     BotManager.getInstance().get(1741557205L).getGroup(1002484182L).sendMessage("error: " + e.getMessage() + " priority: 1.2");
-    return true;
+    return false;
   }
   @ExceptionHandler(targets = IllegalArgumentException.class, priority = 1)
   public void testException5(Throwable e) {

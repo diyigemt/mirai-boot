@@ -222,16 +222,19 @@ public class MiraiApplication {
         CommandUtil.getInstance().registerCommandStart(start);
       }
       // 注册与指令对应的权限id
-      int permissionIndex = 0;
+      EventHandlerComponent classAnnotation = clazz.getAnnotation(EventHandlerComponent.class);
+      int permissionIndex = classAnnotation.value();
       if (method.isAnnotationPresent(CheckPermission.class)) {
         CheckPermission permission = method.getAnnotation(CheckPermission.class);
-        permissionIndex = permission.permissionIndex();
+        permissionIndex = permission.permissionIndex() == 0 ? permissionIndex : permission.permissionIndex();
       }
       FunctionId.put(targetName, permissionIndex);
       EventHandlerManager.getInstance().on(targetName, clazz, method);
     }
   }
   private static void handleExceptionHandler(Class<?> clazz) {
+    ExceptionHandlerComponent classAnnotation = clazz.getAnnotation(ExceptionHandlerComponent.class);
+    int classPriority = classAnnotation.value();
     for (Method method : clazz.getMethods()) {
       if (!method.isAnnotationPresent(ExceptionHandler.class)) continue;
       // 检查返回值类型
@@ -239,10 +242,12 @@ public class MiraiApplication {
       if (!(returnType == void.class || returnType == boolean.class)) continue;
 
       ExceptionHandler annotation = method.getAnnotation(ExceptionHandler.class);
+      int priority = annotation.priority();
+      if (priority == 0 && classPriority != 0) priority = classPriority;
       Class<? extends Exception>[] targets = annotation.targets();
       for (Class<? extends Exception> c : targets) {
         String target = c.getCanonicalName();
-        ExceptionHandlerManager.getInstance().on(target, clazz, method, annotation.priority());
+        ExceptionHandlerManager.getInstance().on(target, clazz, method, priority);
       }
     }
   }
