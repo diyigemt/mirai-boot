@@ -2,16 +2,19 @@ package org.miraiboot.autoconfig;
 
 import net.mamoe.mirai.Bot;
 import net.mamoe.mirai.BotFactory;
+import net.mamoe.mirai.event.events.BotEvent;
 import net.mamoe.mirai.event.events.MessageEvent;
 import org.miraiboot.annotation.AutoInit;
 import org.miraiboot.annotation.EventHandler;
 import org.miraiboot.annotation.EventHandlerComponent;
 import org.miraiboot.annotation.MiraiBootApplication;
 import org.miraiboot.constant.ConstantGlobal;
+import org.miraiboot.constant.EventHandlerType;
 import org.miraiboot.constant.FunctionId;
 import org.miraiboot.dao.PermissionDAO;
 import org.miraiboot.entity.*;
 import org.miraiboot.function.TestAlias;
+import org.miraiboot.listener.BotEventListener;
 import org.miraiboot.listener.MessageEventListener;
 import org.miraiboot.mirai.MiraiMain;
 import org.miraiboot.permission.AuthMgr;
@@ -26,6 +29,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Scanner;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * <h2>主实现逻辑</h2>
@@ -113,6 +117,7 @@ public class MiraiApplication {
     final boolean isNetwork = miraiboot.getLogger().isNetwork();
     // 设置事件监听的logger是否启用
     MessageEventListener.eventLoggerEnable = miraiboot.getLogger().isEventStatus();
+    BotEventListener.eventLoggerEnable = miraiboot.getLogger().isEventStatus();
     // 注册Bot
     for (ConfigFileBot configFileBot : miraiboot.getBots()) {
       long account = configFileBot.getAccount();
@@ -128,6 +133,7 @@ public class MiraiApplication {
         }
       });
       // 注册统一的事件监听器
+      bot.getEventChannel().subscribeAlways(BotEvent.class, new BotEventListener());
       bot.getEventChannel().subscribeAlways(MessageEvent.class, new MessageEventListener());
       BotManager.getInstance().register(configFileBot.getAccount(), bot);
     }
@@ -183,6 +189,18 @@ public class MiraiApplication {
     for (Method method : clazz.getMethods()) {
       if (method.isAnnotationPresent(EventHandler.class)) {
         EventHandler methodAnnotation = method.getAnnotation(EventHandler.class);
+        // 注册其他事件Handler
+        AtomicBoolean b = new AtomicBoolean(false);
+        EventHandlerType[] types = methodAnnotation.type();
+        for (EventHandlerType type : types) {
+          if (type == EventHandlerType.OTHER_HANDLER) {
+            EventHandlerManager.getInstance().onOther("", clazz, method);
+            b.set(true);
+            break;
+          }
+        }
+        // 如果注册为BotEventHandler 将不能被注册为消息事件Handler
+        if (b.get()) continue;
         // 注册强制触发EventHandler
         if (methodAnnotation.isAny()) {
           EventHandlerManager.getInstance().on("", clazz, method);
