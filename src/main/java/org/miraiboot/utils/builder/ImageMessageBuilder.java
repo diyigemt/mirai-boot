@@ -6,6 +6,7 @@ import net.mamoe.mirai.message.data.MessageChain;
 import net.mamoe.mirai.message.data.MessageChainBuilder;
 import net.mamoe.mirai.utils.ExternalResource;
 import org.miraiboot.annotation.HttpsProperties;
+import org.miraiboot.entity.EnhancedMessageChain;
 import org.miraiboot.entity.MessageEventPack;
 import org.miraiboot.utils.HttpUtil;
 
@@ -19,7 +20,7 @@ import java.util.regex.Pattern;
 /**
  * <h2>自定义图片消息构造器</h2>
  * <p>样例：</p>
- * <p>MessageChain chain = new ImageMessageBuilder(MessageEventPack eventPack).build();</p>
+ * <p>EnhancedMessageChain chains = new ImageMessageBuilder(MessageEventPack eventPack).build();</p>
  * <p></p>
  * <p><b>注：请不要用此类创建变量</b></p>
  * @author Haythem
@@ -37,16 +38,19 @@ public class ImageMessageBuilder {
 
     private MessageChain chain = new MessageChainBuilder().build();
 
+    private EnhancedMessageChain chains = new EnhancedMessageChain();
+
     private boolean isUTTPRequestSuccess = true;
 
     /**
      * <h2>自定义图片消息构造器</h2>
      * <p>可以自定义图文消息构成</p>
      * <p>样例:</p>
-     * <p>MessageChain chain = new ImageMessageBuilder(MessageEventPack)</p>
+     * <p>EnhancedMessageChain chain = new ImageMessageBuilder(MessageEventPack)</p>
      * <p>&nbsp;&nbsp;.add(messageChain)</p>
      * <p>&nbsp;&nbsp;.add("1234\n")</p>
      * <p>&nbsp;&nbsp;.add("1234\n", "5678\n")</p>
+     * <p>&nbsp;&nbsp;.add(enhancedMessageChain)</p>
      * <p>&nbsp;&nbsp;.add(LocalFilePath)</p>
      * <p>&nbsp;&nbsp;.add(urlPath)</p>
      * <p>&nbsp;&nbsp;.add(file)</p>
@@ -66,17 +70,18 @@ public class ImageMessageBuilder {
      * <p>支持以下类型输入:</p>
      * <p></p>
      * <p>1: MessageChain消息链</p>
-     * <p>2: String...可变长字符串，字符串支持本地路径、URL和文字消息</p>
-     * <p>3: File 打开的文件类</p>
+     * <p>2: EnhancedMessageChain加强的消息链</p>
+     * <p>3: String...可变长字符串，字符串支持本地路径、URL和文字消息</p>
+     * <p>4: File 打开的文件类</p>
      * <p></p>
      * <p>注:</p>
      * <p>1: 请不要插入和图片无关的素材，如有需求，请使用与素材类型对应的其它Builder</p>
      * <p>2: 当使用URL素材时，如果网络不佳未能获得素材会发送以下纯文本消息:</p>
      * <p>&nbsp;&nbsp;"联网获取素材失败"</p>
-     * @param messages 当前类型: 消息链
+     * @param messageChain 当前类型: 消息链
      */
-    public ImageMessageBuilder add(MessageChain messages){
-        chain = chain.plus(messages);
+    public ImageMessageBuilder add(MessageChain messageChain){
+        chain = chain.plus(messageChain);
         return this;
     }
 
@@ -85,8 +90,31 @@ public class ImageMessageBuilder {
      * <p>支持以下类型输入:</p>
      * <p></p>
      * <p>1: MessageChain消息链</p>
-     * <p>2: String...可变长字符串，字符串支持本地路径、URL和文字消息</p>
-     * <p>3: File 打开的文件类</p>
+     * <p>2: EnhancedMessageChain加强的消息链</p>
+     * <p>3: String...可变长字符串，字符串支持本地路径、URL和文字消息</p>
+     * <p>4: File 打开的文件类</p>
+     * <p></p>
+     * <p>注:</p>
+     * <p>1: 请不要插入和图片无关的素材，如有需求，请使用与素材类型对应的其它Builder</p>
+     * <p>2: 当使用URL素材时，如果网络不佳未能获得素材会发送以下纯文本消息:</p>
+     * <p>&nbsp;&nbsp;"联网获取素材失败"</p>
+     * @param messageChain 当前类型: 加强消息链
+     */
+    public ImageMessageBuilder add(EnhancedMessageChain messageChain){
+        chains.append(chain);
+        chains.append(messageChain);
+        this.chain = new MessageChainBuilder().build();
+        return this;
+    }
+
+    /**
+     * <h2>添加图文消息方法</h2>
+     * <p>支持以下类型输入:</p>
+     * <p></p>
+     * <p>1: MessageChain消息链</p>
+     * <p>2: EnhancedMessageChain加强的消息链</p>
+     * <p>3: String...可变长字符串，字符串支持本地路径、URL和文字消息</p>
+     * <p>4: File 打开的文件类</p>
      * <p></p>
      * <p>注:</p>
      * <p>1: 请不要插入和图片无关的素材，如有需求，请使用与素材类型对应的其它Builder</p>
@@ -118,8 +146,9 @@ public class ImageMessageBuilder {
      * <p>支持以下类型输入:</p>
      * <p></p>
      * <p>1: MessageChain消息链</p>
-     * <p>2: String...可变长字符串，字符串支持本地路径和URL和文字消息</p>
-     * <p>3: File 打开的文件类</p>
+     * <p>2: EnhancedMessageChain加强的消息链</p>
+     * <p>3: String...可变长字符串，字符串支持本地路径、URL和文字消息</p>
+     * <p>4: File 打开的文件类</p>
      * <p></p>
      * <p>注:</p>
      * <p>1: 请不要插入和图片无关的素材，如有需求，请使用与素材类型对应的其它Builder</p>
@@ -134,23 +163,28 @@ public class ImageMessageBuilder {
 
     /**
      * <h2>构造器结尾</h2>
-     * <p>该方法返回构造完成的消息链</p>
-     * @return MessageChain 消息链
+     * <p>该方法返回构造完成的加强消息链</p>
+     * @return EnhancedMessageChain 加强消息链
      */
-    public MessageChain build(){
-        return chain;
+    public EnhancedMessageChain build(){
+        this.chains.append(chain);
+        return chains;
     }
 
     /**
      * <h2>构造器结尾</h2>
-     * <p>该方法返回并自动发送构造完成的消息链</p>
+     * <p>该方法返回并自动发送构造完成的加强消息链</p>
      * <p>注：当使用URL素材时，如果网络不佳未能获得素材会发送以下纯文本消息:</p>
-     * <p>"联网获取素材失败"</p>
-     * @return MessageChain 消息链
+     * <p>&nbsp;&nbsp;"联网获取素材失败"</p>
+     * @return EnhancedMessageChain 加强消息链
      */
-    public MessageChain send(){
-        event.getSubject().sendMessage(chain);
-        return chain;
+
+    public EnhancedMessageChain send(){
+        this.chains.append(chain);
+        for (MessageChain chain : chains){
+            event.getSubject().sendMessage(chain);
+        }
+        return chains;
     }
 
     private ExternalResource ExtResBuilder(String path){
@@ -181,7 +215,7 @@ public class ImageMessageBuilder {
             }
         }catch (IOException e){
             isUTTPRequestSuccess = false;
-        }catch (Exception e){
+        } catch (Exception e){
             e.printStackTrace();
         }
         return externalResource;

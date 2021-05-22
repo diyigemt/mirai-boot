@@ -12,7 +12,7 @@ import java.util.StringTokenizer;
 /**
  * <p>HTTP请求工具类</p>
  *
- * @author Haythem
+ * @author Haythem, diyigemt
  * @since 1.0.0
  */
 
@@ -40,7 +40,6 @@ public class HttpUtil {
 			inputStream = connection.getInputStream();
 			URL su = connection.getURL();
 			FileMessageBuilder.FileName = getFileName(su.getPath());
-			connection.disconnect();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -62,7 +61,6 @@ public class HttpUtil {
 			inputStream = connection.getInputStream();
 			URL su = connection.getURL();
 			FileMessageBuilder.FileName = getFileName(su.getPath());
-			connection.disconnect();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
