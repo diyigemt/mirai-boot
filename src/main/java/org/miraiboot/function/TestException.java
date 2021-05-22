@@ -19,7 +19,7 @@ public class TestException {
   }
   @ExceptionHandler(targets = IllegalArgumentException.class, priority = 0)
   public void testException1(Throwable e) {
-    BotManager.getInstance().get(1741557205L).getGroup(1002484182L).sendMessage("error: " + e.getMessage() + " priority: 0");
+    BotManager.getInstance().get(1741557205L).getGroup(1002484182L).sendMessage("error: " + e.getMessage() + " priority: -1");
   }
   @ExceptionHandler(targets = IllegalArgumentException.class, priority = 1)
   public void testException2(Throwable e) {

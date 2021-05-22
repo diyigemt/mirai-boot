@@ -8,7 +8,6 @@ import org.miraiboot.annotation.EventHandlerComponent;
 import org.miraiboot.constant.EventHandlerType;
 import org.miraiboot.entity.BotEventPack;
 
-@EventHandlerComponent
 public class TestBotEvent {
 
   @EventHandler(type = EventHandlerType.OTHER_HANDLER)
