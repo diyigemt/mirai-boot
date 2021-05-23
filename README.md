@@ -236,3 +236,58 @@ public class Test {
 
 #### @EventHandler
 
+将受到注解的方法标注为消息事件处理器
+
+| 类型               | 属性名 | 默认值              | 说明                                                       |
+| ------------------ | ------ | ------------------- | ---------------------------------------------------------- |
+| String             | target | ""                  | 匹配的指令名，只有消息中包含该指令名才会触发消息事件处理器 |
+| String             | start  | ""                  | 指令开头                                                   |
+| String(正则)       | split  | "\\s+"              | 用于分离参数的正则表达式                                   |
+| EventHandlerType[] | type   | MESSAGE_HANDLER_ALL | 指定需要处理的消息类型                                     |
+| boolean            | isAny  | false               | 为true时忽略type和target，即处理所有消息事件               |
+
+##### `target`：
+
+miriaboot是基于指令响应的机器人，**期望**所有事件处理器都需要有一个对应的指令才会触发，当target留空时，所有消息事件**均会**触发这个消息事件处理器。仅支持**纯中文|英文数字混合**两种类型。
+
+##### `start`：
+
+指令开头，与指令名`target`一起组成一个**完整**的指令，同时也是指令解析的**整体**。例如：
+
+```java
+@EventHandler(target = "help", start = "/")
+public void test1() {}
+@EventHandler(target = "help", start = ".")
+public void test2() {}
+```
+
+以上两个注解将会注册两个指令："/help"和".help"，在消息中发送"/help"和".help"将会分别触发test1()和test2()方法。
+
+在配置文件中的字段`DEFAULT_COMMAND_START`可以注册默认的指令开头，在注解的`start`内容为空时会取配置文件中的值。
+
+##### `split`：
+
+将指令与其后的参数分割开的*正则表达式*，默认值为"\\s+"也就是不定长空格。例如：
+
+```JAVA
+@EventHandler(target = "help", start = "/")
+public void test1() {}
+```
+
+对于输入"一些乱七八糟的东西　/help arg1 arg2   arg3"，将会解析出全指令："/help arg1 arg2   arg3"，指令名："/help"，参数列表：[arg1, arg2, arg3]
+
+##### `type`：
+
+指定消息事件处理器需要处理的消息类型，当消息事件类型符合时才会触发消息事件处理器，具体如下：
+
+| 值                     | 说明               |
+| ---------------------- | ------------------ |
+| MESSAGE_HANDLER_FRIEND | 处理好友消息事件   |
+| MESSAGE_HANDLER_TEMP   | 处理群临时会话事件 |
+| MESSAGE_HANDLER_GROUP  | 处理群聊消息事件   |
+| MESSAGE_HANDLER_ALL    | 处理以上三种事件   |
+| OTHER_HANDLER          | 处理其他类型的事件 |
+
+##### `isAny`：
+
+当其值为true时，注册一个强制触发的消息事件处理器，忽略target，split，start，type的参数设置，处理所有类型的消息事件。
