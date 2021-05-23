@@ -40,7 +40,7 @@ public class TestException {
   }
   @EventHandler(target = "error")
   public void testSendError() {
-    throw new IllegalArgumentException("测试error");
+    throw new RuntimeException("RuntimeException");
   }
 
   @EventHandler(target = "error2")
