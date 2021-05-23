@@ -41,9 +41,11 @@ public class HttpUtil {
 			connection.setRequestMethod(properties.getRequestMethod());
 			Map<String, String> map = properties.getRequestProperties();
 			Set set = map.entrySet();
-			for (Object o : set) {
-				String key = (String) o;
-				String value = map.get(key);
+			Iterator it=set.iterator();
+			while(it.hasNext()) {
+				Map.Entry entry=(Map.Entry)it.next();
+				String key = entry.getKey().toString();
+				String value = entry.getValue().toString();
 				connection.setRequestProperty(key, value);
 			}
 
