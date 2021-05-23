@@ -1,19 +1,14 @@
 package org.miraiboot.utils.builder;
 
-import net.mamoe.mirai.Mirai;
 import net.mamoe.mirai.event.events.MessageEvent;
 import net.mamoe.mirai.message.data.MessageChain;
 import net.mamoe.mirai.message.data.MessageChainBuilder;
 import net.mamoe.mirai.utils.ExternalResource;
-import org.miraiboot.annotation.HttpsProperties;
 import org.miraiboot.entity.EnhancedMessageChain;
+import org.miraiboot.entity.HttpProperties;
 import org.miraiboot.entity.MessageEventPack;
-import org.miraiboot.utils.HttpUtil;
 
 import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.lang.reflect.Method;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -42,6 +37,8 @@ public class ImageMessageBuilder {
 
     private boolean isUTTPRequestSuccess = true;
 
+    private HttpProperties properties = null;
+
     /**
      * <h2>自定义图片消息构造器</h2>
      * <p>可以自定义图文消息构成</p>
@@ -63,6 +60,30 @@ public class ImageMessageBuilder {
     public ImageMessageBuilder(MessageEventPack eventPack){
         this.messageEventPack = eventPack;
         this.event = eventPack.getEvent();
+    }
+
+    /**
+     * <h2>自定义图片消息构造器</h2>
+     * <p>可以自定义图文消息构成</p>
+     * <p>样例:</p>
+     * <p>EnhancedMessageChain chain = new ImageMessageBuilder(MessageEventPack)</p>
+     * <p>&nbsp;&nbsp;.add(messageChain)</p>
+     * <p>&nbsp;&nbsp;.add("1234\n")</p>
+     * <p>&nbsp;&nbsp;.add("1234\n", "5678\n")</p>
+     * <p>&nbsp;&nbsp;.add(enhancedMessageChain)</p>
+     * <p>&nbsp;&nbsp;.add(LocalFilePath)</p>
+     * <p>&nbsp;&nbsp;.add(urlPath)</p>
+     * <p>&nbsp;&nbsp;.add(file)</p>
+     * <p>&nbsp;&nbsp;.send();（或.build();）</p>
+     *<p>}</p>
+     * @param eventPack 事件封装
+     * @author Haythem
+     * @since 1.0.0
+     */
+    public ImageMessageBuilder(MessageEventPack eventPack, HttpProperties properties){
+        this.messageEventPack = eventPack;
+        this.event = eventPack.getEvent();
+        this.properties = properties;
     }
 
     /**
@@ -188,36 +209,10 @@ public class ImageMessageBuilder {
     }
 
     private ExternalResource ExtResBuilder(String path){
-        ExternalResource externalResource = null;
-        try{
-            String methodName = Thread.currentThread().getStackTrace()[3].getMethodName();
-            String className = Thread.currentThread().getStackTrace()[3].getClassName();
-            Class<?> aClass = Class.forName(className);
-            Method[] methods = aClass.getDeclaredMethods();
-            Method method = null;
-            for(Method m : methods){
-                if(m.getName().equals(methodName)){
-                    method = m;
-                }
-            }
-            if(path.contains("http")){//URL
-                InputStream inputStream = null;
-                if(method.isAnnotationPresent(HttpsProperties.class)){
-                    HttpsProperties properties = method.getAnnotation(HttpsProperties.class);
-                    inputStream = HttpUtil.getInputStream_advanced(path, properties);
-                }else{
-                    inputStream = HttpUtil.getInputStream(path);
-                }
-                externalResource = Mirai.getInstance().getFileCacheStrategy().newCache(inputStream);
-            }else {//LOCAL
-                File file = new File(path);
-                externalResource = ExternalResource.create(file);
-            }
-        }catch (IOException e){
+        ExternalResource resource = new ExternalResourceBuilder().ExtResourceBuilder(path, properties);
+        if(resource == null){
             isUTTPRequestSuccess = false;
-        } catch (Exception e){
-            e.printStackTrace();
         }
-        return externalResource;
+        return resource;
     }
 }

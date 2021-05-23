@@ -5,6 +5,7 @@ import net.mamoe.mirai.message.data.MessageChainBuilder;
 import org.miraiboot.annotation.EventHandler;
 import org.miraiboot.annotation.EventHandlerComponent;
 import org.miraiboot.entity.EnhancedMessageChain;
+import org.miraiboot.entity.HttpProperties;
 import org.miraiboot.entity.MessageEventPack;
 import org.miraiboot.entity.PreProcessorData;
 import org.miraiboot.permission.CheckPermission;
@@ -16,8 +17,8 @@ import java.io.File;
 @EventHandlerComponent
 public class TextFileMsgBuilder {
 
-    private static final String FileLocalPath = "";//TODO: 群文件素材本地路径,自己填
-    private static final String VoiceLocalPath = "";//TODO: 语音素材本地路径,自己填
+    private static final String FileLocalPath = "fff";//TODO: 群文件素材本地路径,自己填
+    private static final String VoiceLocalPath = "fff";//TODO: 语音素材本地路径,自己填
     private static final String URLPath = "https://api.btstu.cn/sjbz/?lx=dongman";//素材URL
     private static final MessageChain messageChain = new MessageChainBuilder().append("fff").build();//已经构造好需要接龙的普通消息链
     private static final File file = new File(FileLocalPath);
@@ -34,7 +35,10 @@ public class TextFileMsgBuilder {
                 .add(file)
                 .build();//构造但不发送
 
-        EnhancedMessageChain chains = new VoiceMessageBuilder(eventPack)
+        HttpProperties properties = new HttpProperties();
+        properties.setRequestProperties("Connection", "keep-alive");//TODO:添加属性，支持重写
+
+        EnhancedMessageChain chains = new VoiceMessageBuilder(eventPack, properties)//接龙
                 .add(chain)
                 .add(VoiceLocalPath)
                 .send();//构造并发送
