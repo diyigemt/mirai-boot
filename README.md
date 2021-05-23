@@ -102,7 +102,7 @@ public class Main {
 在主类包下任意一个包或者直接在主类旁边创建一个新的类
 
 ```java
-@ExceptionHandlerComponent
+@EventHandlerComponent
 public class Test {
 	@EventHandler(target = "复读")
 	public void test(MessageEventPack eventPack, PreProcessorData data) {
@@ -128,7 +128,7 @@ data：保存miraiboot的资源文件 放在其中的文件可以很方便地通
 关于事件过滤：
 
 ```java
-@ExceptionHandlerComponent
+@EventHandlerComponent
 public class Test {
 	@EventHandler(target = "复读")
     @MessageFilter(accounts = "1231231231")
@@ -143,7 +143,7 @@ public class Test {
 关于权限管理
 
 ```java
-@ExceptionHandlerComponent
+@EventHandlerComponent
 public class Test {
 	@EventHandler(target = "复读")
 	@CheckPermission(blocks = "123123123", isAdminOnly = true)
@@ -158,6 +158,7 @@ public class Test {
 关于事件预处理
 
 ```java
+@EventHandlerComponent
 public class Test {
 	@EventHandler(target = "复读")
 	@MessagePreProcessor(filterType = MessagePreProcessorMessageType.At)
@@ -178,7 +179,7 @@ public class Test {
 来 我们新建一个类
 
 ```java
-@ExceptionHandlerComponent
+@EventHandlerComponent
 public class ExceptionHandler {
 	@ExceptionHandler(targets = IllegalArgumentException.class, priority = 1)
 	public void test(Throwable e){
@@ -198,3 +199,40 @@ targets可以接受一个数组 priority指代执行优先级 你可以为一个
 关于配置文件 生成的文件里每一行都有注释
 
 关于其他demo  可以去function包下看看
+
+# 详细开发文档
+
+## 事件处理
+
+miraiboot的事件可以分为两类：消息事件(群聊 好友会话和通过群发起的临时会话)和其他事件。它们都可以通过以下方式处理
+
+### 消息事件处理
+
+通过对类加上`@EventHandlerComponent`的注解，并对其中的方法加上`@EventHandler`的注解，可以将一个方法注册为消息事件处理器。例如：
+
+```java
+@EventHandlerComponent
+public class Test {
+	@EventHandler(target = "复读")
+	public void test(MessageEventPack eventPack, PreProcessorData data) {
+		eventPack.reply(eventPack.getMessage());
+	}
+}
+```
+
+这个消息事件处理器的功能是对所有包含纯文本消息"复读"的内容进行复读。
+
+方法之多有**2**个参数，第一个是`MessageEventPack` 包含了对消息事件本体的简单封装，第二个参数是`PreProcessorData` 是对消息事件的一些预处理内容，**多余**的参数将会在执行时传入null。
+
+以上的示例使用了4个miraiboot的类，下面将会分别详细介绍它们的参数和用法
+
+#### @EventHandlerComponent
+
+将该类标注为事件处理器类，启动时将会在该类下将标注了`@EventHandler`注解的方法注册为消息事件处理器
+
+| 类型 | 属性名 | 默认值 | 说明                                               |
+| ---- | ------ | ------ | -------------------------------------------------- |
+| int  | value  | 0      | 该类中所有被标注为消息处理器在权限表中的默认权限id |
+
+#### @EventHandler
+
