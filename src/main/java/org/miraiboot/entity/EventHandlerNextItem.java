@@ -133,11 +133,15 @@ public class EventHandlerNextItem<T extends EventHandlerNext> {
   }
 
   private void handlerException(Throwable e) {
+    String res = "";
     if (e instanceof InvocationTargetException) {
       Throwable ex = ((InvocationTargetException) e).getTargetException();
-      ExceptionHandlerManager.getInstance().emit(ex.getClass().getCanonicalName(), ex);
+      res = ExceptionHandlerManager.getInstance().emit(ex.getClass().getCanonicalName(), ex);
     } else {
-      ExceptionHandlerManager.getInstance().emit(e.getClass().getCanonicalName(), e);
+      res = ExceptionHandlerManager.getInstance().emit(e.getClass().getCanonicalName(), e);
+    }
+    if (res == null) {
+      e.printStackTrace();
     }
   }
 }
