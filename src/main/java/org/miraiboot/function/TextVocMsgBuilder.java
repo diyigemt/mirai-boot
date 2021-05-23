@@ -9,7 +9,6 @@ import org.miraiboot.entity.HttpProperties;
 import org.miraiboot.entity.MessageEventPack;
 import org.miraiboot.entity.PreProcessorData;
 import org.miraiboot.permission.CheckPermission;
-import org.miraiboot.utils.SendMessageUtil;
 import org.miraiboot.utils.builder.VoiceMessageBuilder;
 
 import java.io.File;
@@ -24,23 +23,22 @@ public class TextVocMsgBuilder {
     @EventHandler(target = "VoiceMsg")
     @CheckPermission(isAdminOnly = true)
     public static void textVoiceBuilder(MessageEventPack eventPack, PreProcessorData data){
-//        EnhancedMessageChain chain = new VoiceMessageBuilder(eventPack)
-//                .add("1234")//纯文本消息
-//                .add("1234","5678")//支持多个字符串参数输入
-//                .add(LocalPath)
-//                .add(URLPath)
-//                .add(messageChain)
-//                .add(file)
-//                .build();//构造但不发送
-//
+        EnhancedMessageChain chain = new VoiceMessageBuilder(eventPack)
+                .add("1234")//纯文本消息
+                .add("1234","5678")//支持多个字符串参数输入
+                .add(LocalPath)
+                .add(URLPath)
+                .add(messageChain)
+                .add(file)
+                .build();//构造但不发送
+
         HttpProperties properties = new HttpProperties();
         properties.setRequestProperties("Connection", "keep-alive");//TODO:添加属性，支持重写
-//
-//        EnhancedMessageChain chains = new VoiceMessageBuilder(eventPack, properties)//接龙
-//                .add(chain)
-//                .add("end")
-//                .add(URLPath)
-//                .send();//构造并发送
-        SendMessageUtil.VoiceMsgSender(eventPack, URLPath, properties, properties);
+
+        EnhancedMessageChain chains = new VoiceMessageBuilder(eventPack, properties)//接龙
+                .add(chain)
+                .add("end")
+                .add(URLPath)
+                .send();//构造并发送
     }
 }

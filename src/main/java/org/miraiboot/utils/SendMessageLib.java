@@ -20,11 +20,9 @@ import java.io.IOException;
  * @since 1.0.0
  */
 
-public class SendMessageUtil {
+public class SendMessageLib {
 
     private static ExternalResource resource = null;
-
-    private static boolean isHttpRquestSuccesss = true;
 
     /**
      * <h2>单张图片消息构造器</h2>
@@ -32,11 +30,11 @@ public class SendMessageUtil {
      * <p>本机路径和URL均可</p>
      * <p>注：当使用URL素材时，如果网络不佳未能获得素材会发送以下纯文本消息:</p>
      * <p>"联网获取素材失败"</p>
-     *  @param eventPack   消息事件，群聊或私聊
+     * @param eventPack 消息事件，群聊或私聊
      * @param ImgPath 图片来源
      */
-    public static void ImageMessageSender(MessageEventPack eventPack, String ImgPath) {
-        Image image = ImgMsgBuilder(eventPack, ImgPath);
+    public static void ImageMessageSender(MessageEventPack eventPack, String ImgPath, HttpProperties... properties) {
+        Image image = ImgMsgBuilder(eventPack, ImgPath, properties);
         eventPack.getSubject().sendMessage(image);
         Close();
     }
@@ -47,12 +45,12 @@ public class SendMessageUtil {
      * <p>本机路径和URL均可</p>
      * <p>注：当使用URL素材时，如果网络不佳未能获得素材会发送以下纯文本消息:</p>
      * <p>"联网获取素材失败"</p>
-     *  @param eventPack    消息事件，群聊或私聊
+     * @param eventPack 消息事件，群聊或私聊
      * @param messages 消息链
      * @param ImgPath  图片来源
      */
-    public static void ImageMessageSender(MessageEventPack eventPack, MessageChain messages, String ImgPath) {
-        Image image = ImgMsgBuilder(eventPack, ImgPath);
+    public static void ImageMessageSender(MessageEventPack eventPack, MessageChain messages, String ImgPath, HttpProperties... properties) {
+        Image image = ImgMsgBuilder(eventPack, ImgPath, properties);
         MessageChain messageChain = messages;
         messageChain = messageChain.plus(image);
         eventPack.getSubject().sendMessage(messageChain);
@@ -70,12 +68,12 @@ public class SendMessageUtil {
      * <p>本机路径和URL均可</p>
      * <p>注：当使用URL素材时，如果网络不佳未能获得素材会发送以下纯文本消息:</p>
      * <p>"联网获取素材失败"</p>
-     *  @param eventPack    消息事件，群聊或私聊
+     * @param eventPack 消息事件，群聊或私聊
      * @param messages 纯文本消息
      * @param ImgPath  图片来源
      */
-    public static void ImageMessageSender_asc(MessageEventPack eventPack, String messages, String ImgPath) {
-        Image image = ImgMsgBuilder(eventPack, ImgPath);
+    public static void ImageMessageSender_asc(MessageEventPack eventPack, String messages, String ImgPath, HttpProperties... properties) {
+        Image image = ImgMsgBuilder(eventPack, ImgPath, properties);
         MessageChain messageChain = new MessageChainBuilder()
                 .append(messages)
                 .append(image)
@@ -95,12 +93,12 @@ public class SendMessageUtil {
      * <p>本机路径和URL均可</p>
      * <p>注：当使用URL素材时，如果网络不佳未能获得素材会发送以下纯文本消息:</p>
      * <p>"联网获取素材失败"</p>
-     *  @param eventPack    消息事件，群聊或私聊
+     * @param eventPack 消息事件，群聊或私聊
      * @param messages 纯文本消息
      * @param ImgPath  图片来源
      */
-    public static void ImageMessageSender_desc(MessageEventPack eventPack, String messages, String ImgPath) {
-        Image image = ImgMsgBuilder(eventPack, ImgPath);
+    public static void ImageMessageSender_desc(MessageEventPack eventPack, String messages, String ImgPath, HttpProperties properties) {
+        Image image = ImgMsgBuilder(eventPack, ImgPath, properties);
         MessageChain messageChain = new MessageChainBuilder()
                 .append(image)
                 .append(messages)
@@ -126,8 +124,8 @@ public class SendMessageUtil {
      * @param message_after  后文
      * @param ImgPath        图片来源
      */
-    public static void ImageMessageSender_surround(MessageEventPack eventPack, String message_before, String message_after, String ImgPath) {
-        Image image = ImgMsgBuilder(eventPack, ImgPath);
+    public static void ImageMessageSender_surround(MessageEventPack eventPack, String message_before, String message_after, String ImgPath, HttpProperties properties) {
+        Image image = ImgMsgBuilder(eventPack, ImgPath, properties);
         MessageChain messageChain = new MessageChainBuilder()
                 .append(message_before)
                 .append(image)
@@ -263,8 +261,8 @@ public class SendMessageUtil {
         Close();
     }
 
-    private static Image ImgMsgBuilder(MessageEventPack eventPack, String ImgPath) {
-        resource = ExtResBuilder(eventPack, ImgPath);
+    private static Image ImgMsgBuilder(MessageEventPack eventPack, String ImgPath, HttpProperties... properties) {
+        resource = ExtResBuilder(eventPack, ImgPath, properties);
         return ExternalResource.Companion.uploadAsImage(resource, eventPack.getSubject());
     }
 
@@ -321,11 +319,7 @@ public class SendMessageUtil {
                 eventPack.reply("联网获取素材失败");
             }
         }else {
-            try {
-                throw new MultipleParameterException("Parameter: \"HTTPProperties\" needs 1 but found " + properties.length + ".");
-            }catch (MultipleParameterException e){
-                e.printStackTrace();
-            }
+            throw new MultipleParameterException("Parameter: \"HttpProperties\" need 1 but found " + properties.length + ".");
         }
 
         return resource;
