@@ -458,6 +458,73 @@ public class Test {
 
 被注册的方法至多有**1**个参数`BotEventPack`里面目前只有一个属性，即事件本身，**多余** 的参数将会在执行时传入null。
 
+### 消息事件预处理
+
+#### @MessageFilter
+
+消息事件过滤器，在所有规则通过时EventHandler才会被触发
+
+| 类型                   | 属性名    | 默认值                      | 说明                                              |
+| ---------------------- | --------- | --------------------------- | ------------------------------------------------- |
+| String                 | value     | ""                          | 匹配的内容，为空表示忽略                          |
+| MessageFilterMatchType | matchType | MessageFilterMatchType.NULL | 关键词的匹配类型，为NULL表示忽略                  |
+| String[]               | accounts  | {}                          | 若消息发送着不在列表内则不做响应，为空表示忽略    |
+| String[]               | groups    | {}                          | 若消息发送着不在列表内则不做响应，为空表示忽略    |
+| String[]               | bots      | {}                          | 若消息接受的bot不在列表内则不做响应，为空表示忽略 |
+| boolean                | isAt      | false                       | 是否当bot被at时才触发                             |
+| boolean                | isAtAll   | false                       | 是否at全体时才触发                                |
+| boolean                | isAtAny   | false                       | 是否有人被at时才触发，不一定是bot被at             |
+
+##### `value`：
+
+需要匹配的内容，为空表示忽略
+
+匹配将会对消息内容的**所有纯文本**进行匹配
+
+##### `MessageFilterMatchType`：
+
+消息匹配类型
+
+| 值                 | 说明                 |
+| ------------------ | -------------------- |
+| NULL               | 忽略                 |
+| EQUALS             | 相同匹配             |
+| EQUALS_IGNORE_CASE | 忽略大小写的相同匹配 |
+| CONTAINS           | 包含匹配             |
+| STARTS_WITH        | 开头匹配             |
+| ENDS_WITH          | 结尾匹配             |
+| REGEX_MATCHES      | 正则全文匹配         |
+| REGEX_FIND         | 正则查找匹配         |
+
+#### @MessagePreProcessor
+
+消息事件预处理器，对收到的消息事件进行预处理
+
+| 类型                             | 属性名        | 默认值 | 说明                                                        |
+| -------------------------------- | ------------- | ------ | ----------------------------------------------------------- |
+| boolean                          | textProcessor | false  | 将所有纯文本消息提取出来保存在PreProcessorData.text         |
+| MessagePreProcessorMessageType[] | filterType    | {}     | 将对应类型的消息提取出来保存在PreProcessorData.classified中 |
+
+##### `textProcessor`：
+
+其实就目前来说此项会一直有效
+
+##### `filterType`：
+
+过滤类型，对应mirai-core的消息类型
+
+| 值         | 说明               |
+| ---------- | ------------------ |
+| PlainText  | 纯文本             |
+| Image      | 图片               |
+| At         | 艾特(@)人的消息    |
+| AtAll      | 艾特(@)全体的消息  |
+| Face       | 自带的表情栏的表情 |
+| FlashImage | 闪照               |
+|            |                    |
+|            |                    |
+|            |                    |
+
 ## 上下文监听
 
 上下文监听器的注册有两种方式，这里介绍其中种——在消息事件处理器中注册：
@@ -509,6 +576,8 @@ public class TestNext {
 
 `1 * 60 * 1000L`表示监听1min，超时时调用`onTimeOut`发送消息停止监听。
 
+更详细的内容可以看注释
+
 ## 异常处理
 
 通过对类加上`@ExceptionHandlerComponent`的注解，并对其中的方法加上`@ExceptionHandler`的注解，可以将一个方法注册为异常处理器。例如：
@@ -555,3 +624,4 @@ public class TestException {
 ##### `priority`：
 
 处理器的优先级，当同一个异常有多个处理器时，将会按顺序从高优先级至低优先级依次执行，高优先级的处理器方法可以返回一个boolean值，主动阻止低优先级异常处理器的执行，但是**无法**阻止同优先级的处理器。
+
