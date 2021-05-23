@@ -425,12 +425,133 @@ public abstract class EventHandlerNext {
 
 #### PreProcessorData
 
-`PreProcessorData`是对消息时间的处理结果，包含了解析出的指令、参数、纯文本和@MessagePreProcessor的预处理结果
+`PreProcessorData`是对消息事件的处理结果，包含了解析出的指令、参数、纯文本和@MessagePreProcessor的预处理结果
 
-| 属性 | 类型 | 说明 |
-| ---- | ---- | ---- |
-|      |      |      |
-|      |      |      |
-|      |      |      |
-|      |      |      |
+| 属性         | 类型                | 说明                                         |
+| ------------ | ------------------- | -------------------------------------------- |
+| commandText  | String              | 匹配到的包含指令开头所有内容                 |
+| command      | String              | 匹配到的指令                                 |
+| args         | List<String>        | 匹配到的参数                                 |
+| text         | String              | 消息纯文本                                   |
+| classified   | List<SingleMessage> | 过滤出的消息内容                             |
+| triggerCount | int                 | 上下文触发剩余次数(仅在上下文监听事件中有用) |
 
+### 其他事件处理
+
+通过对类加上`@EventHandlerComponent`的注解，并对其中的方法加上`@EventHandler(type = EventHandlerType.OTHER_HANDLER)`的注解，可以将一个方法注册为非消息事件的事件处理器。例如：
+
+```java
+@EventHandlerComponent
+public class Test {
+   @EventHandler(type = EventHandlerType.OTHER_HANDLER)
+   public void test(BotEventPack eventPack) {
+       BotEvent event = eventPack.getEvent();
+       if (event instanceof MemberCardChangeEvent) {
+       		String aNew = ((MemberCardChangeEvent) event).getNew();
+       		event.getBot().getGroup(1231231312L).sendMessage("change to: " + aNew);
+       }
+   }
+}
+```
+
+这个事件处理器的功能是监听群友的名片变化并发送到群中。
+
+被注册的方法至多有**1**个参数`BotEventPack`里面目前只有一个属性，即事件本身，**多余** 的参数将会在执行时传入null。
+
+## 上下文监听
+
+上下文监听器的注册有两种方式，这里介绍其中种——在消息事件处理器中注册：
+
+```java
+@EventHandlerComponent
+public class TestNext {
+
+  @EventHandler(target = "搜图")
+  @MessagePreProcessor(filterType = MessagePreProcessorMessageType.Image)
+  public void testTimeOut(MessageEventPack eventPack, PreProcessorData data) {
+    List<SingleMessage> filter = data.getClassified();
+    if (filter.isEmpty()) {
+      eventPack.reply("图呢");
+      eventPack.onNextNow(new EventHandlerNext() {
+        @Override
+        @MessagePreProcessor(filterType = MessagePreProcessorMessageType.Image)
+        public ListeningStatus onNext(MessageEventPack eventPack, PreProcessorData nextData) {
+          if (nextData.getText().contains("没有")) {
+            eventPack.reply("停止监听");
+            return ListeningStatus.STOPPED;
+          }
+          List<SingleMessage> filter = nextData.getClassified();
+          if (filter.isEmpty()) {
+            eventPack.reply("等着呢 还是没有");
+            return ListeningStatus.LISTENING;
+          }
+          SingleMessage image = filter.get(0);
+          eventPack.reply(new PlainText("接收到图片\n"), image);
+          return ListeningStatus.STOPPED;
+        }
+
+        @Override
+        public void onTimeOut(MessageEventPack eventPack, PreProcessorData nextData) {
+          eventPack.reply("已经超时 停止监听");
+        }
+      }, data, 1 * 60 * 1000L, -1);
+      return;
+    }
+    SingleMessage image = filter.get(0);
+    eventPack.reply(new PlainText("接收到图片\n"), image);
+  }
+}
+```
+
+以上是一个图片接收器的示例，机器人接受到指令搜图后触发监听器，`@MessagePreProcessor`过滤消息中的图片内容保存至`PreProcessorData`中，如果过滤后的消息List为空，表示发送消息搜图时并没有带上图片，于是**注册**了一个上下文监听器等待消息发送者发送图片。
+
+在上下文监听器中，同样使用了`@MessagePreProcessor`过滤消息中的图片内容，同时，监听器还会判断接下来消息中是否包含文本内容"没有"，如果包含，那么返回`ListeningStatus.STOPPED`结束监听。
+
+`1 * 60 * 1000L`表示监听1min，超时时调用`onTimeOut`发送消息停止监听。
+
+## 异常处理
+
+通过对类加上`@ExceptionHandlerComponent`的注解，并对其中的方法加上`@ExceptionHandler`的注解，可以将一个方法注册为异常处理器。例如：
+
+```
+@ExceptionHandlerComponent
+public class TestException {
+  @ExceptionHandler(targets = IllegalArgumentException.class)
+  public void testException(Throwable e) {
+    BotManager.getInstance().get(1231213L).getGroup(1002123124182L).sendMessage("error: " + e.getMessage() + " priority: 0");
+  }
+}
+```
+
+该异常处理器的功能是对`IllegalArgumentException`异常的处理，发生异常时向群1002123124182发送异常信息。
+
+**注意**当异常没有对应的异常处理器时，不会被抛出，但是会打印stacktrce。
+
+**注意**目前的异常处理器执行的是精确匹配，即全类名必须相等时异常处理器才会被触发。
+
+以上的代码使用了两个注解，下面将详细介绍它们的参数和用法
+
+#### @ExceptionHandlerComponent
+
+将该类标记为异常处理类，启动时将会在该类下将标注了`@ExceptionHandler`注解的方法注册为异常处理器
+
+| 类型 | 属性名 | 默认值 | 说明                                                   |
+| ---- | ------ | ------ | ------------------------------------------------------ |
+| int  | value  | 0      | 当@ExceptionHandler的priority未设置(为默认的0)时取该值 |
+
+#### @ExceptionHandler
+
+将受到注解的方法指定为异常处理器
+
+| 类型                         | 属性名   | 默认值 | 说明             |
+| ---------------------------- | -------- | ------ | ---------------- |
+| Class<? extends Exception>[] | targets  | {}     | 要处理的异常列表 |
+| int                          | priority | 0      | 触发优先级       |
+
+##### `targerts`：
+
+需要监听的异常类数组
+
+##### `priority`：
+
+处理器的优先级，当同一个异常有多个处理器时，将会按顺序从高优先级至低优先级依次执行，高优先级的处理器方法可以返回一个boolean值，主动阻止低优先级异常处理器的执行，但是**无法**阻止同优先级的处理器。

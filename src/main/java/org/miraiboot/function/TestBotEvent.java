@@ -10,6 +10,7 @@ import org.miraiboot.entity.BotEventPack;
 
 public class TestBotEvent {
 
+  @EventHandler(type = EventHandlerType.OTHER_HANDLER)
   public void testBotEvent(BotEventPack eventPack) {
     BotEvent event = eventPack.getEvent();
     if (event instanceof MemberCardChangeEvent) {

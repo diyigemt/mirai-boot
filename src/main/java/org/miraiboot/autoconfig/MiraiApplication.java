@@ -237,14 +237,15 @@ public class MiraiApplication {
     int classPriority = classAnnotation.value();
     for (Method method : clazz.getMethods()) {
       if (!method.isAnnotationPresent(ExceptionHandler.class)) continue;
+      ExceptionHandler annotation = method.getAnnotation(ExceptionHandler.class);
+      Class<? extends Exception>[] targets = annotation.targets();
+      if (targets.length == 0) return;
+      if (!method.isAnnotationPresent(ExceptionHandler.class)) continue;
       // 检查返回值类型
       Class<?> returnType = method.getReturnType();
       if (!(returnType == void.class || returnType == boolean.class)) continue;
-
-      ExceptionHandler annotation = method.getAnnotation(ExceptionHandler.class);
       int priority = annotation.priority();
       if (priority == 0 && classPriority != 0) priority = classPriority;
-      Class<? extends Exception>[] targets = annotation.targets();
       for (Class<? extends Exception> c : targets) {
         String target = c.getCanonicalName();
         ExceptionHandlerManager.getInstance().on(target, clazz, method, priority);

@@ -142,8 +142,18 @@ public class EventHandlerManager {
     for (EventHandlerItem handler: eventHandlerItems) {
       Method method = handler.getHandler();
       Class<?> invoker = handler.getInvoker();
+      int count = method.getParameterCount();
+      Object[] param = null;
+      if (count != 0) {
+        param = new Object[count];
+        param[0] = eventPack;
+      }
       try {
-        method.invoke(invoker.getDeclaredConstructor().newInstance(), eventPack);
+        if (count != 0) {
+          method.invoke(invoker.getDeclaredConstructor().newInstance(), param);
+        } else {
+          method.invoke(invoker.getDeclaredConstructor().newInstance());
+        }
       } catch (IllegalAccessException | InvocationTargetException | InstantiationException | NoSuchMethodException e) {
         handlerException(e);
         return "其他事件执行失败: " + target;
