@@ -11,7 +11,6 @@ import org.miraiboot.entity.BotEventPack;
 @EventHandlerComponent
 public class TestBotEvent {
 
-  @EventHandler(type = EventHandlerType.OTHER_HANDLER)
   public void testBotEvent(BotEventPack eventPack) {
     BotEvent event = eventPack.getEvent();
     if (event instanceof MemberCardChangeEvent) {

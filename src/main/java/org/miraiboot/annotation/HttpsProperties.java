@@ -4,7 +4,7 @@ import java.lang.annotation.*;
 
 /**
  * <h2>自定义HTTP属性</h2>
- * <p>与SendMessageUtils配套使用，在引用SendMessage工具类的方法上使用</p>
+ * <p>与SendMessageUtils配套使用，实例化后在Builder中作为参数传入</p>
  * <p></p>
  * <p>int Timeout 超时时间，默认3000</p>
  * <p></p>

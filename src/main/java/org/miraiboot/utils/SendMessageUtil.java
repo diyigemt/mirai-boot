@@ -327,7 +327,7 @@ public class SendMessageUtil {
                 InputStream inputStream = null;
                 if(method.isAnnotationPresent(HttpsProperties.class)){
                     HttpsProperties properties = method.getAnnotation(HttpsProperties.class);
-                    inputStream = HttpUtil.getInputStream_advanced(path, properties);
+//                    inputStream = HttpUtil.getInputStream_advanced(path, properties);
                 }else{
                     inputStream = HttpUtil.getInputStream(path);
                 }

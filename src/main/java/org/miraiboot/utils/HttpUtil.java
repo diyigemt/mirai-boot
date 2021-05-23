@@ -1,12 +1,16 @@
 package org.miraiboot.utils;
 
 import org.miraiboot.annotation.HttpsProperties;
+import org.miraiboot.entity.HttpProperties;
 import org.miraiboot.utils.builder.FileMessageBuilder;
 
 import javax.net.ssl.HttpsURLConnection;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
 import java.util.StringTokenizer;
 
 /**
@@ -18,6 +22,8 @@ import java.util.StringTokenizer;
 
 public class HttpUtil {
 
+	public static HttpsProperties properties = null;
+
 	/**
 	 * <h2>带高级设置的HTTP请求</h2>
 	 * <p>通过实例化注解或添加注解来增加HOST等设置</p>
@@ -26,16 +32,21 @@ public class HttpUtil {
 	 * @param properties 注解实例化结果
 	 * @return 目标文件输入流
 	 */
-	public static InputStream getInputStream_advanced(String urlString, HttpsProperties properties) {
+	public static InputStream getInputStream_advanced(String urlString, HttpProperties properties) {
 		InputStream inputStream = null;
 		try {
 			URL url = new URL(urlString);
 			HttpsURLConnection connection = (HttpsURLConnection) url.openConnection();
-			connection.setConnectTimeout(properties.Timeout());
-			connection.setRequestMethod(properties.RequestMethod());
-			for (int i = 0; i < properties.RequestProperties().length; i += 2) {
-				connection.setRequestProperty(properties.RequestProperties()[i], properties.RequestProperties()[i + 1]);
+			connection.setConnectTimeout(properties.getTimeout());
+			connection.setRequestMethod(properties.getRequestMethod());
+			Map<String, String> map = properties.getRequestProperties();
+			Set set = map.entrySet();
+			for (Object o : set) {
+				String key = (String) o;
+				String value = map.get(key);
+				connection.setRequestProperty(key, value);
 			}
+
 			connection.connect();
 			inputStream = connection.getInputStream();
 			URL su = connection.getURL();
@@ -74,4 +85,5 @@ public class HttpUtil {
 		}
 		return file;
 	}
+
 }
