@@ -18,5 +18,8 @@ public class ExceptionListener implements Thread.UncaughtExceptionHandler {
     if (res != null) {
       MiraiMain.logger.error(res);
     }
+    if (res == null) {
+      e.printStackTrace();
+    }
   }
 }
