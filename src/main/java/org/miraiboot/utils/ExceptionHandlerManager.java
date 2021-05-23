@@ -78,7 +78,7 @@ public class ExceptionHandlerManager {
         return "执行exception handler: " + target + " 时出错!";
       }
     }
-    return null;
+    return "";
   }
 
   /**

@@ -371,8 +371,8 @@ public class MessageEventPack {
 	 * @param target 需要过滤出的消息类型
 	 * @return 过滤出的列表
 	 */
-	public <T extends SingleMessage> List<SingleMessage> getMessageByType(Class<T> target) {
-		return event.getMessage().stream().filter(item -> target.isAssignableFrom(item.getClass())).collect(Collectors.toList());
+	public <T extends SingleMessage> List<T> getMessageByType(Class<T> target) {
+		return event.getMessage().stream().filter(item -> target.isAssignableFrom(item.getClass())).map(item -> (T) item).collect(Collectors.toList());
 	}
 
 	/**
@@ -439,7 +439,7 @@ public class MessageEventPack {
 	 * 详细请看 https://github.com/mamoe/mirai/blob/dev/mirai-core-api/src/commonMain/kotlin/message/data/MessageSource.kt
 	 * @return 消息源
 	 */
-	public Incoming Incoming() {
+	public Incoming getSource() {
 		return event.getSource();
 	}
 

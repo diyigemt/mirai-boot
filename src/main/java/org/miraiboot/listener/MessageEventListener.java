@@ -31,7 +31,8 @@ public class MessageEventListener implements Consumer<MessageEvent> {
 		// 封装
 		MessageEventPack eventPack = new MessageEventPack(messageEvent);
 		// 提取纯文本
-		List<SingleMessage> collect = eventPack.getMessageByType(PlainText.class);
+
+		List<PlainText> collect = eventPack.getMessageByType(PlainText.class);
 		StringBuffer sb = new StringBuffer();
 		collect.forEach(item -> {
 			sb.append(item.contentToString());
