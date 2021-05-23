@@ -244,6 +244,7 @@ public class MiraiMain {
 	 * @param event 消息事件
 	 * @param msg 要回复的消息内容
 	 */
+	@Deprecated
 	public void quickReply(MessageEvent event, String msg) {
 		long senderId = event.getSender().getId();
 		MessageChain chain = null;
@@ -262,6 +263,7 @@ public class MiraiMain {
 	 * @param event 消息事件
 	 * @param messages 消息数组
 	 */
+	@Deprecated
 	public void quickReply (MessageEvent event, SingleMessage... messages) {
 		MessageChainBuilder builder = new MessageChainBuilder();
 		if (event instanceof GroupMessageEvent) {
@@ -280,6 +282,7 @@ public class MiraiMain {
 	 * @param event 消息事件
 	 * @param chain 消息链
 	 */
+	@Deprecated
 	public void quickReply(MessageEvent event, MessageChain chain) {
 		event.getSubject().sendMessage(chain);
 	}

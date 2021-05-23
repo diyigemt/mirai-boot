@@ -13,4 +13,9 @@ import java.lang.annotation.*;
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
 public @interface ExceptionHandlerComponent {
+	/**
+	 * <h2>默认优先级</h2>
+	 * 当@ExceptionHandler的priority未设置(为默认的0)时取该值
+	 */
+	int value() default 0;
 }

@@ -255,7 +255,7 @@ public class MessageEventPack {
 	 * @see EventHandlerManager
 	 * @see EventHandlerNext
 	 */
-	public void onNext(EventHandlerNext next) {
+	public <T extends EventHandlerNext> void onNext(T next) {
 		EventHandlerManager.getInstance().onNext(getSenderId(), next);
 	}
 
@@ -269,7 +269,7 @@ public class MessageEventPack {
 	 * @see EventHandlerManager
 	 * @see EventHandlerNext
 	 */
-	public void onNext(EventHandlerNext next, long timeOut) {
+	public <T extends EventHandlerNext> void onNext(T next, long timeOut) {
 		EventHandlerManager.getInstance().onNext(getSenderId(), next, timeOut);
 	}
 
@@ -283,7 +283,7 @@ public class MessageEventPack {
 	 * @see EventHandlerManager
 	 * @see EventHandlerNext
 	 */
-	public void onNext(EventHandlerNext next, int triggerCount) {
+	public <T extends EventHandlerNext> void onNext(T next, int triggerCount) {
 		EventHandlerManager.getInstance().onNext(getSenderId(), next, triggerCount);
 	}
 
@@ -298,7 +298,7 @@ public class MessageEventPack {
 	 * @see EventHandlerManager
 	 * @see EventHandlerNext
 	 */
-	public void onNext(EventHandlerNext next, long timeOut, int triggerCount) {
+	public <T extends EventHandlerNext> void onNext(T next, long timeOut, int triggerCount) {
 		EventHandlerManager.getInstance().onNext(getSenderId(), next, timeOut, triggerCount);
 	}
 
@@ -314,7 +314,7 @@ public class MessageEventPack {
 	 * @see EventHandlerManager
 	 * @see EventHandlerNext
 	 */
-	public void onNext(long target, EventHandlerNext next, long timeOut, int triggerCount) {
+	public <T extends EventHandlerNext> void onNext(long target, T next, long timeOut, int triggerCount) {
 		EventHandlerManager.getInstance().onNext(target, next, timeOut, triggerCount);
 	}
 
@@ -328,7 +328,7 @@ public class MessageEventPack {
 	 * @see EventHandlerManager
 	 * @see EventHandlerNext
 	 */
-	public void onNextNow(EventHandlerNext next, PreProcessorData data) {
+	public <T extends EventHandlerNext> void onNextNow(T next, PreProcessorData data) {
 		EventHandlerManager.getInstance().onNextNow(getSenderId(), next, -1, -1, this, data);
 	}
 
@@ -344,7 +344,7 @@ public class MessageEventPack {
 	 * @see EventHandlerManager
 	 * @see EventHandlerNext
 	 */
-	public void onNextNow(EventHandlerNext next, PreProcessorData data, long timeOut, int triggerCount) {
+	public <T extends EventHandlerNext> void onNextNow(T next, PreProcessorData data, long timeOut, int triggerCount) {
 		EventHandlerManager.getInstance().onNextNow(getSenderId(), next, timeOut, triggerCount, this, data);
 	}
 
@@ -361,7 +361,7 @@ public class MessageEventPack {
 	 * @see EventHandlerManager
 	 * @see EventHandlerNext
 	 */
-	public void onNextNow(long target, EventHandlerNext next, PreProcessorData data, long timeOut, int triggerCount) {
+	public <T extends EventHandlerNext> void onNextNow(long target, T next, PreProcessorData data, long timeOut, int triggerCount) {
 		EventHandlerManager.getInstance().onNextNow(target, next, timeOut, triggerCount, this, data);
 	}
 

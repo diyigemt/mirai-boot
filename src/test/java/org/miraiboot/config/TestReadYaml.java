@@ -11,7 +11,7 @@ public class TestReadYaml {
   @Test
   public void testReadConfig() {
     InputStream stream = Main.class.getResourceAsStream("/application-example.yml");
-    ConfigFile configFile = new Yaml().loadAs(stream, ConfigFile.class);
-    System.out.println(configFile.toString());
+//    ConfigFile configFile = new Yaml().loadAs(stream, ConfigFile.class);
+//    System.out.println(configFile.toString());
   }
 }

@@ -16,7 +16,7 @@ import java.util.TimerTask;
  * @since 1.0.0
  */
 @Data
-public class EventHandlerNextItem {
+public class EventHandlerNextItem<T extends EventHandlerNext> {
   /**
    * 超时时间
    * @see org.miraiboot.constant.ConstantGlobal -> DEFAULT_EVENT_NET_TIMEOUT_TIME
@@ -30,7 +30,7 @@ public class EventHandlerNextItem {
    * 存储信息的handler类
    * @see EventHandlerNext
    */
-  private EventHandlerNext handler;
+  private T handler;
   /**
    * timer用
    */
@@ -57,11 +57,11 @@ public class EventHandlerNextItem {
     this.task = null;
   }
 
-  public EventHandlerNextItem(EventHandlerNext handler) {
+  public EventHandlerNextItem(T handler) {
     this.handler = handler;
   }
 
-  public EventHandlerNextItem(EventHandlerNext handler, long timeOut, int triggerCount) {
+  public EventHandlerNextItem(T handler, long timeOut, int triggerCount) {
     this(handler);
     this.timeOut = timeOut;
     this.triggerCount = triggerCount;
