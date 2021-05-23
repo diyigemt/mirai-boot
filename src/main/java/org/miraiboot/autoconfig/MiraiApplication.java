@@ -226,7 +226,7 @@ public class MiraiApplication {
       int permissionIndex = classAnnotation.value();
       if (method.isAnnotationPresent(CheckPermission.class)) {
         CheckPermission permission = method.getAnnotation(CheckPermission.class);
-        permissionIndex = permission.permissionIndex() == 0 ? permissionIndex : permission.permissionIndex();
+        permissionIndex = permission.FunctionID() == 0 ? permissionIndex : permission.FunctionID();
       }
       FunctionId.put(targetName, permissionIndex);
       EventHandlerManager.getInstance().on(targetName, clazz, method);

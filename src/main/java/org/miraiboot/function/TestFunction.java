@@ -11,7 +11,7 @@ import org.miraiboot.permission.CheckPermission;
 public class TestFunction{
 
   @EventHandler(target = "reply")
-  @CheckPermission(isAdminOnly = true, permissionIndex = FunctionId.reply)
+  @CheckPermission(isAdminOnly = true, FunctionID = FunctionId.reply)
   public void testReply(MessageEventPack eventPack, PreProcessorData data) {
     eventPack.getSubject().sendMessage(eventPack.getMessage());
   }

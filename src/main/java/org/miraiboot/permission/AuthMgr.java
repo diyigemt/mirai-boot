@@ -1,6 +1,5 @@
 package org.miraiboot.permission;
 
-import net.mamoe.mirai.event.events.MessageEvent;
 import net.mamoe.mirai.message.data.At;
 import net.mamoe.mirai.message.data.SingleMessage;
 import org.miraiboot.annotation.EventHandler;
@@ -11,7 +10,6 @@ import org.miraiboot.constant.MessagePreProcessorMessageType;
 import org.miraiboot.entity.MessageEventPack;
 import org.miraiboot.entity.PermissionItem;
 import org.miraiboot.entity.PreProcessorData;
-import org.miraiboot.mirai.MiraiMain;
 import org.miraiboot.utils.PermissionUtil;
 
 import java.util.List;
@@ -29,12 +27,13 @@ import java.util.List;
 public class AuthMgr {
 
     @EventHandler(target = "permit")
-    @CheckPermission(isAdminOnly = true, permissionIndex = FunctionId.permit)
+    @CheckPermission(isAdminOnly = true, isStrictRestricted = true, FunctionID = FunctionId.permit)
     @MessagePreProcessor(filterType = MessagePreProcessorMessageType.At)
     public void authorityManager(MessageEventPack eventPack, PreProcessorData data){
         List<String> args = data.getArgs();
         if(args == null){
-            MiraiMain.getInstance().quickReply(eventPack.getEvent(), "获取参数出错");
+//            MiraiMain.getInstance().quickReply(eventPack.getEvent(), "获取参数出错");
+            eventPack.reply("获取参数出错");
             return;
         }
         List<SingleMessage> classified = data.getClassified();
@@ -43,6 +42,10 @@ public class AuthMgr {
             senderId = ((At) message).getTarget();
             if (senderId != eventPack.getBotId()) break;
         }
+        if(senderId == -1L){
+            eventPack.reply("@成员不存在");
+            return;
+        }
         int commandId = 0;
 
         //临时权限剩余次数限制
@@ -50,10 +53,16 @@ public class AuthMgr {
         try{
             remain = Integer.parseInt(args.get(2));
             if(remain == 0 || remain < 0){
-                MiraiMain.getInstance().quickReply(eventPack.getEvent(), "参数：次数限制必须 > 0");
+//                MiraiMain.getInstance().quickReply(eventPack.getEvent(), "参数：次数限制必须 > 0");
+                eventPack.reply("参数：次数限制必须 > 0");
                 return;
             }
-        }catch (IndexOutOfBoundsException e){}
+        }catch (IndexOutOfBoundsException e){
+            remain = -1;
+        }catch (NumberFormatException e){
+            eventPack.reply("参数：次数限制输入非法");
+            return;
+        }
         try{
             if(args.get(0).contains("assign") || args.get(0).contains("cancel")){
                 commandId = FunctionId.getMap(args.get(1));
@@ -61,7 +70,8 @@ public class AuthMgr {
                 commandId = FunctionId.getMap(args.get(0));
             }
         }catch (NullPointerException e){
-            MiraiMain.getInstance().quickReply(eventPack.getEvent(), "一个或多个参数无效");
+//            MiraiMain.getInstance().quickReply(eventPack.getEvent(), "一个或多个参数无效");
+            eventPack.reply("一个或多个参数无效");
             return;
         }
         // 说明指令并没有被CheckPermission注解 不能进行权限判断
@@ -83,7 +93,8 @@ public class AuthMgr {
             }
         }
         if(permit == 2 || (senderId == -1L) || senderId == eventPack.getBotId()){
-            MiraiMain.getInstance().quickReply(eventPack.getEvent(), "命令：permit 无法将“permit”项识别为 函数、脚本文件或可运行程序的名称，请检查参数的拼写。");
+//            MiraiMain.getInstance().quickReply(eventPack.getEvent(), "命令：permit 无法将“permit”项识别为 函数、脚本文件或可运行程序的名称，请检查参数的拼写。");
+            eventPack.reply("命令：permit 无法将“permit”项识别为 函数、脚本文件或可运行程序的名称，请检查参数的拼写。");
             permit = 2;
             return;
         }
@@ -93,18 +104,22 @@ public class AuthMgr {
                 if(permissionItem.getSenderId() == senderId && permissionItem.getPermits() > 0){//数据库中存在临时权限
                     permissionItem.setPermits(0);
                     PermissionUtil.getInstance().updatePermissionItem(permissionItem);
-                    MiraiMain.getInstance().quickReply(eventPack.getEvent(), "对用户" + senderId + "的" + args.get(0) + "功能，禁用完成，临时权限已取消");
+//                    MiraiMain.getInstance().quickReply(eventPack.getEvent(), "对用户" + senderId + "的" + args.get(0) + "功能，禁用完成，临时权限已取消");
+                    eventPack.reply("对用户" + senderId + "的" + args.get(0) + "功能，禁用完成，临时权限已取消");
                 }else {
-                    MiraiMain.getInstance().quickReply(eventPack.getEvent(), "该用户已被禁用，无需操作");
+//                    MiraiMain.getInstance().quickReply(eventPack.getEvent(), "该用户已被禁用，无需操作");
+                    eventPack.reply("该用户已被禁用，无需操作");
                 }
             }catch (NullPointerException e){//数据库没有记录
                 PermissionUtil.getInstance().addPermissionItem(senderId, commandId);
-                MiraiMain.getInstance().quickReply(eventPack.getEvent(), "对用户" + senderId + "的" + args.get(0) + "功能，禁用完成");
+//                MiraiMain.getInstance().quickReply(eventPack.getEvent(), "对用户" + senderId + "的" + args.get(0) + "功能，禁用完成");
+                eventPack.reply("对用户" + senderId + "的" + args.get(0) + "功能，禁用完成");
             }
 
         }else if(permit == 1){
             PermissionUtil.getInstance().removePermissionItem(senderId, commandId);
-            MiraiMain.getInstance().quickReply(eventPack.getEvent(), "对用户" + senderId + "的" + args.get(0) + "功能，解锁完成");
+//            MiraiMain.getInstance().quickReply(eventPack.getEvent(), "对用户" + senderId + "的" + args.get(0) + "功能，解锁完成");
+            eventPack.reply("对用户" + senderId + "的" + args.get(0) + "功能，解锁完成");
         }
     }
 }
