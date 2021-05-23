@@ -39,7 +39,7 @@ public class MessageEventPack {
 	}
 
 	/**
-	 * <h2>回复一串文本消息并at发送者</h2>
+	 * <h2>回复一串消息并at发送者</h2>
 	 * @param s 一串文本
 	 */
 	public void reply(String... s) {
@@ -47,7 +47,7 @@ public class MessageEventPack {
 	}
 
 	/**
-	 * <h2>回复一串文本消息不at发送者</h2>
+	 * <h2>回复一串消息不at发送者</h2>
 	 * @param s 一串文本
 	 */
 	public void replyNotAt(String... s) {
@@ -55,7 +55,7 @@ public class MessageEventPack {
 	}
 
 	/**
-	 * <h2>回复一串文本消息并at发送者</h2>
+	 * <h2>回复一串消息并at发送者</h2>
 	 * @param msg 一串消息
 	 */
 	public void reply(SingleMessage... msg) {
@@ -64,7 +64,7 @@ public class MessageEventPack {
 
 
 	/**
-	 * <h2>回复一串文本消息不at发送者</h2>
+	 * <h2>回复一串消息不at发送者</h2>
 	 * @param msg 一串消息
 	 */
 	public void replyNotAt(SingleMessage... msg) {
@@ -72,7 +72,7 @@ public class MessageEventPack {
 	}
 
 	/**
-	 * <h2>回复一串文本消息并at发送者</h2>
+	 * <h2>回复一串消息并at发送者</h2>
 	 * @param chain 构建好的消息链
 	 */
 	public void reply(MessageChain chain) {
@@ -81,11 +81,34 @@ public class MessageEventPack {
 
 
 	/**
-	 * <h2>回复一串文本消息不at发送者</h2>
+	 * <h2>回复一串消息不at发送者</h2>
 	 * @param chain 构建好的消息链
 	 */
 	public void replyNotAt(MessageChain chain) {
 		MiraiMain.getInstance().replyNotAt(this, chain);
+	}
+
+	/**
+	 * <h2>回复一串消息并at发送者</h2>
+	 * 为啥要用list呢 因为发送语音和文件的时候 不能和其他类型的消息一起发送 所以要分开多条消息来发
+	 * @param chains 构建好的消息链列表
+	 */
+	public void reply(List<MessageChain> chains) {
+		for (MessageChain chain : chains) {
+			MiraiMain.getInstance().reply(this, chain);
+		}
+	}
+
+
+	/**
+	 * <h2>回复一串消息不at发送者</h2>
+	 * 为啥要用list呢 因为发送语音和文件的时候 不能和其他类型的消息一起发送 所以要分开多条消息来发
+	 * @param chains 构建好的消息链列表
+	 */
+	public void replyNotAt(List<MessageChain> chains) {
+		for (MessageChain chain : chains) {
+			MiraiMain.getInstance().replyNotAt(this, chain);
+		}
 	}
 
 	/**

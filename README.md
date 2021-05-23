@@ -179,7 +179,7 @@ public class Test {
 来 我们新建一个类
 
 ```java
-@EventHandlerComponent
+@ExceptionHandlerComponent
 public class ExceptionHandler {
 	@ExceptionHandler(targets = IllegalArgumentException.class, priority = 1)
 	public void test(Throwable e){
@@ -192,7 +192,9 @@ public class ExceptionHandler {
 
 当然这种方法目前还不完善 比如需要用户自己获得bot自己获取群自己回消息(这不是完全没做吗23333)
 
-targets可以接受一个数组 priority指代执行优先级 你可以为一个异常指定多个handler  同时方法可以返回一个boolean 当值为true是阻止低优先级的handler的触发
+targets可以接受一个数组，priority指代执行优先级。
+
+你可以为一个异常指定多个handler，同时方法可以返回一个boolean，当值为true时阻止低优先级的handler的触发
 
 关于动态权限管理  先看注释吧 
 
@@ -248,7 +250,7 @@ public class Test {
 
 这个消息事件处理器的功能是对所有包含纯文本消息"复读"的内容进行复读。
 
-方法之多有**2**个参数，第一个是`MessageEventPack` 包含了对消息事件本体的简单封装，第二个参数是`PreProcessorData` 是对消息事件的一些预处理内容，**多余**的参数将会在执行时传入null。
+方法至多有**2**个参数，第一个是`MessageEventPack` ，其包含了对消息事件本体的简单封装，第二个参数是`PreProcessorData` ，是对消息事件的一些预处理内容，**多余**的参数将会在执行时传入null。
 
 以上的示例使用了4个miraiboot的类，下面将会分别详细介绍它们的参数和用法
 
@@ -262,7 +264,7 @@ public class Test {
 
 #### @EventHandler
 
-将受到注解的方法标注为消息事件处理器
+将受到注解的方法指定为消息事件处理器
 
 | 类型               | 属性名 | 默认值              | 说明                                                       |
 | ------------------ | ------ | ------------------- | ---------------------------------------------------------- |
@@ -274,7 +276,9 @@ public class Test {
 
 ##### `target`：
 
-miriaboot是基于指令响应的机器人，**期望**所有事件处理器都需要有一个对应的指令才会触发，当target留空时，所有消息事件**均会**触发这个消息事件处理器。仅支持**纯中文|英文数字混合**两种类型。
+miriaboot是基于指令响应的机器人，**期望**所有事件处理器都需要有一个对应的指令才会触发，指令仅支持**纯中文|英文数字混合**两种类型。
+
+当target留空时，所有消息事件**均会**触发这个消息事件处理器。
 
 ##### `start`：
 
@@ -293,7 +297,7 @@ public void test2() {}
 
 ##### `split`：
 
-将指令与其后的参数分割开的*正则表达式*，默认值为"\\s+"也就是不定长空格。例如：
+将指令与其后的参数分割开的*正则表达式*，默认值为"\\s+"，也就是不定长空格。例如：
 
 ```JAVA
 @EventHandler(target = "help", start = "/")
@@ -349,15 +353,84 @@ public void test1() {}
 
 ##### 对消息事件进行回复
 
-| 方法原型                                  | 说明                                                         |
-| ----------------------------------------- | ------------------------------------------------------------ |
-| reply(String...):void                     | 将所有传入的字符串拼接成一条纯文本消息回复发送者，如果是群消息将会at发送者 |
-| reply(SingleMessage...):void              | 将所有传入的所有消息拼接成一条消息回复发送者，如果是群消息将会at发送者 |
-| reply(MessageChain):void                  | 将所有传入的消息链回复发送者，如果是群消息将会at发送者       |
-|                                           |                                                              |
-| replyNotAt(String...):void                | 将所有传入的字符串拼接成一条纯文本消息回复发送者，如果是群消息将不会at发送者 |
-| replyNotAt(SingleMessage...):void         | 将所有传入的所有消息拼接成一条消息回复发送者，如果是群消息将不会at发送者 |
-| replyNotAt(MessageChain):void             | 将所有传入的消息链回复发送者，如果是群消息将不会at发送者     |
-|                                           |                                                              |
-| sendGroupMessage(long, String...):boolean | 将所有传入的字符串拼接成一条纯文本消息并向指定的群发送       |
+| 方法原型                                              | 说明                                                         |
+| ----------------------------------------------------- | ------------------------------------------------------------ |
+| reply(String...):void                                 | 将所有传入的字符串拼接成一条纯文本消息回复发送者，如果是群消息将会at发送者 |
+| reply(SingleMessage...):void                          | 将所有传入的所有消息拼接成一条消息回复发送者，如果是群消息将会at发送者 |
+| reply(MessageChain):void                              | 将所有传入的消息链回复发送者，如果是群消息将会at发送者       |
+| reply(List<MessageChain>):void                        | 将所有传入的消息链列表逐一回复发送者，如果是群消息将会at发送者<br/>为啥要用list呢，因为发送语音和文件的时候 不能和其他类型的消息一起发送，所以要分开多条消息来发 |
+| replyNotAt(String...):void                            | 将所有传入的字符串拼接成一条纯文本消息回复发送者，如果是群消息将不会at发送者 |
+| replyNotAt(SingleMessage...):void                     | 将所有传入的所有消息拼接成一条消息回复发送者，如果是群消息将不会at发送者 |
+| replyNotAt(MessageChain):void                         | 将所有传入的消息链回复发送者，如果是群消息将不会at发送者     |
+| replyNotAt(List<MessageChain>):void                   | 将所有传入的消息链列表回复发送者，如果是群消息将会at发送者   |
+| sendGroupMessage(long, String...):boolean             | 将所有传入的字符串拼接成一条纯文本消息并向指定的群发送，群不存在时返回false |
+| sendGroupMessage(long, SingleMessage...):boolean      | 将所有传入的所有消息拼接成一条消息并向指定的群发送，群不存在时返回false |
+| sendGroupMessage(long, MessageChain):boolean          | 将所有传入的消息链向指定的群发送，群不存在时返回false        |
+| sendGroupMessage(long, List<MessageChain>):boolean    | 将所有传入的消息链列表逐一向指定的群发送，群不存在时返回false |
+| sendTempMessage(long, long, String...):boolean        | 将所有传入的字符串拼接成一条纯文本消息并向指定的群中指定的群员发送临时会话，群或群友不存在时返回false |
+| sendTempMessage(long, long, SingleMessage...):boolean | 将所有传入的所有消息拼接成一条消息并向指定的群中指定的群员发送临时会话，群或群友不存在时返回false |
+| sendTempMessage(long, long, MessageChain):boolean     | 将所有传入的消息链向指定的群中指定的群员发送临时会话，群或群友不存在时返回false |
+| sendFriendMessage(long, String...):boolean            | 将所有传入的字符串拼接成一条纯文本消息并向指定的好友发送，好友不存在时返回false |
+| sendFriendMessage(long, SingleMessage...):boolean     | 将所有传入的所有消息拼接成一条消息并向指定的好友发送，好友不存在时返回false |
+| sendFriendMessage(long, MessageChain):boolean         | 将所有传入的消息链向指定的好友发送，好友不存在时返回false    |
+| sendFriendMessage(long, List<MessageChain>):boolean   | 将所有传入的消息链列表逐一向指定的好友发送，好友不存在时返回false |
+
+##### 上下文监听器注册
+
+上下文监听器`EventHandlerNext`是一个抽象类，任何继承并实现其中`onNext`方法的类均可以被注册成为上下文监听器
+
+```java
+public abstract class EventHandlerNext {
+  /**
+   * <h2>上下文监听器方法</h2>
+   * 该方法可以使用@MessageEventFilter注解来过滤信息
+   * @param eventPack 事件本身
+   * @param data 预处理器
+   * @return 返回是否继续监听事件 ListeningStatus.LISTENING表示继续监听 STOPPED表示停止监听
+   */
+  public abstract ListeningStatus onNext(MessageEventPack eventPack, PreProcessorData data);
+
+  /**
+   * <h2>监听器销毁时调用</h2>
+   * @param eventPack 最后一次触发监听器的事件Event
+   * @param data 最后一次触发监听器的PreProcessorData
+   */
+  public void onDestroy(MessageEventPack eventPack, PreProcessorData data) { }
+
+  /**
+   * <h2>监听器超时时调用</h2>
+   * @param eventPack 最后一次触发监听器的事件Event
+   * @param data 最后一次触发监听器的PreProcessorData
+   */
+  public void onTimeOut(MessageEventPack eventPack, PreProcessorData data) { }
+
+  /**
+   * <h2>监听器触发次数耗尽时调用</h2>
+   * @param eventPack 最后一次触发监听器的事件Event
+   * @param data 最后一次触发监听器的PreProcessorData
+   */
+  public void onTriggerOut(MessageEventPack eventPack, PreProcessorData data) { }
+```
+
+| 方法原型                                                     | 说明                                                         |
+| ------------------------------------------------------------ | ------------------------------------------------------------ |
+| <T extends EventHandlerNext> onNext(T):void                  | 注册一个上下文监听器，使用全局配置的超时时间，监听本事件的发送者 |
+| <T extends EventHandlerNext> onNext(T, long):void            | 注册一个上下文监听器，设置超时时间为long，监听本事件的发送者 |
+| <T extends EventHandlerNext> onNext(T, int):void             | 注册一个上下文监听器，使用全局配置的超时时间，监听本事件的发送者，并至多触发int次 |
+| <T extends EventHandlerNext> onNext(T, long, int):void       | 注册一个上下文监听器，设置超时时间为long，监听本事件的发送者，并至多触发int次 |
+| <T extends EventHandlerNext> onNext(long, T, long, int):void | 注册一个上下文监听器，设置超时时间为long，监听第一个long对应的群友，并至多触发int次 |
+| <T extends EventHandlerNext> onNextNow(T, PreProcessorData):void | 注册一个上下文监听器，使用全局配置的超时时间，监听本事件的发送者，并立即开始倒计时 |
+| <T extends EventHandlerNext> onNextNow(T, PreProcessorData, long, int):void | 注册一个上下文监听器，设置超时时间为long，监听本事件的发送者，至多触发int次，并立即开始倒计时 |
+| <T extends EventHandlerNext> onNextNow(long, T, PreProcessorData, long, int):void | 注册一个上下文监听器，设置超时时间为long，监听第一个long对应的群友，至多触发int次，并立即开始倒计时 |
+
+#### PreProcessorData
+
+`PreProcessorData`是对消息时间的处理结果，包含了解析出的指令、参数、纯文本和@MessagePreProcessor的预处理结果
+
+| 属性 | 类型 | 说明 |
+| ---- | ---- | ---- |
+|      |      |      |
+|      |      |      |
+|      |      |      |
+|      |      |      |
 
