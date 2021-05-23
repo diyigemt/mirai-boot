@@ -47,14 +47,15 @@ public class PermissionCheck {
           if(remain - 1 == 0){
             //次数没了
             PermissionUtil.getInstance().removePermissionItem(permissionItem.getSenderId(), permissionItem.getCommandId());
+            permissionItem.setPermits(0);
             MiraiMain.getInstance().quickReply(eventPack.getEvent(), "提示：本次操作是最后一次, 使用完成后系统将回收您的使用权");
-            return true;
+          }else {
+            permissionItem.setRemain(permissionItem.getRemain() - 1);
           }
-          permissionItem.setRemain(permissionItem.getRemain() - 1);
           PermissionUtil.getInstance().updatePermissionItem(permissionItem);
           return true;
         }
-        return true;
+        return false;
       }
     }catch (NullPointerException e){//数据库没相关记录，说明没有任何禁用和授权
       return false;
@@ -129,6 +130,10 @@ public class PermissionCheck {
       if(s instanceof At && ((At) s).getTarget() != botId){
         targetId = ((At) s).getTarget();
       }
+    }
+    if(targetId == -1){
+      eventPack.reply("宁禁我干嘛？");
+      return false;
     }
     MemberPermission targetPermission = eventPack.getGroup().get(targetId).getPermission();
     int targetAuthLevel = targetPermission.ordinal();

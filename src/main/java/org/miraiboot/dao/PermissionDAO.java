@@ -82,6 +82,7 @@ public class PermissionDAO {
     long senderId = item.getSenderId();
     int commandId = item.getCommandId();
     int remain = item.getRemain();
+    int permits = item.getPermits();
     args.put("sender_id", senderId);
     args.put("command_id", commandId);
     List<PermissionItem> permissionItems = selectForFieldValuesArgs(args);
@@ -90,6 +91,7 @@ public class PermissionDAO {
       item.setSenderId(String.valueOf(senderId));
       item.setCommandId(commandId);
       item.setRemain(remain);
+      item.setPermits(permits);
     }
     try {
       CreateOrUpdateStatus status = dao.createOrUpdate(item);

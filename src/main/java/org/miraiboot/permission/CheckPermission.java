@@ -13,6 +13,7 @@ import static org.miraiboot.constant.FunctionId.DEFAULT_INDEX;
  * <p>isStrictRestricted: 严格管理模式，开启时将严格划分权限级别，详情看【1】</p>
  * <p>isGroupOwnerOnly: 群主独占功能，开启后此功能仅限群主使用</p>
  * <p>isAdminOnly: 管理层独占功能，开启后此功能仅限群主和管理员使用</p>
+ * <p>FunctionID: 注册功能ID号,管理层独占功能为负数，普通功能为正数。1和-1已被占用</p>
  * <p></p>
  * <p>注：</p>
  * <p>【1】 严格管理模式：不允许越级操作（包括同级别权限）</p>
@@ -42,6 +43,6 @@ public @interface CheckPermission {
   //是否允许管理员(包括群主)
   boolean isAdminOnly() default false;
 
-  //与数据库权限对应的id号
-  int permissionIndex() default DEFAULT_INDEX;
+  //注册功能ID号,管理层独占功能为负数，普通功能为正数。1和-1已被占用
+  int FunctionID() default DEFAULT_INDEX;
 }

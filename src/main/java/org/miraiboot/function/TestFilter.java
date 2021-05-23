@@ -1,11 +1,9 @@
 package org.miraiboot.function;
 
 
-import net.mamoe.mirai.event.events.MessageEvent;
 import org.miraiboot.annotation.EventHandler;
 import org.miraiboot.annotation.EventHandlerComponent;
 import org.miraiboot.annotation.MessageFilter;
-import org.miraiboot.constant.FunctionId;
 import org.miraiboot.constant.MessageFilterMatchType;
 import org.miraiboot.entity.MessageEventPack;
 import org.miraiboot.entity.PreProcessorData;
@@ -15,7 +13,7 @@ import org.miraiboot.permission.CheckPermission;
 public class TestFilter {
 
   @EventHandler(target = "filter1")
-  @CheckPermission(isAdminOnly = true, permissionIndex = 3)
+  @CheckPermission(isAdminOnly = true, FunctionID = 3)
   @MessageFilter(accounts = "1355247243")
   public void testFilter1(MessageEventPack eventPack, PreProcessorData data) {
     eventPack.getSubject().sendMessage("filter1");
