@@ -144,9 +144,9 @@ public class SendMessageLib {
      *  @param eventPack   消息事件，群聊或私聊
      * @param ImgPath 图片来源数组
      */
-    public static void ImageMessageSender_multiImg(MessageEventPack eventPack, String[] ImgPath) {
+    public static void ImageMessageSender_multiImg(MessageEventPack eventPack, String[] ImgPath, HttpProperties... properties) {
         MessageChain messageChain = new MessageChainBuilder()
-                .append(MultiImgMsgBuilder(eventPack, ImgPath))
+                .append(MultiImgMsgBuilder(eventPack, ImgPath, properties))
                 .build();
         eventPack.getSubject().sendMessage(messageChain);
         int i = 0;
@@ -171,10 +171,10 @@ public class SendMessageLib {
      * @param messages 纯文本消息
      * @param ImgPath  图片来源数组
      */
-    public static void ImageMessageSender_multiImg_msgAsc(MessageEventPack eventPack, String messages, String[] ImgPath) {
+    public static void ImageMessageSender_multiImg_msgAsc(MessageEventPack eventPack, String messages, String[] ImgPath, HttpProperties properties) {
         MessageChain messageChain = new MessageChainBuilder()
                 .append(messages)
-                .append(MultiImgMsgBuilder(eventPack, ImgPath))
+                .append(MultiImgMsgBuilder(eventPack, ImgPath, properties))
                 .build();
         eventPack.getSubject().sendMessage(messageChain);
         Close();
@@ -198,9 +198,9 @@ public class SendMessageLib {
      * @param messages 纯文本消息
      * @param ImgPath  图片来源数组
      */
-    public static void ImageMessageSender_multiImg_msgDesc(MessageEventPack eventPack, String messages, String[] ImgPath) {
+    public static void ImageMessageSender_multiImg_msgDesc(MessageEventPack eventPack, String messages, String[] ImgPath, HttpProperties properties) {
         MessageChain messageChain = new MessageChainBuilder()
-                .append(MultiImgMsgBuilder(eventPack, ImgPath))
+                .append(MultiImgMsgBuilder(eventPack, ImgPath, properties))
                 .append(messages)
                 .build();
         eventPack.getSubject().sendMessage(messageChain);
@@ -224,10 +224,10 @@ public class SendMessageLib {
      * @param message_after  后文
      * @param ImgPath        图片来源数组
      */
-    public static void ImageMessageSender_multiImg_msgSurround(MessageEventPack eventPack, String message_before, String message_after, String[] ImgPath) {
+    public static void ImageMessageSender_multiImg_msgSurround(MessageEventPack eventPack, String message_before, String message_after, String[] ImgPath, HttpProperties properties) {
         MessageChain messageChain = new MessageChainBuilder()
                 .append(message_before)
-                .append(MultiImgMsgBuilder(eventPack, ImgPath))
+                .append(MultiImgMsgBuilder(eventPack, ImgPath, properties))
                 .append(message_after)
                 .build();
         eventPack.getSubject().sendMessage(messageChain);
@@ -252,10 +252,10 @@ public class SendMessageLib {
      * @param messages 文字消息数组
      * @param ImgPath  图片来源数组
      */
-    public static void ImageMessageSender_multiImgMsgList(MessageEventPack eventPack, String[] messages, String[] ImgPath) {
+    public static void ImageMessageSender_multiImgMsgList(MessageEventPack eventPack, String[] messages, String[] ImgPath, HttpProperties properties) {
         MessageChain messageChain = new MessageChainBuilder().build();
         for (int i = 0; i < messages.length; i++) {
-            messageChain = messageChain.plus(Img_MsgBuilder(eventPack, ImgPath[i], messages[i]));
+            messageChain = messageChain.plus(Img_MsgBuilder(eventPack, ImgPath[i], messages[i], properties));
         }
         eventPack.getSubject().sendMessage(messageChain);
         Close();
@@ -266,17 +266,17 @@ public class SendMessageLib {
         return ExternalResource.Companion.uploadAsImage(resource, eventPack.getSubject());
     }
 
-    private static MessageChain Img_MsgBuilder(MessageEventPack eventPack, String ImgPath, String messages) {
+    private static MessageChain Img_MsgBuilder(MessageEventPack eventPack, String ImgPath, String messages, HttpProperties properties) {
         MessageChain messageChain = new MessageChainBuilder().build();
-        messageChain = messageChain.plus(ImgMsgBuilder(eventPack, ImgPath)).plus(messages);
+        messageChain = messageChain.plus(ImgMsgBuilder(eventPack, ImgPath, properties)).plus(messages);
         return messageChain;
     }
 
-    private static MessageChain MultiImgMsgBuilder(MessageEventPack eventPack, String[] ImgPath) {
+    private static MessageChain MultiImgMsgBuilder(MessageEventPack eventPack, String[] ImgPath, HttpProperties... properties) {
         MessageChain messageChain = new MessageChainBuilder().build();
         Image image = null;
         for (String s : ImgPath) {
-            image = ImgMsgBuilder(eventPack, s);
+            image = ImgMsgBuilder(eventPack, s, properties);
             messageChain = messageChain.plus(image);
         }
         return messageChain;

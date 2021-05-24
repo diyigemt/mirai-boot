@@ -117,6 +117,11 @@ public class AuthMgr {
             }
 
         }else if(permit == 1){
+            PermissionItem pi = PermissionUtil.getInstance().getPermissionItem(senderId, String.valueOf(commandId));
+            if(pi == null){
+                eventPack.reply("该用户并没有被禁用相关功能");
+                return;
+            }
             PermissionUtil.getInstance().removePermissionItem(senderId, commandId);
 //            MiraiMain.getInstance().quickReply(eventPack.getEvent(), "对用户" + senderId + "的" + args.get(0) + "功能，解锁完成");
             eventPack.reply("对用户" + senderId + "的" + args.get(0) + "功能，解锁完成");
