@@ -88,9 +88,6 @@ miraiboot是是对mirai框架的简单Java封装。
 创建一个主类
 
 ```java
-import org.miraiboot.annotation.MiraiBootApplication;
-import org.miraiboot.autoconfig.MiraiApplication;
-
 @MiraiBootApplication
 public class Main {
 	public static void main(String[] args) {
@@ -215,9 +212,6 @@ targets可以接受一个数组，priority指代执行优先级。
 创建一个主类，并调用MiraiApplication的静态run方法。
 
 ```java
-import org.miraiboot.annotation.MiraiBootApplication;
-import org.miraiboot.autoconfig.MiraiApplication;
-
 @MiraiBootApplication
 public class Main {
 	public static void main(String[] args) {
@@ -782,7 +776,7 @@ MultipleParameterException（多余的参数）是MiraiBoot新增的异常。可
 报文样例如下：
 
 ```
-Caused by org.miraiboot.exception.MultipleParameterException:
+Caused by MultipleParameterException:
 	Parameter "HTTPProperties" need 1 but found 2.
 ```
 
