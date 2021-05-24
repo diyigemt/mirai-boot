@@ -1,6 +1,5 @@
 package net.diyigemt.miraiboot.utils;
 
-import net.diyigemt.miraiboot.annotation.HttpsProperties;
 import net.diyigemt.miraiboot.entity.HttpProperties;
 import net.diyigemt.miraiboot.utils.builder.FileMessageBuilder;
 
@@ -21,8 +20,6 @@ import java.util.StringTokenizer;
  */
 
 public class HttpUtil {
-
-	public static HttpsProperties properties = null;
 
 	/**
 	 * <h2>带高级设置的HTTP请求</h2>
