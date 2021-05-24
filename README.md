@@ -204,6 +204,12 @@ targets可以接受一个数组，priority指代执行优先级。
 
 # 详细开发文档
 
+## 目录
+
+[TOC]
+
+
+
 ## 系统启动
 
 创建一个主类，并调用MiraiApplication的静态run方法。
@@ -532,17 +538,255 @@ public class Test {
 | Dice                 | 骰子消息                       |
 | FileMessage          | 文件消息                       |
 
-## 消息构造器
+## 消息的构造和发送
 
-Mirai-core已经拥有一种构造器，MessageChainBuilder，可以使用.plus方法对图文信息进行连接，但对于语音和群文件消息，MessageChain只能接受一个，不能连续使用.plus方法接受多个添加操作
+#### 消息链概念介绍
 
-Miraiboot拥有三种构造器，分别是
+消息链（MessageChain）是指一种由多个类型元素组成的链表结构。任意一种继承Message类的元素均可成为链表中的一个节点，例如文字PlainText、语音Voice、图片Image、文件FileMessage等等，统称为SingleMessage。多个SingleMessage连接到一起，即为消息链。下图即是一条图文消息的消息链构成。
 
-| builder             | 作用             |
-| ------------------- | ---------------- |
-| ImageMessageBuilder | 图片消息构造器   |
-| VoiceMessageBuilder | 语音消息构造器   |
-| FileMessageBuilder  | 群文件消息构造器 |
+![](C:\Users\Administrator\Desktop\Miraiboot\resource\MessageChain.jpg)
+
+值得注意的是，SingleMessage并不一定是实际显示中的一条消息，它指的是一条消息中的一个元素。如果该消息由多个元素构成（例如图文消息），则实际显示中一条消息是MessageChain。而且，对于语音元素和文件元素，这里将以上两种元素成为特殊元素。由于QQ自身对特殊元素显示规则等原因，每条消息链只能接受一个特殊元素。一旦插入特殊元素，之前的图文元素会被忽略，如果插入多个特殊元素，实际显示时只会显示消息链中最后一个特殊元素。
+
+
+
+#### MessageChain类型
+
+MessageChain类型是Mirai-core中自带的默认消息链类型，用于存储纯文本消息和图文消息的构成。详情请看Mirai-core官方文档。下面列举一些常用的方法：
+
+| 返回类型     | 方法                    | 参数                                | 说明                   |
+| ------------ | ----------------------- | ----------------------------------- | ---------------------- |
+| MessageChain | .plus()                 | Char, SingleMessage, MessageChain等 | 向消息链中添加消息元素 |
+| String       | .serializeToMiraiCode() | 无                                  | 将消息转换为Mirai格式  |
+
+
+
+#### EnhancedMessageChain类型
+
+在[消息链概念介绍](消息链概念介绍)中我们指出了MessageChain关于特殊元素的不足之处，而在MiraiBoot中，我们对此进行了一些改进和封装，新增了一个类型：EnhancedMessageChain（加强消息链）。其本质为List<MessageChain>，用于支持特殊消息混合插入。同时加入URL和本地路径识别，可以自动联网获取特殊元素素材进行发送，无需自行下载。
+
+
+
+相比MessageChain，EnhancedMessageChain可以将图文信息和群文件以及语音元素混合插入，打破了MessageChain对于特殊元素不能添加多个的限制。同时EnhancedMessageChain也支持连接使用MessageChainBuilder构造完成的结果。
+
+EnhancedMessageChain类型拥有以下方法：
+
+具体请阅读[Mirai文档](https://github.com/mamoe/mirai/blob/dev/docs/Messages.md#%E6%9E%84%E9%80%A0%E6%B6%88%E6%81%AF%E9%93%BE)
+
+| 返回类型 | 方法      | 参数                 | 说明                     |
+| -------- | --------- | -------------------- | ------------------------ |
+| void     | .append() | MessageChain         | 加入MessageChain         |
+| void     | .append() | EnhancedMessageChain | 加入EnhancedMessageChain |
+
+
+
+同时，EnhancedMessageChain类型拥有迭代器，支持Foreach循环
+
+```java
+EnhancedMessageChain chains = new ImageMessageChainBulider(eventPack)
+    .add("1")
+    .add("2")
+    .build();
+
+for(MessageChain chain : chains){
+    chain.plus("A");
+}
+```
+
+
+
+#### 消息构造器
+
+在Mirai-Core中，已经拥有一种默认构造器如下:
+
+| 构造器              | 参数 | 返回类型     |
+| ------------------- | ---- | ------------ |
+| MessageChainBuilder | 无   | MessageChain |
+
+该构造器常用的方法：
+
+具体请阅读[Mirai开发文档](https://github.com/mamoe/mirai/blob/dev/docs/Messages.md#%E6%9E%84%E9%80%A0%E6%B6%88%E6%81%AF%E9%93%BE)
+
+| 返回类型 | 方法      | 参数                                | 说明               |
+| -------- | --------- | ----------------------------------- | ------------------ |
+| void     | .append() | Char, SingleMessage, MessageChain等 | 向消息链中添加元素 |
+| void     | .build()  | 无                                  | 构造消息链         |
+
+使用样例：
+
+```java
+MessageChain chain = new MessageChainBuilder()
+    .plus("Hello")
+    .build();
+```
+
+构造完成后发送：
+
+```java
+eventPack.reply(chain);
+```
+
+
+
+在MiraiBoot中，新增了三种消息构造器为EnhancedMessageChain服务。其使用方法和原版MessageChainBuilder基本保持一致。但MessageChainBuilder并不能为EnhancedMessageChain构造消息。介绍如下。
+
+| 构造器              | 参数                                        | 说明           | 返回类型             |
+| ------------------- | ------------------------------------------- | -------------- | -------------------- |
+| ImageMessageBuilder | EventPack（必填）, HttpProperties（可不填） | 图片消息构造器 | EnhancedMessageChain |
+| VoiceMessageBuilder | EventPack（必填）, HttpProperties（可不填） | 语音消息构造器 | EnhancedMessageChain |
+| FileMessageBuilder  | EventPack（必填）, HttpProperties（可不填） | 文件消息构造器 | EnhancedMessageChain |
+
+使用样例：
+
+```java
+EnhancedMessageChain chains = new ImageMessageChainBulider(eventPack).build();//一般实例化
+
+HttpProperties properties = new HttpProperties();
+properties.setRequestProperties("Connection", "keep-alive");
+
+EnhancedMessageChain chains = new ImageMessageChainBulider(eventPack, httpProperties).build();//对于HTTP有特殊需求的实例化
+```
+
+每一种Builder拥有相同的方法：
+
+| 返回类型             | 方法    | 参数                 | 说明                                              |
+| -------------------- | ------- | -------------------- | ------------------------------------------------- |
+| xxxMessageBuilder    | add()   | MessageChain         | 将之前构造好的消息链依次接入尾部                  |
+| xxxMessageBuilder    | add()   | EnhancedMessageChain | 将之前构造好的消息链依次接入尾部                  |
+| xxxMessageBuilder    | add()   | String...            | 自动识别文字消息、URL、本机路径，后两者会自动解析 |
+| xxxMessageBuilder    | add()   | File                 | 将打开的File类传入解析                            |
+| EnhancedMessageChain | build() | 无                   | 构造消息但不发送                                  |
+| EnhancedMessageChain | send()  | 无                   | 构造消息并发送                                    |
+
+
+
+注：
+
+1. Miraiboot会等到消息链中所有素材都加载完成并上传至服务器才会进行发送操作。所以URL的连接质量直接影响您发送消息的延迟，请尽量使用连接质量好的URL或使用HTTPProperties进行Host等设置优化。实在不行可以考虑事先下载好素材使用本地路径或File类打开传入。
+2. 请不要在一条加强消息链上添加过多语音、群文件等特殊元素，可能会因为消息接收方带宽限制和QQ消息同步规则使得接收方消息乱序，得不偿失。
+3. 对于没有传入HTTPProperties的Builder实例化，Miraiboot将使用全局默认的设置对URL进行HTTP请求。
+4. 文件消息构造器目前只能对群文件生效，私聊无效。
+
+
+
+样例：
+
+```java
+EnhancedMessageChain chains = new FileMessageBuilder(eventPack)
+	 .add("1234\n")
+	 .add("1234\n", "5678\n")
+     .add(messageChain)
+	 .add(enhancedMessageChain)
+	 .add(LocalFilePath)
+	 .add(urlPath)
+	 .add(file)
+	 .send();（或.build();）
+```
+
+
+
+混合输入样例：
+
+```java
+EnhancedMessageChain chain = new FileMessageBuilder(eventPack)
+    .add("1234")
+    .add("1234","5678")
+    .build();
+
+EnhancedMessageChain chains = new VoiceMessageBuilder(eventPack, properties)//混合接龙
+    .add(chain)//上面的消息链
+    .add(VoiceLocalPath)
+    .send();
+```
+
+
+
+#### HTTPProperties类型
+
+该类型是为了对于一些链接质量不好的URL提供高级HTTP属性设置，例如HOST，Cookie等。如URL链接质量很好，可以不写。
+
+该变量具有以下以下属性：
+
+| 类型                | 属性              | 作用         | 默认值             |
+| ------------------- | ----------------- | ------------ | ------------------ |
+| int                 | Timeout           | 请求最大时间 | 3000               |
+| String              | RequestMethod     | 请求方法     | GET                |
+| Map<String, String> | RequestProperties | 属性设置     | 引擎伪装和保持连接 |
+
+注：
+
+1. 引擎伪装和保持连接指：
+
+```java
+"User-agent","Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.72 Safari/537.36"
+"Connection", "keep-alive"
+```
+
+2. 以上默认值会在类型实例化时自动使用，如有需求，复写即可。
+
+每种属性拥有以下操作方法：
+
+| 返回类型            | 方法                       | 说明                           |
+| ------------------- | -------------------------- | ------------------------------ |
+| Map<String, String> | getRequestProperties()     | 获取HTTP属性Map                |
+| void                | setRequestProperties()     | 添加HTTP属性，如果已存在则复写 |
+| int                 | getRequestPropertiesSize() | 获取HTTP属性Map长度            |
+| int                 | getTimeout()               | 获取最大超时时间设置           |
+| void                | setTimeout()               | 设置最大超时时间               |
+| String              | getRequestMethod()         | 获取请求方法                   |
+| void                | setRequestMethod()         | 设置请求方法                   |
+
+
+
+使用样例：
+
+```java
+HttpProperties properties = new HttpProperties();//实例化
+properties.setTimeout(4000);//设置请求超时时间
+properties.setRequestProperties("Connection", "keep-alive");//详细设置
+...
+
+//在Builder构造函数中使用
+EnhancedMessageChain chains = new FileMessageBuilder(eventPack, properties)
+	 .add(urlPath)
+	 .send();
+```
+
+
+
+#### 消息模板库
+
+消息构造器由于需要自定义消息格式，在某些简单消息构成时反复构造颇为麻烦。所以MiraiBoot也为大家提供了消息模板，用户只需要提供文字消息和素材来源即可，程序会自动构造并发送。
+
+该模板库拥有以下模板方法：
+
+| 方法                                    | 参数                                                         | 说明                                                         |
+| --------------------------------------- | ------------------------------------------------------------ | ------------------------------------------------------------ |
+| ImageMessageSender                      | MessageEventPack eventPack, <br />String ImagePath, <br />HttpProperties... properties | 单张图片消息模板                                             |
+| ImageMessageSender                      | MessageEventPack eventPack, <br />MessageChain chain, <br />String ImagePath, <br />HttpProperties... properties | 单张图文消息连接器，需要自己先行构造MessageChain消息链。     |
+| ImageMessageSender_asc                  | MessageEventPack eventPack, <br />String message, <br />String ImagePath, <br />HttpProperties... prpperties | 单张图文消息模板（正序）<br />例：<br /><br />文字<br />图片 |
+| ImageMessageSender_desc                 | MessageEventPack eventPack, <br />String message, <br />String ImagePath, <br />HttpProperties... prpperties | 单张图文消息模板（倒序）<br />例：<br /><br />图片<br />文字 |
+| ImageMessageSender_surround             | MessageEventPack eventPack, <br />String message_before, <br />String message_after, <br />String ImagePath, <br />HttpProperties... properties | 单张图文消息模板（文字环绕）<br />例：<br /><br />文字<br />图片<br />文字 |
+| ImageMessageSender_multiImg             | MessageEventPack eventPack, <br />String messages, <br />String[] ImagePath, <br />HttpProperties... properties | 多张图片消息模板（正序）<br />例：<br /><br />文字<br />图片<br />图片 |
+| ImageMessageSender_multiImg_msgDesc     | MMessageEventPack eventPack, <br />String messages, <br />String[] ImagePath, <br />HttpProperties... properties | 多张图文消息模板（倒序）<br />例：<br /><br />图片<br />图片<br />文字 |
+| ImageMessageSender_multiImg_msgSurround | MessageEventPack eventPack, <br />String message_before, <br />String message_after, <br />String[] ImagePath, <br />HttpProperties... properties | 多张图文消息模板（文字环绕）<br />例：<br /><br />文字<br />图片<br />图片<br />文字 |
+| ImageMessageSender_multiImgMsgList      | MessageEventPack eventPack, <br />String[] messages, <br />String[] ImgPath, <br />HttpProperties... properties | 多张图文消息模板（List样式）<br />例：<br /><br />图片<br />文字<br />图片<br />文字 |
+| VoiceMsgSender                          | MessageEventPack eventPack, <br />String path, <br />HttpProperties... properties | 单条语音消息模板                                             |
+
+
+
+#### MultipleParameterException异常
+
+MultipleParameterException（多余的参数）是MiraiBoot新增的异常。可能会在使用图文消息模板库时抛出。
+
+报文样例如下：
+
+```
+Caused by org.miraiboot.exception.MultipleParameterException:
+	Parameter "HTTPProperties" need 1 but found 2.
+```
+
+原因可能是因为目标方法的参数提供了多余的参数，如果无法避免，可以考虑使用[@ExceptionHandler](异常处理)注解对该异常进行监听和编写该异常处理方案。
 
 
 
