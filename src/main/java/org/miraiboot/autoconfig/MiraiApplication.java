@@ -216,7 +216,7 @@ public class MiraiApplication {
       if (b.get()) continue;
       // 注册强制触发EventHandler
       if (methodAnnotation.isAny()) {
-        EventHandlerManager.getInstance().on("", clazz, method);
+        EventHandlerManager.getInstance().onAny(clazz, method);
         continue;
       }
       String targetName = methodAnnotation.target();
@@ -228,6 +228,7 @@ public class MiraiApplication {
         Object o = GlobalConfig.getInstance().get(ConstantGlobal.DEFAULT_COMMAND_START);
         if (!o.toString().equals("")) targetName = o + targetName;
       } else {
+        targetName = start + targetName;
         // 注册指令开头
         CommandUtil.getInstance().registerCommandStart(start);
       }

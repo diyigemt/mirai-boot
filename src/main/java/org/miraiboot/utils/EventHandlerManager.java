@@ -50,6 +50,8 @@ public class EventHandlerManager {
    */
   private static final Map<String, List<EventHandlerItem>> OTHER_EVENT_STORE = new HashMap<String, List<EventHandlerItem>>();
 
+  private static final String HANDLER_ANY_NAME = "HANDLER_ANY";
+
   /**
    * <h2>获取单列对象</h2>
    * @return EventHandlerManager
@@ -84,6 +86,15 @@ public class EventHandlerManager {
     EventHandlerItem eventHandlerItem = new EventHandlerItem(target, invoker, handler, type);
     if (!eventHandlerItems.contains(eventHandlerItem)) eventHandlerItems.add(eventHandlerItem);
     OTHER_EVENT_STORE.put(target, eventHandlerItems);
+  }
+
+  /**
+   * <h2>注册强制执行Handler</h2>
+   * @param invoker Handler所在的类
+   * @param handler Handler
+   */
+  public void onAny(Class<?> invoker, Method handler) {
+    on(HANDLER_ANY_NAME, invoker ,handler);
   }
 
   /**
@@ -127,6 +138,16 @@ public class EventHandlerManager {
    */
   public List<EventHandlerItem> removeOther(String target) {
     return OTHER_EVENT_STORE.remove(target);
+  }
+
+  /**
+   * <h2>执行非消息事件Handler</h2>
+   * @param eventPack 封装事件
+   * @param plainText 内容纯文本
+   * @return 结果 为null为无事发生
+   */
+  public String emitAny(MessageEventPack eventPack, String plainText) {
+    return emit(HANDLER_ANY_NAME, eventPack, plainText);
   }
 
   /**
