@@ -40,28 +40,28 @@ public class TempPermission {
         permissionItem = PermissionUtil.getInstance().getPermissionItem(senderId, String.valueOf(commandId));
         if(permissionItem == null){// 数据库里没有记录，开始授权
             PermissionUtil.getInstance().addPermissionItem(senderId, commandId, 1, remain);
-            MiraiMain.getInstance().quickReply(eventPack.getEvent(), "对用户" + senderId + "的" + FunctionId.getKey(commandId) + "功能，临时授权成功");
+            eventPack.reply("对用户" + senderId + "的" + FunctionId.getKey(commandId) + "功能，临时授权成功");
             return;
         }
         else if(permissionItem.getPermits() <= 0 && permissionItem.getSenderId() == senderId){//数据库中有被禁止使用当前功能的记录，取消禁用并授权
             permissionItem.setPermits(1);
             permissionItem.setRemain(remain);
             PermissionUtil.getInstance().updatePermissionItem(permissionItem);
-            MiraiMain.getInstance().quickReply(eventPack.getEvent(), "对用户" + senderId + "的" + FunctionId.getKey(commandId) + "功能，临时授权成功, 禁用已解除");
+            eventPack.reply("对用户" + senderId + "的" + FunctionId.getKey(commandId) + "功能，临时授权成功, 禁用已解除");
             return;
         }
         else if(permissionItem.getRemain() < 0 && permissionItem.getSenderId() == senderId){//数据库存在高级权限
             permissionItem.setRemain(remain);
             PermissionUtil.getInstance().updatePermissionItem(permissionItem);
-            MiraiMain.getInstance().quickReply(eventPack.getEvent(), "对用户" + senderId + "的" + FunctionId.getKey(commandId) + "功能，降低权限成功, 次数限制已生效");
+            eventPack.reply("对用户" + senderId + "的" + FunctionId.getKey(commandId) + "功能，降低权限成功, 次数限制已生效");
         }
         else if(permissionItem.getRemain() > 0 && permissionItem.getSenderId() == senderId){//数据库存在低级权限
             permissionItem.setRemain(-1);
             PermissionUtil.getInstance().updatePermissionItem(permissionItem);
-            MiraiMain.getInstance().quickReply(eventPack.getEvent(), "对用户" + senderId + "的" + FunctionId.getKey(commandId) + "功能，提升权限成功, 次数限制已解除");
+            eventPack.reply("对用户" + senderId + "的" + FunctionId.getKey(commandId) + "功能，提升权限成功, 次数限制已解除");
         }
         else {
-            MiraiMain.getInstance().quickReply(eventPack.getEvent(), "该用户已授权");
+            eventPack.reply("该用户已授权");
         }
     }
 

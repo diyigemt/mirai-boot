@@ -4,7 +4,6 @@ import net.mamoe.mirai.Bot;
 import net.mamoe.mirai.contact.*;
 import net.mamoe.mirai.event.events.*;
 import net.mamoe.mirai.message.data.MessageChain;
-import net.mamoe.mirai.message.data.MessageChainBuilder;
 import net.mamoe.mirai.message.data.OnlineMessageSource.Incoming;
 import net.mamoe.mirai.message.data.SingleMessage;
 import org.miraiboot.constant.EventType;
@@ -394,8 +393,11 @@ public class MessageEventPack {
 	 * @param target 需要过滤出的消息类型
 	 * @return 过滤出的列表
 	 */
+	@SuppressWarnings("unchecked")
 	public <T extends SingleMessage> List<T> getMessageByType(Class<T> target) {
-		return event.getMessage().stream().filter(item -> target.isAssignableFrom(item.getClass())).map(item -> (T) item).collect(Collectors.toList());
+		return event.getMessage().stream().filter(item -> target.isAssignableFrom(item.getClass()))
+				.map(item -> (T) item)
+				.collect(Collectors.toList());
 	}
 
 	/**

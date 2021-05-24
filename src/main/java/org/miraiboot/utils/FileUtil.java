@@ -81,6 +81,16 @@ public class FileUtil {
    * @param fileName 文件名(包括文件拓展名)
    * @return 获取到的文件
    */
+  public File getVoiceResourceFile(String fileName) {
+    return getResourceFile(fileName, "voices");
+  }
+
+  /**
+   * <h2>根据文件名获取音频资源文件</h2>
+   * @param fileName 文件名(包括文件拓展名)
+   * @param fold 子文件夹
+   * @return 获取到的文件
+   */
   public File getVoiceResourceFile(String fileName, String fold) {
     if (fold == null) return getResourceFile(fileName, "voices");
     return getResourceFile(fileName, "voices" + SYSTEM_PATH_DIV + fold);

@@ -22,29 +22,6 @@ import java.util.jar.JarFile;
  */
 public class GlobalLoader {
   private static final char SYSTEM_PATH_DIV = File.separatorChar;
-  /**
-   * 取得某个接口下所有实现这个接口的类
-   */
-  public static <T> List<Class<? extends T>> getAllClassByInterface(Class<T> c) {
-    if (!c.isInterface()) return null;
-    // 获取当前的包名
-    String packageName = c.getPackage().getName();
-    // 获取当前包下以及子包下所以的类
-    List<Class<?>> allClass = getClasses(packageName);
-
-    if (allClass.isEmpty()) return null;
-
-    List<Class<? extends T>> returnClassList = new ArrayList<Class<? extends T>>();
-    for (Class<?> classes : allClass) {
-      // 判断是否是同一个接口
-      if (c.isAssignableFrom(classes)) {
-        // 本身不加入进去
-        if (c.equals(classes)) continue;
-        returnClassList.add((Class<? extends T>) classes);
-      }
-    }
-    return returnClassList;
-  }
 
   public static <T extends Annotation> List<Class<?>> getClassHasAnnotation(Class<T> annotation, String packageName) {
     List<Class<?>> classes = getClasses(packageName);
@@ -160,13 +137,9 @@ public class GlobalLoader {
       return;
     }
     //如果存在 就获取包下的所有文件 包括目录
-    File[] dirFiles = dir.listFiles(new FileFilter() {
-      //自定义过滤规则 如果可以循环(包含子目录) 或则是以.class结尾的文件(编译好的java类文件)
-      @Override
-      public boolean accept(File file) {
-        return (recursive && file.isDirectory()) || (file.getName().endsWith(".class"));
-      }
-    });
+    //自定义过滤规则 如果可以循环(包含子目录) 或则是以.class结尾的文件(编译好的java类文件)
+    File[] dirFiles = dir.listFiles(file -> (recursive && file.isDirectory()) || (file.getName().endsWith(".class")));
+    if (dirFiles == null) return;
     //循环所有文件
     for (File file : dirFiles) {
       //如果是目录 则继续扫描

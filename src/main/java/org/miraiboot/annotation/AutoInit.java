@@ -5,7 +5,7 @@ import java.lang.annotation.*;
 /**
  * <h2>对被注释类启用自动初始化</h2>
  * 样例:{@link org.miraiboot.dao.PermissionDAO}<br/>
- * 自动初始化将会在程序启动完成(bot前后执行)
+ * 自动初始化将会在程序启动完成(bot登录前执行)
  * <p>被注解的类中必须有一个静态方法</p>
  * *@param config 配置文件<br/>
  *  public static void init(ConfigFile config) {//your code}<br/>

@@ -65,7 +65,7 @@ public class BotManager {
    * @return 登出的Bot实例
    */
   public Bot logout(long key) {
-    Bot remove = STORE.remove(key);
+    Bot remove = STORE.get(key);
     remove.close();
     return remove;
   }
@@ -77,7 +77,6 @@ public class BotManager {
     STORE.forEach((qq, bot) -> {
       bot.close();
     });
-    STORE.clear();
   }
 
   /**

@@ -145,8 +145,18 @@ public class MiraiApplication {
     // 开始自动初始化
     Collections.sort(inits);
     for (AutoInitItem item : inits) {
+      int parameterCount = item.getHandler().getParameterCount();
+      Object[] param = null;
+      if (parameterCount != 0) {
+        param = new Object[parameterCount];
+        param[0] = config;
+      }
       try {
-        item.getHandler().invoke(null, config);
+        if (parameterCount == 0) {
+          item.getHandler().invoke(null);
+        } else {
+          item.getHandler().invoke(null, param);
+        }
       } catch (IllegalAccessException | InvocationTargetException e) {
         e.printStackTrace();
       }

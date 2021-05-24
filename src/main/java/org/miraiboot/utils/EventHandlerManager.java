@@ -7,7 +7,6 @@ import org.miraiboot.constant.EventType;
 import org.miraiboot.constant.FunctionId;
 import org.miraiboot.entity.*;
 import org.miraiboot.interfaces.EventHandlerNext;
-import org.miraiboot.listener.ExceptionListener;
 import org.miraiboot.mirai.MiraiMain;
 import org.miraiboot.permission.CheckPermission;
 import org.miraiboot.permission.PermissionCheck;
@@ -183,7 +182,7 @@ public class EventHandlerManager {
         //获取权限ID
         if(annotation.isStrictRestricted()){
           if(!PermissionCheck.strictRestrictedCheck(eventPack)){
-            MiraiMain.getInstance().quickReply(eventPack.getEvent(), "您当前的权限不足以对目标用户操作");
+            MiraiMain.getInstance().reply(eventPack, "您当前的权限不足以对目标用户操作");
             return "您当前的权限不足以对目标用户操作";
           }
         }
@@ -196,12 +195,12 @@ public class EventHandlerManager {
           flag = false;
         }
         if(!PermissionCheck.individualAuthCheck(handler, eventPack) && flag){
-          MiraiMain.getInstance().quickReply(eventPack.getEvent(), "您没有权限使用该功能");
+          MiraiMain.getInstance().reply(eventPack, "您没有权限使用该功能");
           return "您没有权限使用该功能";
         }
         else {
           if(!PermissionCheck.identityCheck(handler, eventPack) && flag){
-            MiraiMain.getInstance().quickReply(eventPack.getEvent(), "权限不足");
+            MiraiMain.getInstance().reply(eventPack, "权限不足");
             return "权限不足";
           }
         }
@@ -443,7 +442,7 @@ public class EventHandlerManager {
       timeOut = time == null ? DEFAULT_EVENT_NET_TIMEOUT_TIME : time;
     }
     if (triggerCount < 1 ) triggerCount = -1;
-    return new EventHandlerNextItem(onNext, timeOut, triggerCount);
+    return new EventHandlerNextItem<T>(onNext, timeOut, triggerCount);
   }
 
   /**
