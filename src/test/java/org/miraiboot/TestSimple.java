@@ -10,6 +10,15 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class TestSimple {
+
+  @Test
+  public void testPattern() {
+    String s = "1d2 log";
+    int i = s.indexOf("");
+    String trim = s.substring(i + s.length()).trim();
+    String[] split = trim.split("\\s+");
+    Pattern compile = Pattern.compile("\\s+");
+  }
   @Test
   public void testMethodInvoke() {
     Method[] methods = TestSimple.class.getMethods();

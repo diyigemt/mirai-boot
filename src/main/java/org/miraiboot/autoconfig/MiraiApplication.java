@@ -183,13 +183,12 @@ public class MiraiApplication {
    * @param clazz 目标类
    */
   private static void handleAutoInit(Class<?> clazz, List<AutoInitItem> res) {
-    try {
-      Method init = clazz.getMethod("init", ConfigFile.class);
-      AutoInit annotation = clazz.getAnnotation(AutoInit.class);
-      AutoInitItem item = new AutoInitItem(annotation.value(), init);
-      res.add(item);
-    } catch (NoSuchMethodException e) {
-      e.printStackTrace();
+    AutoInit annotation = clazz.getAnnotation(AutoInit.class);
+    for (Method method : clazz.getMethods()) {
+      if (method.getName().equals("init") && method.canAccess(null)) {
+        AutoInitItem item = new AutoInitItem(annotation.value(), method);
+        res.add(item);
+      }
     }
   }
 

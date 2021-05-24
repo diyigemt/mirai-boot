@@ -238,7 +238,7 @@ public class EventHandlerManager {
       if (parameterCount > 1) {
         parameters = new Object[parameterCount];
         parameters[0] = eventPack;
-        processorData = CommandUtil.getInstance().parseArgs(plainText, target, method, processorData);
+        processorData = CommandUtil.getInstance().parseArgs(plainText, target.equals(HANDLER_ANY_NAME) ? "" : target, method, processorData);
         processorData.setText(plainText);
         parameters[1] = processorData;
         // 开始预处理 分离参数之类的

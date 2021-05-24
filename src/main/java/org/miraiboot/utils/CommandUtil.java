@@ -127,7 +127,10 @@ public class CommandUtil {
 			if (!o.toString().equals("")) start = o.toString();
 		}
 		String remove = start + command;
-		String s = source.substring(source.indexOf(remove) + remove.length()).trim();
+		String s = source;
+		// 如果是强制执行handler command将会是 ""
+		// 那么substring的结果将会是 "" 需要做个选择
+		if (!command.equals("")) s = source.substring(source.indexOf(remove) + remove.length()).trim();
 		String split = eventHandlerAnnotation.split();
 		if (split.equals("")) split = "\\s+";
 		String[] res = s.split(split);
