@@ -358,22 +358,22 @@ public void test1() {}
 | reply(String...):void                                 | 将所有传入的字符串拼接成一条纯文本消息回复发送者，如果是群消息将会at发送者 |
 | reply(SingleMessage...):void                          | 将所有传入的所有消息拼接成一条消息回复发送者，如果是群消息将会at发送者 |
 | reply(MessageChain):void                              | 将所有传入的消息链回复发送者，如果是群消息将会at发送者       |
-| reply(List<MessageChain>):void                        | 将所有传入的消息链列表逐一回复发送者，如果是群消息将会at发送者<br/>为啥要用list呢，因为发送语音和文件的时候 不能和其他类型的消息一起发送，所以要分开多条消息来发 |
+| reply(EnhancedMessageChain):void                      | 将所有传入的消息链列表逐一回复发送者，如果是群消息将会at发送者<br/>为啥要用list呢，因为发送语音和文件的时候 不能和其他类型的消息一起发送，所以要分开多条消息来发 |
 | replyNotAt(String...):void                            | 将所有传入的字符串拼接成一条纯文本消息回复发送者，如果是群消息将不会at发送者 |
 | replyNotAt(SingleMessage...):void                     | 将所有传入的所有消息拼接成一条消息回复发送者，如果是群消息将不会at发送者 |
 | replyNotAt(MessageChain):void                         | 将所有传入的消息链回复发送者，如果是群消息将不会at发送者     |
-| replyNotAt(List<MessageChain>):void                   | 将所有传入的消息链列表回复发送者，如果是群消息将会at发送者   |
+| replyNotAt(EnhancedMessageChain):void                 | 将所有传入的消息链列表回复发送者，如果是群消息将会at发送者   |
 | sendGroupMessage(long, String...):boolean             | 将所有传入的字符串拼接成一条纯文本消息并向指定的群发送，群不存在时返回false |
 | sendGroupMessage(long, SingleMessage...):boolean      | 将所有传入的所有消息拼接成一条消息并向指定的群发送，群不存在时返回false |
 | sendGroupMessage(long, MessageChain):boolean          | 将所有传入的消息链向指定的群发送，群不存在时返回false        |
-| sendGroupMessage(long, List<MessageChain>):boolean    | 将所有传入的消息链列表逐一向指定的群发送，群不存在时返回false |
+| sendGroupMessage(long, EnhancedMessageChain):boolean  | 将所有传入的消息链列表逐一向指定的群发送，群不存在时返回false |
 | sendTempMessage(long, long, String...):boolean        | 将所有传入的字符串拼接成一条纯文本消息并向指定的群中指定的群员发送临时会话，群或群友不存在时返回false |
 | sendTempMessage(long, long, SingleMessage...):boolean | 将所有传入的所有消息拼接成一条消息并向指定的群中指定的群员发送临时会话，群或群友不存在时返回false |
 | sendTempMessage(long, long, MessageChain):boolean     | 将所有传入的消息链向指定的群中指定的群员发送临时会话，群或群友不存在时返回false |
 | sendFriendMessage(long, String...):boolean            | 将所有传入的字符串拼接成一条纯文本消息并向指定的好友发送，好友不存在时返回false |
 | sendFriendMessage(long, SingleMessage...):boolean     | 将所有传入的所有消息拼接成一条消息并向指定的好友发送，好友不存在时返回false |
 | sendFriendMessage(long, MessageChain):boolean         | 将所有传入的消息链向指定的好友发送，好友不存在时返回false    |
-| sendFriendMessage(long, List<MessageChain>):boolean   | 将所有传入的消息链列表逐一向指定的好友发送，好友不存在时返回false |
+| sendFriendMessage(long, EnhancedMessageChain):boolean | 将所有传入的消息链列表逐一向指定的好友发送，好友不存在时返回false |
 
 ##### 上下文监听器注册
 
@@ -513,17 +513,28 @@ public class Test {
 
 过滤类型，对应mirai-core的消息类型
 
-| 值         | 说明               |
-| ---------- | ------------------ |
-| PlainText  | 纯文本             |
-| Image      | 图片               |
-| At         | 艾特(@)人的消息    |
-| AtAll      | 艾特(@)全体的消息  |
-| Face       | 自带的表情栏的表情 |
-| FlashImage | 闪照               |
-|            |                    |
-|            |                    |
-|            |                    |
+| 值                   | 说明                           |
+| -------------------- | ------------------------------ |
+| PlainText            | 纯文本                         |
+| Image                | 图片                           |
+| At                   | 艾特(@)人的消息                |
+| AtAll                | 艾特(@)全体的消息              |
+| Face                 | 自带的表情栏的表情             |
+| FlashImage           | 闪照                           |
+| PokeMessage          | 戳一戳                         |
+| VipFace              | vip才能用的表情                |
+| LightApp             | 快应用                         |
+| Voice                | 语音                           |
+| MarketFace           | 表情市场中的表情               |
+| ForwardMessage       | 合并转发的消息                 |
+| SimpleServiceMessage | 另一种快应用的消息类型，不常用 |
+| MusicShare           | 音乐分享                       |
+| Dice                 | 骰子消息                       |
+| FileMessage          | 文件消息                       |
+
+## 消息构造器
+
+
 
 ## 上下文监听
 

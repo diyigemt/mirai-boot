@@ -91,9 +91,9 @@ public class MessageEventPack {
 	/**
 	 * <h2>回复一串消息并at发送者</h2>
 	 * 为啥要用list呢 因为发送语音和文件的时候 不能和其他类型的消息一起发送 所以要分开多条消息来发
-	 * @param chains 构建好的消息链列表
+	 * @param chains 构建好的消息链
 	 */
-	public void reply(List<MessageChain> chains) {
+	public void reply(EnhancedMessageChain chains) {
 		for (MessageChain chain : chains) {
 			MiraiMain.getInstance().reply(this, chain);
 		}
@@ -105,7 +105,7 @@ public class MessageEventPack {
 	 * 为啥要用list呢 因为发送语音和文件的时候 不能和其他类型的消息一起发送 所以要分开多条消息来发
 	 * @param chains 构建好的消息链列表
 	 */
-	public void replyNotAt(List<MessageChain> chains) {
+	public void replyNotAt(EnhancedMessageChain chains) {
 		for (MessageChain chain : chains) {
 			MiraiMain.getInstance().replyNotAt(this, chain);
 		}
@@ -156,7 +156,7 @@ public class MessageEventPack {
 	 * @param chains 构建好的消息链列表
 	 * @return 群不存在时(机器人不在群中)返回false 消息为空返回false
 	 */
-	public boolean sendGroupMessage(long groupId, List<MessageChain> chains) {
+	public boolean sendGroupMessage(long groupId, EnhancedMessageChain chains) {
 		if (chains == null || chains.size() == 0) return false;
 		Group group = getGroup(groupId);
 		if (group == null) return false;
@@ -259,7 +259,7 @@ public class MessageEventPack {
 	 * @param chains 构建好的消息链列表
 	 * @return 好友不存在时返回false 消息为空返回false
 	 */
-	public boolean sendFriendMessage(long friendId, List<MessageChain> chains) {
+	public boolean sendFriendMessage(long friendId, EnhancedMessageChain chains) {
 		if (chains == null || chains.size() == 0) return false;
 		Friend friend = getFriend(friendId);
 		if (friend == null) return false;

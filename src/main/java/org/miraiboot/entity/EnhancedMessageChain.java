@@ -68,4 +68,6 @@ public class EnhancedMessageChain implements Iterable<MessageChain>{
             return EnhancedMsgChain.get(current++);
         }
     }
+
+    public int size() { return EnhancedMsgChain.size(); }
 }
