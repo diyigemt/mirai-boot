@@ -81,9 +81,9 @@ public class TempPermission {
         PermissionItem permissionItem = PermissionUtil.getInstance().getPermissionItem(senderId, String.valueOf(commandId));
         if(permissionItem != null && permissionItem.getSenderId() == eventPack.getSenderId() && permissionItem.getPermits() != 0){
             PermissionUtil.getInstance().removePermissionItem(eventPack.getSender().getId(), commandId);
-            MiraiMain.getInstance().quickReply(eventPack.getEvent(), "对用户" + senderId + "的" + FunctionId.getKey(commandId) + "功能，解除授权成功");
+            eventPack.reply("对用户" + senderId + "的" + FunctionId.getKey(commandId) + "功能，解除授权成功");
         } else {
-            MiraiMain.getInstance().quickReply(eventPack.getEvent(), "该用户并没有授予相关权限");
+            eventPack.reply("该用户并没有授予相关权限");
         }
     }
 }
