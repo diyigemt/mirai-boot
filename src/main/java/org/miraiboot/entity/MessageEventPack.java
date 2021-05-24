@@ -401,6 +401,41 @@ public class MessageEventPack {
 	}
 
 	/**
+	 * <h2>主动触发消息事件处理器<h2/>
+	 * @param target 触发的指令
+	 * @param plainText 消息纯文本
+	 */
+	public void emit(String target, String plainText) {
+		EventHandlerManager.getInstance().emit(target, this, plainText);
+	}
+
+	/**
+	 * <h2>主动触发强制消息事件处理器<h2/>
+	 * @param plainText 消息纯文本
+	 */
+	public void emitAny(String plainText) {
+		EventHandlerManager.getInstance().emitAny(this, plainText);
+	}
+
+	/**
+	 * <h2>主动触发其他事件处理器<h2/>
+	 * @param target 触发指令 暂定为 ""
+	 * @param eventPack 其他消息事件封装
+	 */
+	public void emitOther(String target, BotEventPack eventPack) {
+		EventHandlerManager.getInstance().emitOther("", eventPack);
+	}
+
+	/**
+	 * <h2>主动触发上下文监听器<h2/>
+	 * @param target 监听对象的qq号
+	 * @param plainText 消息纯文本
+	 */
+	public void emitNext(long target, String plainText) {
+		EventHandlerManager.getInstance().emitNext(target, this, plainText);
+	}
+
+	/**
 	 * <h2>判断消息是否来源于群聊</h2>
 	 * @return 消息是否来源于群聊 true: 消息来源于群聊
 	 */

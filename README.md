@@ -183,7 +183,7 @@ public class Test {
 public class ExceptionHandler {
 	@ExceptionHandler(targets = IllegalArgumentException.class, priority = 1)
 	public void test(Throwable e){
-        BotManager.getInstance().get(12312312L).getGroup(12313123L).sendMessage("error" + 		  e.getMessage());
+        BotManager.getInstance().get(12312312L).getGroup(12313123L).sendMessage("error" + e.getMessage());
 	}
 }
 ```
@@ -544,7 +544,7 @@ public class Test {
 
 消息链（MessageChain）是指一种由多个类型元素组成的链表结构。任意一种继承Message类的元素均可成为链表中的一个节点，例如文字PlainText、语音Voice、图片Image、文件FileMessage等等，统称为SingleMessage。多个SingleMessage连接到一起，即为消息链。下图即是一条图文消息的消息链构成。
 
-![](\resource\MessageChain.jpg)
+![](.\resource\MessageChain.jpg)
 
 值得注意的是，SingleMessage并不一定是实际显示中的一条消息，它指的是一条消息中的一个元素。如果该消息由多个元素构成（例如图文消息），则实际显示中一条消息是MessageChain。而且，对于语音元素和文件元素，这里将以上两种元素成为特殊元素。由于QQ自身对特殊元素显示规则等原因，每条消息链只能接受一个特殊元素。一旦插入特殊元素，之前的图文元素会被忽略，如果插入多个特殊元素，实际显示时只会显示消息链中最后一个特殊元素。
 
@@ -890,3 +890,80 @@ public class TestException {
 
 处理器的优先级，当同一个异常有多个处理器时，将会按顺序从高优先级至低优先级依次执行，高优先级的处理器方法可以返回一个boolean值，主动阻止低优先级异常处理器的执行，但是**无法**阻止同优先级的处理器。
 
+## 自动初始化
+
+通过对类加上`@AutoInit`注解，并实现一个静态的`init`方法，可实现类的自动初始化功能。例如：
+
+```
+@AutoInit
+public class TestInit {
+  /**
+   * @param config 配置文件
+   */
+  public static void init(ConfigFile config) {
+    your code
+  }
+}
+```
+
+该方法将会在系统启动的最后，所有机器人被注册而未登录时开始执行(最后一个步骤是登录Bot)。
+
+意味着此时已经可以访问miraiboot所管理的所有实例，包括事件处理器、异常处理器、全局配置和Bot实例。
+
+#### `@AutoInit`：
+
+| 类型 | 属性名 | 默认值 | 说明                                       |
+| ---- | ------ | ------ | ------------------------------------------ |
+| int  | value  | 0      | 初始化的优先级，数字**越大越先**进行初始化 |
+
+## 内部类
+
+### BotManager
+
+用于对 Bot进行统一管理，只有一个全局实例
+
+| 方法原型                    | 说明                                              |
+| --------------------------- | ------------------------------------------------- |
+| getInstance():BotManager    | 获取全局实例                                      |
+| get(long):Bot               | 根据qq号获取Bot实例                               |
+| getAllBot():Collection<Bot> | 获取所有Bot实例                                   |
+| register(long, Bot):void    | 注册一个Bot实例                                   |
+| remove(long):Bot            | 根据qq号移除一个Bot实例                           |
+| logout(long):Bot            | 将qq号对应的Bot实例登出                           |
+| logoutAll():void            | 登出所有Bot实例                                   |
+| login(long):boolean         | 根据qq号登入一个Bot实例(Bot实例不存在时返回false) |
+| loginAll():void             | 登入所有Bot实例                                   |
+
+### EventHandlerManager
+
+对事件处理器进行统一管理，只有一个全局实例。
+
+具体方法请参考注释
+
+### ExceptionHandlerManager
+
+对异常处理器进行统一管理，只有一个全局实例。
+
+具体方法请参考注释
+
+### GlobalConfig
+
+存储配置文件中miraiboot.config的配置内容。
+
+具体方法请参考注释
+
+### FileUtil
+
+用于获取资源文件夹(data)下的内容
+
+| 方法原型                                   | 说明                                            |
+| ------------------------------------------ | ----------------------------------------------- |
+| getResourceFile(String):File               | 根据文件名获取data文件夹下的文件                |
+| getResourceFile(String, String):File       | 根据文件名获取data文件夹子文件夹下的文件        |
+| getVoiceResourceFile(String):File          | 根据文件名获取data/voices文件夹下的文件         |
+| getVoiceResourceFile(String， String):File | 根据文件名获取data/voices文件夹子文件夹下的文件 |
+| getImageResourceFile(String):File          | 根据文件名获取data/images文件夹下的文件         |
+| getImageResourceFile(String， String):File | 根据文件名获取data/images文件夹子文件夹下的文件 |
+| getConfigFile():File                       | 获取配置文件                                    |
+
+具体方法请参考注释
