@@ -544,7 +544,7 @@ public class Test {
 
 消息链（MessageChain）是指一种由多个类型元素组成的链表结构。任意一种继承Message类的元素均可成为链表中的一个节点，例如文字PlainText、语音Voice、图片Image、文件FileMessage等等，统称为SingleMessage。多个SingleMessage连接到一起，即为消息链。下图即是一条图文消息的消息链构成。
 
-![](.\resource\MessageChain.jpg)
+![](https://lychee.diyigemt.net/uploads/big/312aab6dde35cabb196d83317f74691c.jpg)
 
 值得注意的是，SingleMessage并不一定是实际显示中的一条消息，它指的是一条消息中的一个元素。如果该消息由多个元素构成（例如图文消息），则实际显示中一条消息是MessageChain。而且，对于语音元素和文件元素，这里将以上两种元素成为特殊元素。由于QQ自身对特殊元素显示规则等原因，每条消息链只能接受一个特殊元素。一旦插入特殊元素，之前的图文元素会被忽略，如果插入多个特殊元素，实际显示时只会显示消息链中最后一个特殊元素。
 
