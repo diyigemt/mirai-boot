@@ -213,9 +213,22 @@ public class MiraiApplication {
       }
       // 如果注册为BotEventHandler 将不能被注册为消息事件Handler
       if (b.get()) continue;
+      // 获取与指令对应的权限id
+      EventHandlerComponent classAnnotation = clazz.getAnnotation(EventHandlerComponent.class);
+      int permissionIndex = classAnnotation.value();
+      if (method.isAnnotationPresent(CheckPermission.class)) {
+        CheckPermission permission = method.getAnnotation(CheckPermission.class);
+        permissionIndex = permission.FunctionID() == 0 ? permissionIndex : permission.FunctionID();
+      }
       // 注册强制触发EventHandler
       if (methodAnnotation.isAny()) {
         EventHandlerManager.getInstance().onAny(clazz, method);
+        String target = methodAnnotation.target();
+        // 注册权限id
+        String methodName = method.getName();
+        String className = clazz.getCanonicalName();
+        String s = target.equals("") ? className + "." + methodName : target;
+        FunctionId.put(s, permissionIndex);
         continue;
       }
       String targetName = methodAnnotation.target();
@@ -231,13 +244,7 @@ public class MiraiApplication {
         // 注册指令开头
         CommandUtil.getInstance().registerCommandStart(start);
       }
-      // 注册与指令对应的权限id
-      EventHandlerComponent classAnnotation = clazz.getAnnotation(EventHandlerComponent.class);
-      int permissionIndex = classAnnotation.value();
-      if (method.isAnnotationPresent(CheckPermission.class)) {
-        CheckPermission permission = method.getAnnotation(CheckPermission.class);
-        permissionIndex = permission.FunctionID() == 0 ? permissionIndex : permission.FunctionID();
-      }
+
       FunctionId.put(targetName, permissionIndex);
       EventHandlerManager.getInstance().on(targetName, clazz, method);
     }
