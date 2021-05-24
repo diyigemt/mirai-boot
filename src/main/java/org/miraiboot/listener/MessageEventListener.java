@@ -43,7 +43,7 @@ public class MessageEventListener implements Consumer<MessageEvent> {
 		// 执行强制触发EventHandler
 		String res = null;
 		res = EventHandlerManager.getInstance().emitAny(eventPack, source);
-		if (res != null) {
+		if (res != null && eventLoggerEnable) {
 			MiraiMain.logger.error(res);
 		}
 		// 获取指令
