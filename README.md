@@ -534,6 +534,16 @@ public class Test {
 
 ## 消息构造器
 
+Mirai-core已经拥有一种构造器，MessageChainBuilder，可以使用.plus方法对图文信息进行连接，但对于语音和群文件消息，MessageChain只能接受一个，不能连续使用.plus方法接受多个添加操作
+
+Miraiboot拥有三种构造器，分别是
+
+| builder             | 作用             |
+| ------------------- | ---------------- |
+| ImageMessageBuilder | 图片消息构造器   |
+| VoiceMessageBuilder | 语音消息构造器   |
+| FileMessageBuilder  | 群文件消息构造器 |
+
 
 
 ## 上下文监听
