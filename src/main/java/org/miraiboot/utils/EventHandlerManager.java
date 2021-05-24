@@ -50,6 +50,8 @@ public class EventHandlerManager {
    */
   private static final Map<String, List<EventHandlerItem>> OTHER_EVENT_STORE = new HashMap<String, List<EventHandlerItem>>();
 
+  private static final String HANDLER_ANY_NAME = "HANDLER_ANY";
+
   /**
    * <h2>获取单列对象</h2>
    * @return EventHandlerManager
@@ -84,6 +86,15 @@ public class EventHandlerManager {
     EventHandlerItem eventHandlerItem = new EventHandlerItem(target, invoker, handler, type);
     if (!eventHandlerItems.contains(eventHandlerItem)) eventHandlerItems.add(eventHandlerItem);
     OTHER_EVENT_STORE.put(target, eventHandlerItems);
+  }
+
+  /**
+   * <h2>注册强制执行Handler</h2>
+   * @param invoker Handler所在的类
+   * @param handler Handler
+   */
+  public void onAny(Class<?> invoker, Method handler) {
+    on(HANDLER_ANY_NAME, invoker ,handler);
   }
 
   /**
@@ -131,6 +142,16 @@ public class EventHandlerManager {
 
   /**
    * <h2>执行非消息事件Handler</h2>
+   * @param eventPack 封装事件
+   * @param plainText 内容纯文本
+   * @return 结果 为null为无事发生
+   */
+  public String emitAny(MessageEventPack eventPack, String plainText) {
+    return emit(HANDLER_ANY_NAME, eventPack, plainText);
+  }
+
+  /**
+   * <h2>执行非消息事件Handler</h2>
    * @param target 指令
    * @param eventPack 封装事件
    * @return 结果 为null为无事发生
@@ -172,10 +193,15 @@ public class EventHandlerManager {
     List<EventHandlerItem> eventHandlerItems = STORE.get(target);
     if (eventHandlerItems == null) return null;
     for (EventHandlerItem handler : eventHandlerItems) {
+      boolean isAny = target.equals(HANDLER_ANY_NAME);
       EventHandlerType[] type = handler.getType();
       if (!checkEventType(type, eventPack)) return null;
       Method method = handler.getHandler();
-      // TODO 处理权限
+      // 判断Filter 用于过滤强制触发事件
+      if (method.isAnnotationPresent(MessageFilter.class) || method.isAnnotationPresent(MessageFilters.class)) {
+        if (!CommandUtil.getInstance().checkFilter(eventPack, method, plainText)) return "filter 未通过";
+      }
+      // 处理权限
       if (handler.getHandler().isAnnotationPresent(CheckPermission.class)) {
         boolean flag = true;
         CheckPermission annotation = method.getAnnotation(CheckPermission.class);
@@ -186,8 +212,17 @@ public class EventHandlerManager {
             return "您当前的权限不足以对目标用户操作";
           }
         }
-        // 改成从FunctionId中获取以适应全局permissionIndex的设置
-        int commandId = FunctionId.getMap(target);
+        // 从FunctionId中获取以适应全局permissionIndex的设置
+        String permissionName = target;
+        // 如果是强制触发处理器 改成由方法名获取
+        if (isAny) {
+          EventHandler eventHandlerAnnotation = method.getAnnotation(EventHandler.class);
+          String s = eventHandlerAnnotation.target();
+          String methodName = method.getName();
+          String className = handler.getInvoker().getCanonicalName();
+          permissionName = s.equals("") ? className + "." + methodName : s;
+        }
+        int commandId = FunctionId.getMap(permissionName);
         if(PermissionCheck.checkGroupPermission(eventPack, commandId)){
           if(SQLNonTempAuth){
             return "您的管理员已禁止您使用该功能";
@@ -205,11 +240,7 @@ public class EventHandlerManager {
           }
         }
       }
-      // 开始处理@Filter 和 @PreProcessor
-      // 判断Filter
-      if (method.isAnnotationPresent(MessageFilter.class) || method.isAnnotationPresent(MessageFilters.class)) {
-        if (!CommandUtil.getInstance().checkFilter(eventPack, method, plainText)) return "filter 未通过";
-      }
+      // 开始处理@PreProcessor
       int parameterCount = method.getParameterCount();
       Object[] parameters = null;
       PreProcessorData processorData = new PreProcessorData();
@@ -217,7 +248,7 @@ public class EventHandlerManager {
       if (parameterCount > 1) {
         parameters = new Object[parameterCount];
         parameters[0] = eventPack;
-        processorData = CommandUtil.getInstance().parseArgs(plainText, target, method, processorData);
+        processorData = CommandUtil.getInstance().parseArgs(plainText, isAny ? "" : target, method, processorData);
         processorData.setText(plainText);
         parameters[1] = processorData;
         // 开始预处理 分离参数之类的

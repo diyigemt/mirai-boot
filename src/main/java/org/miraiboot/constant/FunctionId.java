@@ -30,7 +30,8 @@ public class FunctionId {
      * @return 返回ID值
      */
     public static int getMap(String target){
-        return map.get(target);
+        Integer integer = map.get(target);
+        return integer == null ? 0 : integer;
     }
 
     public static String getKey(int value){

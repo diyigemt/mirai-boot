@@ -183,13 +183,12 @@ public class MiraiApplication {
    * @param clazz 目标类
    */
   private static void handleAutoInit(Class<?> clazz, List<AutoInitItem> res) {
-    try {
-      Method init = clazz.getMethod("init", ConfigFile.class);
-      AutoInit annotation = clazz.getAnnotation(AutoInit.class);
-      AutoInitItem item = new AutoInitItem(annotation.value(), init);
-      res.add(item);
-    } catch (NoSuchMethodException e) {
-      e.printStackTrace();
+    AutoInit annotation = clazz.getAnnotation(AutoInit.class);
+    for (Method method : clazz.getMethods()) {
+      if (method.getName().equals("init") && method.canAccess(null)) {
+        AutoInitItem item = new AutoInitItem(annotation.value(), method);
+        res.add(item);
+      }
     }
   }
 
@@ -214,9 +213,22 @@ public class MiraiApplication {
       }
       // 如果注册为BotEventHandler 将不能被注册为消息事件Handler
       if (b.get()) continue;
+      // 获取与指令对应的权限id
+      EventHandlerComponent classAnnotation = clazz.getAnnotation(EventHandlerComponent.class);
+      int permissionIndex = classAnnotation.value();
+      if (method.isAnnotationPresent(CheckPermission.class)) {
+        CheckPermission permission = method.getAnnotation(CheckPermission.class);
+        permissionIndex = permission.FunctionID() == 0 ? permissionIndex : permission.FunctionID();
+      }
       // 注册强制触发EventHandler
       if (methodAnnotation.isAny()) {
-        EventHandlerManager.getInstance().on("", clazz, method);
+        EventHandlerManager.getInstance().onAny(clazz, method);
+        String target = methodAnnotation.target();
+        // 注册权限id
+        String methodName = method.getName();
+        String className = clazz.getCanonicalName();
+        String s = target.equals("") ? className + "." + methodName : target;
+        FunctionId.put(s, permissionIndex);
         continue;
       }
       String targetName = methodAnnotation.target();
@@ -228,16 +240,11 @@ public class MiraiApplication {
         Object o = GlobalConfig.getInstance().get(ConstantGlobal.DEFAULT_COMMAND_START);
         if (!o.toString().equals("")) targetName = o + targetName;
       } else {
+        targetName = start + targetName;
         // 注册指令开头
         CommandUtil.getInstance().registerCommandStart(start);
       }
-      // 注册与指令对应的权限id
-      EventHandlerComponent classAnnotation = clazz.getAnnotation(EventHandlerComponent.class);
-      int permissionIndex = classAnnotation.value();
-      if (method.isAnnotationPresent(CheckPermission.class)) {
-        CheckPermission permission = method.getAnnotation(CheckPermission.class);
-        permissionIndex = permission.FunctionID() == 0 ? permissionIndex : permission.FunctionID();
-      }
+
       FunctionId.put(targetName, permissionIndex);
       EventHandlerManager.getInstance().on(targetName, clazz, method);
     }
