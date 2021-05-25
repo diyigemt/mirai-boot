@@ -27,7 +27,7 @@ import java.util.List;
 public class AuthMgr {
 
     @EventHandler(target = "permit")
-    @CheckPermission(isAdminOnly = true, isStrictRestricted = true, FunctionID = FunctionId.permit)
+    @CheckPermission(isAdminOnly = true, isStrictRestricted = true, functionId = FunctionId.permit)
     @MessagePreProcessor(filterType = MessagePreProcessorMessageType.At)
     public void authorityManager(MessageEventPack eventPack, PreProcessorData data){
         List<String> args = data.getArgs();

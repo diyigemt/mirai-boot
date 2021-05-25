@@ -7,12 +7,10 @@ import net.mamoe.mirai.Bot;
 import net.mamoe.mirai.BotFactory;
 import net.mamoe.mirai.event.events.BotEvent;
 import net.mamoe.mirai.event.events.MessageEvent;
-import net.diyigemt.miraiboot.annotation.*;
 import net.diyigemt.miraiboot.constant.ConstantGlobal;
 import net.diyigemt.miraiboot.constant.EventHandlerType;
 import net.diyigemt.miraiboot.constant.FunctionId;
 import net.diyigemt.miraiboot.dao.PermissionDAO;
-import net.diyigemt.miraiboot.entity.*;
 import net.diyigemt.miraiboot.function.TestAlias;
 import net.diyigemt.miraiboot.listener.BotEventListener;
 import net.diyigemt.miraiboot.listener.ExceptionListener;
@@ -20,7 +18,6 @@ import net.diyigemt.miraiboot.listener.MessageEventListener;
 import net.diyigemt.miraiboot.mirai.MiraiMain;
 import net.diyigemt.miraiboot.permission.AuthMgr;
 import net.diyigemt.miraiboot.permission.CheckPermission;
-import net.diyigemt.miraiboot.utils.*;
 import org.yaml.snakeyaml.Yaml;
 
 import java.io.*;
@@ -221,7 +218,7 @@ public class MiraiApplication {
       int permissionIndex = classAnnotation.value();
       if (method.isAnnotationPresent(CheckPermission.class)) {
         CheckPermission permission = method.getAnnotation(CheckPermission.class);
-        permissionIndex = permission.FunctionID() == 0 ? permissionIndex : permission.FunctionID();
+        permissionIndex = permission.functionId() == 0 ? permissionIndex : permission.functionId();
       }
       // 注册强制触发EventHandler
       if (methodAnnotation.isAny()) {

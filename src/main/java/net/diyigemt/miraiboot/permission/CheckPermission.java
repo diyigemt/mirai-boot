@@ -44,5 +44,5 @@ public @interface CheckPermission {
   boolean isAdminOnly() default false;
 
   //注册功能ID号,管理层独占功能为负数，普通功能为正数。1和-1已被占用
-  int FunctionID() default DEFAULT_INDEX;
+  int functionId() default DEFAULT_INDEX;
 }

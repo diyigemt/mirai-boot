@@ -13,7 +13,7 @@ import net.diyigemt.miraiboot.permission.CheckPermission;
 public class TestFilter {
 
   @EventHandler(target = "filter1")
-  @CheckPermission(isAdminOnly = true, FunctionID = 3)
+  @CheckPermission(isAdminOnly = true, functionId = 3)
   @MessageFilter(accounts = "1355247243")
   public void testFilter1(MessageEventPack eventPack, PreProcessorData data) {
     eventPack.getSubject().sendMessage("filter1");
