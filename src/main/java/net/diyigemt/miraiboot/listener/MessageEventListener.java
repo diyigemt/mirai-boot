@@ -34,7 +34,7 @@ public class MessageEventListener implements Consumer<MessageEvent> {
 		collect.forEach(item -> {
 			sb.append(item.contentToString());
 		});
-		String source = sb.toString();
+		String source = sb.toString().trim();
 		// 执行监听中的特定对话
 		EventHandlerManager.getInstance().emitNext(eventPack.getSenderId(), eventPack, source);
 		// 执行强制触发EventHandler
