@@ -17,8 +17,13 @@ public class Alias {
   @EventHandler(target = "alias")
   public void testAlias(MessageEventPack eventPack, PreProcessorData data) {
     List<String> args = data.getArgs();
-    if (args.isEmpty()) {
+    if (args == null || args.isEmpty()) {
       eventPack.reply("参数获取失败");
+      return;
+    }
+    if (args.size() < 2) {
+      eventPack.reply("参数不足");
+      return;
     }
     String target = args.get(0);
     String alias = args.get(1);

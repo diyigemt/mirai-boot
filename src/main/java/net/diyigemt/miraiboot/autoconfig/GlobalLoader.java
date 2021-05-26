@@ -21,7 +21,8 @@ import java.util.jar.JarFile;
  * @since 1.0.0
  */
 public class GlobalLoader {
-  private static final char SYSTEM_PATH_DIV = File.separatorChar;
+//  private static final char SYSTEM_PATH_DIV = File.separatorChar;
+  private static final char SYSTEM_PATH_DIV = '/';
 
   public static <T extends Annotation> List<Class<?>> getClassHasAnnotation(Class<T> annotation, String packageName) {
     List<Class<?>> classes = getClasses(packageName);
@@ -101,7 +102,8 @@ public class GlobalLoader {
                     String className = name.substring(packageName.length() + 1, name.length() - 6);
                     try {
                       //添加到classes
-                      classes.add(Class.forName(packageName + '.' + className));
+                      String clazzName = packageName + '.' + className;
+                      classes.add(Class.forName(clazzName.replace(SYSTEM_PATH_DIV, '.')));
                     } catch (ClassNotFoundException e) {
                       e.printStackTrace();
                     }
@@ -153,7 +155,8 @@ public class GlobalLoader {
         String className = file.getName().substring(0, file.getName().length() - 6);
         try {
           //添加到集合中去
-          classes.add(Class.forName(packageName + '.' + className));
+          String clazzName = packageName + '.' + className;
+          classes.add(Class.forName(clazzName.replace(SYSTEM_PATH_DIV, '.')));
         } catch (ClassNotFoundException e) {
           e.printStackTrace();
         }
