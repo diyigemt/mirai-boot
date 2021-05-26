@@ -55,8 +55,6 @@ public class MiraiApplication {
         }
       }
     }
-    // 注册全局Exception Handler
-    Thread.currentThread().setUncaughtExceptionHandler(new ExceptionListener());
     // AutoConfiguration
     // 打印描述
     MiraiBootApplication miraiBootApplication = mainClass.getAnnotation(MiraiBootApplication.class);
