@@ -80,11 +80,11 @@ miraiboot是是对mirai框架的简单Java封装。
 <dependency>
         <groupId>net.diyigemt.miraiboot</groupId>
         <artifactId>mirai-boot</artifactId>
-        <version>1.0.0</version>
+        <version>1.0.3</version>
 </dependency>
 ```
 
-你也可以去 [releases](https://github.com/diyigemt/mirai-boot/releases/tag/1.0.0)下载jar包并导入项目。
+你也可以去 [releases](https://github.com/diyigemt/mirai-boot/releases/tag/1.0.3)下载jar包并导入项目。
 **注：第一次miraiboot需要引入mirai-login-solver-selenium这个依赖以完成新设备的滑动验证**
 
 bot的设备信息文件 `*.json`将会存放在/config/qq号/*.json文件中，若是从其他框架迁移，可直接将json文件放在该文件夹下，并在配置文件中指定文件名即可，无需再次引入`mirai-login-solver-selenium`	
