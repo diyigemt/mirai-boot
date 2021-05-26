@@ -87,7 +87,7 @@ miraiboot是是对mirai框架的简单Java封装。
 你也可以去 [releases](https://github.com/diyigemt/mirai-boot/releases/tag/1.0.0)下载jar包并导入项目。
 **注：第一次miraiboot需要引入mirai-login-solver-selenium这个依赖以完成新设备的滑动验证**
 
-bot的设备信息文件 `*.json`将回存放在/config/qq号/*.json文件中，若是从其他框架迁移，可直接将json文件放在该文件夹下，并在配置文件中指定文件名即可，无需再次引入`mirai-login-solver-selenium`	
+bot的设备信息文件 `*.json`将会存放在/config/qq号/*.json文件中，若是从其他框架迁移，可直接将json文件放在该文件夹下，并在配置文件中指定文件名即可，无需再次引入`mirai-login-solver-selenium`	
 
 ## 快速上手
 
@@ -133,7 +133,7 @@ data：保存miraiboot的资源文件 放在其中的文件可以很方便地通
 
 **关于bot设备信息**
 
-bot的设备信息文件 `*.json`将回存放在/config/qq号/*.json文件中，若是从其他框架迁移，可直接将json文件放在该文件夹下，并在配置文件中指定文件名即可，无需再次引入`mirai-login-solver-selenium`	
+bot的设备信息文件 `*.json`将会存放在/config/qq号/*.json文件中，若是从其他框架迁移，可直接将json文件放在该文件夹下，并在配置文件中指定文件名即可，无需再次引入`mirai-login-solver-selenium`	
 
 关于事件过滤：
 
