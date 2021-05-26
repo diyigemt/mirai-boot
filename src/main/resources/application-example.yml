@@ -18,9 +18,9 @@ miraiboot:
         device: device.json # 设备信息文件名
   logger:
     network: false # 是否在控制台显示bot的网络信息
-    eventStatus: true # 是否在控制台打印事件执行失败信息
-    debug: false # 是否在控制台打印事件解析信息
-  alias: # 指令别名
-  configs: # 全局配置
+    eventStatus: true # 是否在控制台打印事件执行失败信息 暂时不起作用
+    debug: false # 是否在控制台打印事件解析信息 暂时不起作用
+  alias: # 指令别名 将会自动注册 配置方式为 指令全名:别名
+  configs: # 全局配置 所有全局配置均可以主动从GlobalConfig类中拿到 具体请看注释
     DEFAULT_COMMAND_START: "" # 默认指令开头 当@EventHandler中没有指定start时使用改配置
     DEFAULT_EVENT_NET_TIMEOUT: 300000 # 默认的上下文监听超时时间 5分钟

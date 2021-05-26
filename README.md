@@ -74,22 +74,28 @@ miraiboot是是对mirai框架的简单Java封装。
 
 ## 安装教程
 
-1. 在maven中添加依赖
+在maven中添加依赖
 
+```xml
+<dependency>
+        <groupId>net.diyigemt.miraiboot</groupId>
+        <artifactId>mirai-boot</artifactId>
+        <version>1.0.0</version>
+</dependency>
+```
 
-
-你也可以去 [target目录](https://gitee.com/fanwen-magician/mirai-java-easy/blob/master/target)下载jar包并导入项目。但不推荐这样做。
+你也可以去 [releases](https://github.com/diyigemt/mirai-boot/releases/tag/1.0.0)下载jar包并导入项目。
 **注：第一次miraiboot需要引入mirai-login-solver-selenium这个依赖以完成新设备的滑动验证**
 
-
+bot的设备信息文件 `*.json`将回存放在/config/qq号/*.json文件中，若是从其他框架迁移，可直接将json文件放在该文件夹下，并在配置文件中指定文件名即可，无需再次引入`mirai-login-solver-selenium`	
 
 ## 快速上手
 
 创建一个主类
 
 ```java
-import org.miraiboot.annotation.MiraiBootApplication;
-import org.miraiboot.autoconfig.MiraiApplication;
+import net.diyigemt.miraiboot.annotation.MiraiBootApplication;
+import net.diyigemt.miraiboot.autoconfig.MiraiApplication;
 
 @MiraiBootApplication
 public class Main {
@@ -117,13 +123,17 @@ public class Test {
 
 在上面用到的三个注解可以将在下面详细解释 当然也可以去看注释(反正下面的东西也是从注释那边复制过来的)
 
-**注意 第一次运行会在项目目录创建config cache和data三个文件夹**
+**注意 第一次运行会在项目目录创建config cache和data三个文件夹**，并退出运行。需要在配置文件中指定机器人的qq号、密码和设备信息json文件名
 
 config：保存miraiboot的配置文件和bot的device.json文件
 
 cache：保存mirai-core的文件
 
 data：保存miraiboot的资源文件 放在其中的文件可以很方便地通过工具类访问
+
+**关于bot设备信息**
+
+bot的设备信息文件 `*.json`将回存放在/config/qq号/*.json文件中，若是从其他框架迁移，可直接将json文件放在该文件夹下，并在配置文件中指定文件名即可，无需再次引入`mirai-login-solver-selenium`	
 
 关于事件过滤：
 
@@ -235,6 +245,14 @@ cache：保存mirai-core的文件
 data：保存miraiboot的资源文件 放在其中的文件可以很方便地通过工具类访问
 
 其中在config文件夹下的application.yml文件是系统的配置文件，各种设置项请参考文件注释
+
+## 配置文件
+
+系统的配置文件放置在`./config/application.yml`，其中包括的机器人的账号信息、一些设置的开关配置
+
+具体配置项功能均有注释。
+
+第一次运行时将会自动创建配置文件，并退出运行，需要手动在配置文件中指定机器人的账号信息。
 
 ## 事件处理
 
