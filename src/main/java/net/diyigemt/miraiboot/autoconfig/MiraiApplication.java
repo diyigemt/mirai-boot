@@ -11,7 +11,7 @@ import net.diyigemt.miraiboot.constant.ConstantGlobal;
 import net.diyigemt.miraiboot.constant.EventHandlerType;
 import net.diyigemt.miraiboot.constant.FunctionId;
 import net.diyigemt.miraiboot.dao.PermissionDAO;
-import net.diyigemt.miraiboot.function.TestAlias;
+import net.diyigemt.miraiboot.function.Alias;
 import net.diyigemt.miraiboot.listener.BotEventListener;
 import net.diyigemt.miraiboot.listener.ExceptionListener;
 import net.diyigemt.miraiboot.listener.MessageEventListener;
@@ -94,7 +94,7 @@ public class MiraiApplication {
     String packageName = mainClass.getPackageName();
     List<Class<?>> classes = GlobalLoader.getClasses(packageName);
     // 添加权限管理命令和别名命令
-    classes.add(TestAlias.class);
+    classes.add(Alias.class);
     classes.add(AuthMgr.class);
     // 初始化permission数据库
     classes.add(PermissionDAO.class);

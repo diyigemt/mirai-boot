@@ -12,7 +12,7 @@ import java.util.List;
  *
  */
 @EventHandlerComponent
-public class TestAlias {
+public class Alias {
 
   @EventHandler(target = "alias")
   public void testAlias(MessageEventPack eventPack, PreProcessorData data) {

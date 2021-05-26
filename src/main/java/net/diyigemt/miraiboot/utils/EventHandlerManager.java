@@ -178,7 +178,7 @@ public class EventHandlerManager {
         }
       } catch (IllegalAccessException | InvocationTargetException | InstantiationException | NoSuchMethodException e) {
         handlerException(e);
-        return "其他事件执行失败: " + target;
+//        return "其他事件执行失败: " + target;
       }
     }
     return null;
@@ -201,7 +201,10 @@ public class EventHandlerManager {
       Method method = handler.getHandler();
       // 判断Filter 用于过滤强制触发事件
       if (method.isAnnotationPresent(MessageFilter.class) || method.isAnnotationPresent(MessageFilters.class)) {
-        if (!CommandUtil.getInstance().checkFilter(eventPack, method, plainText)) return "filter 未通过";
+        if (!CommandUtil.getInstance().checkFilter(eventPack, method, plainText)) {
+          continue;
+//          return "filter 未通过";
+        }
       }
       // 处理权限
       if (handler.getHandler().isAnnotationPresent(CheckPermission.class)) {
@@ -210,8 +213,8 @@ public class EventHandlerManager {
         //获取权限ID
         if(annotation.isStrictRestricted()){
           if(!PermissionCheck.strictRestrictedCheck(eventPack)){
-            MiraiMain.getInstance().reply(eventPack, "您当前的权限不足以对目标用户操作");
-            return "您当前的权限不足以对目标用户操作";
+            eventPack.reply("您当前的权限不足以对目标用户操作");
+//            return "您当前的权限不足以对目标用户操作";
           }
         }
         // 从FunctionId中获取以适应全局permissionIndex的设置
@@ -227,18 +230,20 @@ public class EventHandlerManager {
         int commandId = FunctionId.getMap(permissionName);
         if(PermissionCheck.checkGroupPermission(eventPack, commandId)){
           if(SQLNonTempAuth){
-            return "您的管理员已禁止您使用该功能";
+            continue;
+//            return "您的管理员已禁止您使用该功能";
           }
           flag = false;
         }
         if(!PermissionCheck.individualAuthCheck(handler, eventPack) && flag){
-          MiraiMain.getInstance().reply(eventPack, "您没有权限使用该功能");
-          return "您没有权限使用该功能";
+          eventPack.reply("您没有权限使用该功能");
+          continue;
         }
         else {
           if(!PermissionCheck.identityCheck(handler, eventPack) && flag){
-            MiraiMain.getInstance().reply(eventPack, "权限不足");
-            return "权限不足";
+            eventPack.reply("权限不足");
+            continue;
+//            return "权限不足";
           }
         }
       }
@@ -270,7 +275,7 @@ public class EventHandlerManager {
         }
       } catch (IllegalAccessException | InvocationTargetException | InstantiationException | NoSuchMethodException e) {
         handlerException(e);
-        return "事件执行出错";
+//        return "事件执行出错";
       }
     }
     return null;
@@ -387,7 +392,7 @@ public class EventHandlerManager {
         data = CommandUtil.getInstance().parsePreProcessor(eventPack, onNext, data);
       } catch (NoSuchMethodException e) {
         e.printStackTrace();
-        return "没有找到该方法!";
+//        return "没有找到该方法!";
       }
       if (next.check()) {
         ListeningStatus status = next.onNext(eventPack, data);
