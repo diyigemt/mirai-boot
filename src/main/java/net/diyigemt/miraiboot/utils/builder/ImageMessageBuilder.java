@@ -204,6 +204,11 @@ public class ImageMessageBuilder {
         this.chains.append(chain);
         for (MessageChain chain : chains){
             event.getSubject().sendMessage(chain);
+            try{
+                Thread.sleep(500);
+            } catch (InterruptedException e) {
+                continue;
+            }
         }
         return chains;
     }

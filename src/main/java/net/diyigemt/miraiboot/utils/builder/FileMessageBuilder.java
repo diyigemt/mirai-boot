@@ -211,6 +211,11 @@ public class FileMessageBuilder {
 	public EnhancedMessageChain send() {
 		for (MessageChain messageChain : chains) {
 			event.getSubject().sendMessage(messageChain);
+			try{
+				Thread.sleep(500);
+			} catch (InterruptedException e) {
+				continue;
+			}
 		}
 		return this.chains;
 	}
