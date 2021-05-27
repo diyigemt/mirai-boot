@@ -10,8 +10,8 @@ import net.diyigemt.miraiboot.entity.PreProcessorData;
 import net.diyigemt.miraiboot.interfaces.EventHandlerNext;
 import net.diyigemt.miraiboot.utils.BotManager;
 
-@ExceptionHandlerComponent(value = -1)
-@EventHandlerComponent
+//@ExceptionHandlerComponent(value = -1)
+//@EventHandlerComponent
 public class TestException {
   @ExceptionHandler(targets = IllegalArgumentException.class, priority = 0)
   public void testException6(Throwable e) {

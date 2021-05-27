@@ -3,6 +3,7 @@ package net.diyigemt.miraiboot.utils.builder;
 import net.diyigemt.miraiboot.entity.EnhancedMessageChain;
 import net.diyigemt.miraiboot.entity.HttpProperties;
 import net.mamoe.mirai.event.events.MessageEvent;
+import net.mamoe.mirai.message.data.EmptyMessageChain;
 import net.mamoe.mirai.message.data.MessageChain;
 import net.mamoe.mirai.message.data.MessageChainBuilder;
 import net.mamoe.mirai.utils.ExternalResource;
@@ -122,7 +123,9 @@ public class ImageMessageBuilder {
      * @param messageChain 当前类型: 加强消息链
      */
     public ImageMessageBuilder add(EnhancedMessageChain messageChain){
-        chains.append(chain);
+        if(!(chain instanceof EmptyMessageChain)){
+            chains.append(chain);
+        }
         chains.append(messageChain);
         this.chain = new MessageChainBuilder().build();
         return this;

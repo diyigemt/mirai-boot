@@ -22,7 +22,7 @@ public class text {
 //        SendMessageLib.ImageMessageSender(eventPack, AbsPath);
 //        eventPack.reply("分割线");
         EnhancedMessageChain chain1 = new ImageMessageBuilder(eventPack)
-                .add("G:\\素材\\QQBot\\素材\\未标题-1.png")
+                .add("G:\\素材\\成品\\QQ截图20210215191854.png")
                 .build();
         EnhancedMessageChain chain2 = new ImageMessageBuilder(eventPack)
                 .add(chain1)
@@ -30,7 +30,7 @@ public class text {
                 .build();
         EnhancedMessageChain chain3 = new ImageMessageBuilder(eventPack)
                 .add(chain2)
-                .add("G:\\素材\\QQBot\\素材\\未标题-1.png")
+                .add("G:\\素材\\成品\\QQ截图20210215191854.png")
                 .build();
         EnhancedMessageChain chain4 = new ImageMessageBuilder(eventPack)
                 .add(chain3)
