@@ -585,7 +585,7 @@ MessageChain类型是Mirai-core中自带的默认消息链类型，用于存储�
 
 
 
-相比MessageChain，EnhancedMessageChain可以将图文信息和群文件以及语音元素混合插入，打破了MessageChain对于特殊元素不能添加多个的限制。同时EnhancedMessageChain也支持连接使用MessageChainBuilder构造完成的结果。
+相比MessageChain，EnhancedMessageChain可以将图文信息和群文件以及语音元素混合插入，打破了MessageChain对于特殊元素不能添加多个的限制。同时EnhancedMessageChain也支持连接使用MessageChainBuilder构造完成的结果。但需要注意的是，由于特殊元素的素材体积参差不齐，个别差距悬殊、程序发送信息速度超过手动操作、接收方网络带宽限制、QQ显示消息采取先到先显示的规则等缘故，EnhancedMessageChain并不能保证在任何情况下接收方消息顺序和您安排的顺序保持一致。如果一定要求顺序，建议您使用MessageChain类型存储，当做一整条消息发送出去，但这仅仅支持图文。
 
 EnhancedMessageChain类型拥有以下方法：
 
@@ -681,7 +681,7 @@ EnhancedMessageChain chains = new ImageMessageChainBulider(eventPack, httpProper
 注：
 
 1. Miraiboot会等到消息链中所有素材都加载完成并上传至服务器才会进行发送操作。所以URL的连接质量直接影响您发送消息的延迟，请尽量使用连接质量好的URL或使用HTTPProperties进行Host等设置优化。实在不行可以考虑事先下载好素材使用本地路径或File类打开传入。
-2. 请不要在一条加强消息链上添加过多语音、群文件等特殊元素，可能会因为消息接收方带宽限制和QQ消息同步规则使得接收方消息乱序，得不偿失。
+2. 请不要在一条加强消息链上添加过多图片，语音、群文件等元素，可能会因为消息接收方带宽限制和QQ消息同步规则使得接收方消息乱序，得不偿失（如果必要，可以考虑在两条特殊消息链组成的消息之间写一个延时降低机器人发消息的速度）。
 3. 对于没有传入HTTPProperties的Builder实例化，Miraiboot将使用全局默认的设置对URL进行HTTP请求。
 4. 文件消息构造器目前只能对群文件生效，私聊无效。
 
