@@ -23,7 +23,13 @@ import java.lang.annotation.*;
 @Documented
 public @interface EventHandlerHelp {
   /**
+   * <h2>是否录入帮助信息</h2>
+   * 为false时不会将被注解的方法录入帮助信息中
+   */
+  boolean enable() default true;
+  /**
    * <h2>指令对应的帮助id</h2>
+   * 会在用户输入 帮助 帮助id时，将id对应的指令具体触发方式描述打印
    */
   int value();
   /**
