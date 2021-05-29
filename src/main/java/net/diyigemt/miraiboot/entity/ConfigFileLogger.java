@@ -9,8 +9,10 @@ import lombok.NoArgsConstructor;
 public class ConfigFileLogger {
   private boolean network;
   private boolean eventStatus;
+  private boolean debug;
   public ConfigFileLogger() {
     this.network = false;
     this.eventStatus = true;
+    this.debug = false;
   }
 }
