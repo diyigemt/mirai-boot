@@ -72,6 +72,12 @@ miraiboot是是对mirai框架的简单Java封装。
 
    miraiboot所有的事件和异常处理都通过注解完成，开发者只需要对处理方法加上对应的注解，其余的都交由miraiboot进行管理，让开发者专注于功能的实现。
 
+## bug
+
+项目包名与引入的依赖重名时会导致包扫描出现问题
+
+当上下文监听器处理事件出现异常时，仍然会继续监听目标    需要更改为用户自定义
+
 ## 安装教程
 
 在maven中添加依赖
@@ -80,11 +86,11 @@ miraiboot是是对mirai框架的简单Java封装。
 <dependency>
         <groupId>net.diyigemt.miraiboot</groupId>
         <artifactId>mirai-boot</artifactId>
-        <version>1.0.3</version>
+        <version>1.0.4</version>
 </dependency>
 ```
 
-你也可以去 [releases](https://github.com/diyigemt/mirai-boot/releases/tag/1.0.3)下载jar包并导入项目。
+你也可以去 [releases](https://github.com/diyigemt/mirai-boot/releases/tag/v1.0.4)下载jar包并导入项目。
 **注：第一次miraiboot需要引入mirai-login-solver-selenium这个依赖以完成新设备的滑动验证**
 
 bot的设备信息文件 `*.json`将会存放在/config/qq号/*.json文件中，若是从其他框架迁移，可直接将json文件放在该文件夹下，并在配置文件中指定文件名即可，无需再次引入`mirai-login-solver-selenium`	
