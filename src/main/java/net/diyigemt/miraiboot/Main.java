@@ -9,7 +9,6 @@ import java.util.List;
 @MiraiBootApplication(description = "测试项目")
 public class Main {
   public static void main(String[] args) {
-    List<Class<?>> classes = PluginLoader.getPluginClasses();
     MiraiApplication.run(Main.class, args);
   }
 }
