@@ -3,6 +3,7 @@ package net.diyigemt.miraiboot.entity;
 import lombok.Data;
 import net.diyigemt.miraiboot.annotation.MessagePreProcessor;
 import net.diyigemt.miraiboot.constant.MessagePreProcessorMessageType;
+import net.diyigemt.miraiboot.interfaces.MessageProcessor;
 import net.mamoe.mirai.message.data.*;
 
 import java.util.*;
@@ -14,12 +15,12 @@ import java.util.*;
  * @since 1.0.0
  */
 @Data
-public class MessagePreProcessorItem {
-  private boolean isTextProcessor;
-  private Set<MessagePreProcessorMessageType> filterType;
+public class MessageProcessorImp implements MessageProcessor<Object> {
+  private final boolean isTextProcessor = true;
+  private final Set<MessagePreProcessorMessageType> filterType;
 
-  public MessagePreProcessorItem() {
-    this.filterType = new HashSet<MessagePreProcessorMessageType>();
+  public MessageProcessorImp() {
+    this.filterType = new HashSet<>();
   }
 
   public void addFilterType(MessagePreProcessorMessageType[] type) {
@@ -28,7 +29,7 @@ public class MessagePreProcessorItem {
 
   public List<SingleMessage> parseMessage(MessageEventPack eventPack) {
     if (this.filterType.isEmpty()) return eventPack.getMessage();
-    List<Class<? extends SingleMessage>> classes = new ArrayList<Class<? extends SingleMessage>>();
+    List<Class<? extends SingleMessage>> classes = new ArrayList<>();
     for (MessagePreProcessorMessageType type : filterType) {
       switch (type) {
         case PlainText:
@@ -81,13 +82,20 @@ public class MessagePreProcessorItem {
           break;
       }
     }
-    List<SingleMessage> res = new ArrayList<SingleMessage>();
+    List<SingleMessage> res = new ArrayList<>();
     for (SingleMessage message : eventPack.getMessage()) {
       Class<?> clazz = message.getClass();
       for (Class<? extends SingleMessage> messageClass : classes) {
         if (messageClass.isAssignableFrom(clazz)) res.add(message);
       }
     }
+    return res;
+  }
+
+  @Override
+  public PreProcessorData<Object> parseMessage(String source, MessageEventPack eventPack, PreProcessorData<?> data) {
+    PreProcessorData<Object> res = new PreProcessorData<>();
+    res.setClassified(parseMessage(eventPack));
     return res;
   }
 }

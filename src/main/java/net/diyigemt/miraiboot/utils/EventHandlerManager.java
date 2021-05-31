@@ -251,8 +251,8 @@ public class EventHandlerManager {
         processorData.setText(plainText);
         parameters[1] = processorData;
         // 开始预处理 分离参数之类的
-        if (method.isAnnotationPresent(MessagePreProcessor.class) || method.isAnnotationPresent(MessagePreProcessors.class)) {
-          processorData = CommandUtil.getInstance().parsePreProcessor(eventPack, method, processorData);
+        if (method.isAnnotationPresent(MessagePreProcessor.class)) {
+          processorData = CommandUtil.getInstance().parsePreProcessor(eventPack, processorData, method, plainText);
           parameters[1] = processorData;
         }
       }
@@ -375,12 +375,14 @@ public class EventHandlerManager {
     if (events == null) return false;
     for (int i = 0; i < events.size(); i++) {
       EventHandlerNextItem<?, ? extends EventHandlerNext<?>> next = events.get(i);
-      EventHandlerNext handler = next.getHandler();
-      PreProcessorData data = new PreProcessorData();
+      EventHandlerNext<?> handler = next.getHandler();
+      PreProcessorData<?> data = new PreProcessorData<>();
       data.setText(plainText);
       try {
         Method onNext = handler.getClass().getMethod("onNext", MessageEventPack.class, PreProcessorData.class);
-        data = CommandUtil.getInstance().parsePreProcessor(eventPack, onNext, data);
+        if (onNext.isAnnotationPresent(MessagePreProcessor.class)) {
+          data = CommandUtil.getInstance().parsePreProcessor(eventPack, data, onNext, plainText);
+        }
       } catch (NoSuchMethodException e) {
         e.printStackTrace();
       }
@@ -417,10 +419,10 @@ public class EventHandlerManager {
    * 退出是调用
    */
   public void cancelAll() {
-    if (LISTENING_STORE.isEmpty()) return;;
-    for (List<EventHandlerNextItem<? extends EventHandlerNext>> listeners : LISTENING_STORE.values()) {
+    if (LISTENING_STORE.isEmpty()) return;
+    for (List<EventHandlerNextItem<?, ? extends EventHandlerNext<?>>> listeners : LISTENING_STORE.values()) {
       if (listeners.isEmpty()) continue;
-      for (EventHandlerNextItem<? extends EventHandlerNext> item : listeners) {
+      for (EventHandlerNextItem<?, ? extends EventHandlerNext<?>> item : listeners) {
         item.cancel();
       }
     }
@@ -470,7 +472,7 @@ public class EventHandlerManager {
       timeOut = time == null ? DEFAULT_EVENT_NET_TIMEOUT_TIME : time;
     }
     if (triggerCount < 1 ) triggerCount = -1;
-    return new EventHandlerNextItem<T, K>(onNext, timeOut, triggerCount);
+    return new EventHandlerNextItem<>(onNext, timeOut, triggerCount);
   }
 
   /**
@@ -478,14 +480,14 @@ public class EventHandlerManager {
    * @param events 监听事件列表
    * @param next 事件本身
    */
-  private void handlerNextEnd(List<EventHandlerNextItem<? extends EventHandlerNext>> events, EventHandlerNextItem next) {
+  private void handlerNextEnd(List<EventHandlerNextItem<?, ? extends EventHandlerNext<?>>> events, EventHandlerNextItem<?, ? extends EventHandlerNext<?>> next) {
     next.cancel();
     next.onDestroy();
     events.remove(next);
   }
 
   private <T extends BaseEventPack> void handlerException(Throwable e, T eventPack, PreProcessorData<?> data, List<ExceptionHandlerItem> handlers) {
-    boolean res = false;
+    boolean res;
     if (e instanceof InvocationTargetException) {
       Throwable ex = ((InvocationTargetException) e).getTargetException();
       if (handlers == null || handlers.isEmpty()) {

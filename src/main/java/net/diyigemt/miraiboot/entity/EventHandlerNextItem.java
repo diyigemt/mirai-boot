@@ -67,20 +67,20 @@ public class EventHandlerNextItem<T, K extends EventHandlerNext<T>> {
     if (timeOut != -1 || triggerCount != -1) this.timer = new Timer();
   }
 
-  public ListeningStatus onNext(MessageEventPack eventPack, PreProcessorData<T> data) {
+  public ListeningStatus onNext(MessageEventPack eventPack, PreProcessorData<?> data) {
+    PreProcessorData<T> cast = (PreProcessorData<T>) data;
     this.lastEventPack = eventPack;
-    this.lastData = data;
+    this.lastData = cast;
     if (this.triggerCount != -1) data.setTriggerCount(this.triggerCount);
-    return onNextSelf(eventPack, data);
+    return onNextSelf(eventPack, cast);
   }
 
   public ListeningStatus onNextSelf(MessageEventPack eventPack, PreProcessorData<T> data) {
     try {
       return handler.onNext(eventPack, data);
     } catch (Throwable e) {
-      handlerException(e);
+      return handlerException(e);
     }
-    return ListeningStatus.LISTENING;
   }
 
   public void onTimeOut() {
@@ -131,7 +131,7 @@ public class EventHandlerNextItem<T, K extends EventHandlerNext<T>> {
     this.timer.cancel();
   }
 
-  private void handlerException(Throwable e) {
-    handler.onException(e, lastEventPack, lastData);
+  private ListeningStatus handlerException(Throwable e) {
+    return handler.onException(e, lastEventPack, lastData);
   }
 }

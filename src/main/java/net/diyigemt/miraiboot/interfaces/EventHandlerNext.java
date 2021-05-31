@@ -61,7 +61,8 @@ public abstract class EventHandlerNext<T> {
    */
   public void onTriggerOut(MessageEventPack eventPack, PreProcessorData<T> data) { }
 
-  public void onException(Throwable e, MessageEventPack eventPack, PreProcessorData<T> data) {
+  public ListeningStatus onException(Throwable e, MessageEventPack eventPack, PreProcessorData<T> data) {
     ExceptionHandlerManager.getInstance().emit(e, eventPack, data);
+    return ListeningStatus.STOPPED;
   }
 }

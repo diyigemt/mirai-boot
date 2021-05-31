@@ -259,6 +259,9 @@ public class MiraiApplication {
     }
   }
   private static void handleExceptionHandler(Class<?> clazz) {
+    // 不在事件处理器类中扫描异常处理器 防止重复注册
+    if (clazz.isAnnotationPresent(EventHandlerComponent.class)) return;
+
     ExceptionHandlerComponent classAnnotation = clazz.getAnnotation(ExceptionHandlerComponent.class);
     int classPriority = classAnnotation.value();
     for (Method method : clazz.getMethods()) {
