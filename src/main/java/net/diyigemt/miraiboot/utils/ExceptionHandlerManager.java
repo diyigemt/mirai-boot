@@ -1,10 +1,12 @@
 package net.diyigemt.miraiboot.utils;
 
 
+import net.diyigemt.miraiboot.entity.BaseEventPack;
 import net.diyigemt.miraiboot.entity.ExceptionHandlerItem;
 import net.diyigemt.miraiboot.entity.MessageEventPack;
 import net.diyigemt.miraiboot.entity.PreProcessorData;
 import net.diyigemt.miraiboot.mirai.MiraiMain;
+import net.mamoe.mirai.event.events.BotEvent;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -66,9 +68,29 @@ public class ExceptionHandlerManager {
    * @param <T>       异常泛型
    * @return 处理结果 正常返回null 异常返回信息字符串
    */
-  public <T extends Throwable> boolean emit(T e, MessageEventPack eventPack, PreProcessorData<?> data) {
-    String canonicalName = e.getClass().getCanonicalName();
-    List<ExceptionHandlerItem> collect = STORE.stream().filter(item -> item.check(e.getClass())).collect(Collectors.toList());
+  public <T extends Throwable, K extends BaseEventPack> boolean emit(T e, K eventPack, PreProcessorData<?> data) {
+    return handleException(e, eventPack, data, STORE);
+  }
+
+  /**
+   * 根据异常处理器的名称移除一个异常处理器
+   * @param name 要移除的异常处理器的名称
+   * @return 被移除的异常处理器
+   */
+  public ExceptionHandlerItem remove(String name) {
+    for (int i = 0; i < STORE.size(); i++) {
+      ExceptionHandlerItem item = STORE.get(i);
+      if (item.getName().equals(name)) {
+        STORE.remove(i);
+        return item;
+      }
+    }
+    return null;
+  }
+
+  public <T extends Throwable, K extends BaseEventPack> boolean handleException(T e, K eventPack, PreProcessorData<?> data, List<ExceptionHandlerItem> handlers) {
+    if (handlers == null || handlers.isEmpty()) return false;
+    List<ExceptionHandlerItem> collect = handlers.stream().filter(item -> item.check(e.getClass())).collect(Collectors.toList());
     if (collect.isEmpty()) return false;
     // 排序
     Collections.sort(collect);
@@ -100,26 +122,9 @@ public class ExceptionHandlerManager {
         }
       } catch (IllegalAccessException | InvocationTargetException | InstantiationException | NoSuchMethodException ex) {
         ex.printStackTrace();
-//        MiraiMain.logger.error("执行exception handler: " + target + " 时出错!");
         return false;
       }
     }
     return true;
-  }
-
-  /**
-   * 根据异常处理器的名称移除一个异常处理器
-   * @param name 要移除的异常处理器的名称
-   * @return 被移除的异常处理器
-   */
-  public ExceptionHandlerItem remove(String name) {
-    for (int i = 0; i < STORE.size(); i++) {
-      ExceptionHandlerItem item = STORE.get(i);
-      if (item.getName().equals(name)) {
-        STORE.remove(i);
-        return item;
-      }
-    }
-    return null;
   }
 }

@@ -7,7 +7,7 @@ import net.mamoe.mirai.event.events.BotEvent;
  * @author diyigemt
  * @since 1.0.0
  */
-public class BotEventPack {
+public class BotEventPack extends BaseEventPack{
 
   private BotEvent event;
 

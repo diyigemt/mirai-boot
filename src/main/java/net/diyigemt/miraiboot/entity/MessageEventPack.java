@@ -19,7 +19,7 @@ import java.util.stream.Collectors;
  * @author diyigemt
  * @since 1.0.0
  */
-public class MessageEventPack {
+public class MessageEventPack extends BaseEventPack{
 	/**
 	 * 消息事件本身
 	 */

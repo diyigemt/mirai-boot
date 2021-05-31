@@ -193,9 +193,20 @@ public class MiraiApplication {
    * @param clazz 被@EventHandlerComponent注册的类
    */
   private static void handleEventHandler(Class<?> clazz) {
+    // 提取类私有的异常处理器
+    List<ExceptionHandlerItem> handlers = null;
     Method[] methods = clazz.getMethods();
-    List<Method> collect = Arrays.stream(methods).filter(item -> item.isAnnotationPresent(ExceptionHandler.class)).collect(Collectors.toList());
-    Method exceptionHandler = collect.isEmpty() ? null : collect.get(0);
+    for (Method method : methods) {
+      if (!method.isAnnotationPresent(ExceptionHandler.class)) continue;
+      if (handlers == null) handlers = new ArrayList<>();
+      ExceptionHandler annotation = method.getAnnotation(ExceptionHandler.class);
+      Class<? extends Exception> value = annotation.value();
+      int priority = annotation.priority();
+      String name = annotation.name();
+      ExceptionHandlerItem item = new ExceptionHandlerItem(name, value, clazz, method, priority);
+      handlers.add(item);
+    }
+
     for (Method method : methods) {
       if (!method.isAnnotationPresent(EventHandler.class)) continue;
       EventHandler methodAnnotation = method.getAnnotation(EventHandler.class);
@@ -204,7 +215,7 @@ public class MiraiApplication {
       EventHandlerType[] types = methodAnnotation.type();
       for (EventHandlerType type : types) {
         if (type == EventHandlerType.OTHER_HANDLER) {
-          EventHandlerManager.getInstance().onOther("", clazz, method);
+          EventHandlerManager.getInstance().onOther("", clazz, method, handlers);
           b.set(true);
           break;
         }
@@ -220,7 +231,7 @@ public class MiraiApplication {
       }
       // 注册强制触发EventHandler
       if (methodAnnotation.isAny()) {
-        EventHandlerManager.getInstance().onAny(clazz, method);
+        EventHandlerManager.getInstance().onAny(clazz, method, handlers);
         String target = methodAnnotation.target();
         // 注册权限id
         String methodName = method.getName();
@@ -244,7 +255,7 @@ public class MiraiApplication {
       }
 
       FunctionId.put(targetName, permissionIndex);
-      EventHandlerManager.getInstance().on(targetName, clazz, method);
+      EventHandlerManager.getInstance().on(targetName, clazz, method, handlers);
     }
   }
   private static void handleExceptionHandler(Class<?> clazz) {
@@ -253,18 +264,16 @@ public class MiraiApplication {
     for (Method method : clazz.getMethods()) {
       if (!method.isAnnotationPresent(ExceptionHandler.class)) continue;
       ExceptionHandler annotation = method.getAnnotation(ExceptionHandler.class);
-      Class<? extends Exception>[] targets = annotation.targets();
-      if (targets.length == 0) return;
       if (!method.isAnnotationPresent(ExceptionHandler.class)) continue;
       // 检查返回值类型
       Class<?> returnType = method.getReturnType();
       if (!(returnType == void.class || returnType == boolean.class)) continue;
       int priority = annotation.priority();
       if (priority == 0 && classPriority != 0) priority = classPriority;
-      for (Class<? extends Exception> c : targets) {
-        String target = c.getCanonicalName();
-        ExceptionHandlerManager.getInstance().on(target, clazz, method, priority);
-      }
+      Class<? extends Exception> value = annotation.value();
+      String name = annotation.name();
+      ExceptionHandlerItem item = new ExceptionHandlerItem(name, value, clazz, method, priority);
+      ExceptionHandlerManager.getInstance().on(item);
     }
   }
 }

@@ -40,7 +40,7 @@ public class EventHandlerManager {
    * Long: 监听的qq号<br/>
    * EventHandlerNextItem: 存储Handler的信息类
    */
-  private static final Map<Long, List<EventHandlerNextItem<? extends EventHandlerNext>>> LISTENING_STORE = new HashMap<>();
+  private static final Map<Long, List<EventHandlerNextItem<?, ? extends EventHandlerNext<?>>>> LISTENING_STORE = new HashMap<>();
 
   /**
    * <h2>存储所有除了消息事件以外的事件</h2>
@@ -67,7 +67,7 @@ public class EventHandlerManager {
    * @param invoker Handler所在的类
    * @param handler Handler
    */
-  public void onOther(String target, Class<?> invoker, Method handler) {
+  public void onOther(String target, Class<?> invoker, Method handler, List<ExceptionHandlerItem> exceptionHandlers) {
     // 检查类型
     EventHandler annotation = handler.getAnnotation(EventHandler.class);
     EventHandlerType[] type = annotation.type();
@@ -82,7 +82,7 @@ public class EventHandlerManager {
     List<EventHandlerItem> eventHandlerItems = OTHER_EVENT_STORE.get(target);
     if (eventHandlerItems == null) eventHandlerItems = new ArrayList<>();
 
-    EventHandlerItem eventHandlerItem = new EventHandlerItem(target, invoker, handler, type, null);
+    EventHandlerItem eventHandlerItem = new EventHandlerItem(target, invoker, handler, type, exceptionHandlers);
     if (!eventHandlerItems.contains(eventHandlerItem)) eventHandlerItems.add(eventHandlerItem);
     OTHER_EVENT_STORE.put(target, eventHandlerItems);
   }
@@ -92,8 +92,8 @@ public class EventHandlerManager {
    * @param invoker Handler所在的类
    * @param handler Handler
    */
-  public void onAny(Class<?> invoker, Method handler, EventExceptionHandlerItem item) {
-    on(HANDLER_ANY_NAME, invoker ,handler, item);
+  public void onAny(Class<?> invoker, Method handler, List<ExceptionHandlerItem> exceptionHandlers) {
+    on(HANDLER_ANY_NAME, invoker ,handler, exceptionHandlers);
   }
 
   /**
@@ -102,7 +102,7 @@ public class EventHandlerManager {
    * @param invoker Handler所在的类
    * @param handler Handler
    */
-  public void on(String target, Class<?> invoker, Method handler, EventExceptionHandlerItem item) {
+  public void on(String target, Class<?> invoker, Method handler, List<ExceptionHandlerItem> exceptionHandlers) {
     // 检查类型
     EventHandler annotation = handler.getAnnotation(EventHandler.class);
     EventHandlerType[] type = annotation.type();
@@ -116,7 +116,7 @@ public class EventHandlerManager {
     if (b) return;
     List<EventHandlerItem> eventHandlerItems = STORE.get(target);
     if (eventHandlerItems == null) eventHandlerItems = new ArrayList<>();
-    EventHandlerItem eventHandlerItem = new EventHandlerItem(target, invoker, handler, type, item);
+    EventHandlerItem eventHandlerItem = new EventHandlerItem(target, invoker, handler, type, exceptionHandlers);
     if (!eventHandlerItems.contains(eventHandlerItem)) eventHandlerItems.add(eventHandlerItem);
     STORE.put(target, eventHandlerItems);
   }
@@ -174,7 +174,7 @@ public class EventHandlerManager {
           method.invoke(invoker.getDeclaredConstructor().newInstance());
         }
       } catch (IllegalAccessException | InvocationTargetException | InstantiationException | NoSuchMethodException e) {
-        handlerException(e, null, null);
+        handlerException(e, eventPack, null, null);
       }
     }
     return null;
@@ -266,8 +266,7 @@ public class EventHandlerManager {
           method.invoke(invoker.getDeclaredConstructor().newInstance(), eventPack);
         }
       } catch (IllegalAccessException | InvocationTargetException | InstantiationException | NoSuchMethodException e) {
-        handlerException(e, eventPack, processorData);
-//        return "事件执行出错";
+        handlerException(e, eventPack, processorData, handler.getExceptionHandlers());
       }
     }
     return null;
@@ -290,7 +289,7 @@ public class EventHandlerManager {
    * @param target 监听目标qq号
    * @param onNext 事件handler
    */
-  public <T extends EventHandlerNext> void onNext(long target, T onNext) {
+  public <T, K extends EventHandlerNext<T>> void onNext(long target, K onNext) {
     onNext(target, onNext, -2, -1);
   }
 
@@ -300,7 +299,7 @@ public class EventHandlerManager {
    * @param onNext 事件handler
    * @param timeOut 超时时间
    */
-  public <T extends EventHandlerNext> void onNext(long target, T onNext, long timeOut) {
+  public <T, K extends EventHandlerNext<T>> void onNext(long target, K onNext, long timeOut) {
     onNext(target, onNext, timeOut, -1);
   }
 
@@ -310,7 +309,7 @@ public class EventHandlerManager {
    * @param onNext 事件handler
    * @param triggerCount 监听次数
    */
-  public <T extends EventHandlerNext> void onNext(long target, T onNext, int triggerCount) {
+  public <T, K extends EventHandlerNext<T>> void onNext(long target, K onNext, int triggerCount) {
     Long time = (Long) GlobalConfig.getInstance().get(DEFAULT_EVENT_NET_TIMEOUT);
     if (time == null) time = DEFAULT_EVENT_NET_TIMEOUT_TIME;
     onNext(target, onNext, time, triggerCount);
@@ -325,10 +324,10 @@ public class EventHandlerManager {
    * @param timeOut 超时时间 不合法将使用配置文件中的超时时间或者默认的5min
    * @param triggerCount 监听次数 不合法将设置为-1 表示无限监听
    */
-  public <T extends EventHandlerNext> void onNext(long target, T onNext, long timeOut, int triggerCount) {
-    List<EventHandlerNextItem<? extends EventHandlerNext>> events = LISTENING_STORE.get(target);
-    if (events == null) events = new ArrayList<EventHandlerNextItem<? extends EventHandlerNext>>();
-    EventHandlerNextItem<? extends EventHandlerNext> eventHandlerNextItem = createCheckItem(onNext, timeOut, triggerCount);
+  public <T, K extends EventHandlerNext<T>> void onNext(long target, K onNext, long timeOut, int triggerCount) {
+    List<EventHandlerNextItem<?, ? extends EventHandlerNext<?>>> events = LISTENING_STORE.get(target);
+    if (events == null) events = new ArrayList<>();
+    EventHandlerNextItem<T, K> eventHandlerNextItem = createCheckItem(onNext, timeOut, triggerCount);
     events.add(eventHandlerNextItem);
     LISTENING_STORE.put(target, events);
   }
@@ -343,11 +342,11 @@ public class EventHandlerManager {
    * @param eventPack 当前MessageEvent用于给onDestroy之类的用
    * @param data 当前PreProcessorData用于给onDestroy之类的用
    */
-  public <T extends EventHandlerNext> void onNextNow(long target, T onNext, long timeOut, int triggerCount, MessageEventPack eventPack, PreProcessorData data) {
-    List<EventHandlerNextItem<? extends EventHandlerNext>> events = LISTENING_STORE.get(target);
-    if (events == null) events = new ArrayList<EventHandlerNextItem<? extends EventHandlerNext>>();
-    EventHandlerNextItem<? extends EventHandlerNext> eventHandlerNextItem = createCheckItem(onNext, timeOut, triggerCount);
-    List<EventHandlerNextItem<? extends EventHandlerNext>> finalEvents = events;
+  public <T, K extends EventHandlerNext<T>> void onNextNow(long target, K onNext, long timeOut, int triggerCount, MessageEventPack eventPack, PreProcessorData<T> data) {
+    List<EventHandlerNextItem<?, ? extends EventHandlerNext<?>>> events = LISTENING_STORE.get(target);
+    if (events == null) events = new ArrayList<>();
+    EventHandlerNextItem<T, K> eventHandlerNextItem = createCheckItem(onNext, timeOut, triggerCount);
+    final List<EventHandlerNextItem<?, ? extends EventHandlerNext<?>>> finalEvents = events;
     eventHandlerNextItem.setLastEventPack(eventPack);
     eventHandlerNextItem.setLastData(data);
     eventHandlerNextItem.start(new TimerTask() {
@@ -371,11 +370,11 @@ public class EventHandlerManager {
    * @param plainText 事件内容纯文本
    * @return 结果 为null表示一切正常
    */
-  public String emitNext(long target, MessageEventPack eventPack, String plainText) {
-    List<EventHandlerNextItem<? extends EventHandlerNext>> events = LISTENING_STORE.get(target);
-    if (events == null) return null;
+  public boolean emitNext(long target, MessageEventPack eventPack, String plainText) {
+    List<EventHandlerNextItem<?, ? extends EventHandlerNext<?>>> events = LISTENING_STORE.get(target);
+    if (events == null) return false;
     for (int i = 0; i < events.size(); i++) {
-      EventHandlerNextItem<? extends EventHandlerNext> next = events.get(i);
+      EventHandlerNextItem<?, ? extends EventHandlerNext<?>> next = events.get(i);
       EventHandlerNext handler = next.getHandler();
       PreProcessorData data = new PreProcessorData();
       data.setText(plainText);
@@ -384,7 +383,6 @@ public class EventHandlerManager {
         data = CommandUtil.getInstance().parsePreProcessor(eventPack, onNext, data);
       } catch (NoSuchMethodException e) {
         e.printStackTrace();
-//        return "没有找到该方法!";
       }
       if (next.check()) {
         ListeningStatus status = next.onNext(eventPack, data);
@@ -411,7 +409,7 @@ public class EventHandlerManager {
       }
     }
     if (events.isEmpty()) LISTENING_STORE.remove(target);
-    return null;
+    return false;
   }
 
   /**
@@ -466,13 +464,13 @@ public class EventHandlerManager {
    * @param triggerCount 监听次数 不合法将设置为-1 表示无限监听
    * @return 合法的监听信息存储类
    */
-  private <T extends EventHandlerNext> EventHandlerNextItem<? extends EventHandlerNext> createCheckItem(T onNext, long timeOut, int triggerCount) {
+  private <T, K extends EventHandlerNext<T>> EventHandlerNextItem<T, K> createCheckItem(K onNext, long timeOut, int triggerCount) {
     if (timeOut < -1) {
       Long time = (Long) GlobalConfig.getInstance().get(DEFAULT_EVENT_NET_TIMEOUT);
       timeOut = time == null ? DEFAULT_EVENT_NET_TIMEOUT_TIME : time;
     }
     if (triggerCount < 1 ) triggerCount = -1;
-    return new EventHandlerNextItem<T>(onNext, timeOut, triggerCount);
+    return new EventHandlerNextItem<T, K>(onNext, timeOut, triggerCount);
   }
 
   /**
@@ -486,11 +484,15 @@ public class EventHandlerManager {
     events.remove(next);
   }
 
-  private void handlerException(Throwable e, MessageEventPack eventPack, PreProcessorData<?> data) {
-    boolean res;
+  private <T extends BaseEventPack> void handlerException(Throwable e, T eventPack, PreProcessorData<?> data, List<ExceptionHandlerItem> handlers) {
+    boolean res = false;
     if (e instanceof InvocationTargetException) {
       Throwable ex = ((InvocationTargetException) e).getTargetException();
-      res = ExceptionHandlerManager.getInstance().emit(ex, eventPack, data);
+      if (handlers == null || handlers.isEmpty()) {
+        res = ExceptionHandlerManager.getInstance().emit(ex, eventPack, data);
+      } else {
+        res = ExceptionHandlerManager.getInstance().handleException(ex, eventPack, data, handlers);
+      }
     } else {
       res = ExceptionHandlerManager.getInstance().emit(e, eventPack, data);
     }
