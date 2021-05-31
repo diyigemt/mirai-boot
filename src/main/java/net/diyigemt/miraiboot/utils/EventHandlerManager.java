@@ -1,17 +1,14 @@
 package net.diyigemt.miraiboot.utils;
 
 import net.diyigemt.miraiboot.annotation.*;
-import net.diyigemt.miraiboot.entity.*;
-import net.mamoe.mirai.event.ListeningStatus;
-import net.diyigemt.miraiboot.annotation.*;
 import net.diyigemt.miraiboot.constant.EventHandlerType;
 import net.diyigemt.miraiboot.constant.EventType;
 import net.diyigemt.miraiboot.constant.FunctionId;
 import net.diyigemt.miraiboot.entity.*;
 import net.diyigemt.miraiboot.interfaces.EventHandlerNext;
-import net.diyigemt.miraiboot.mirai.MiraiMain;
 import net.diyigemt.miraiboot.permission.CheckPermission;
 import net.diyigemt.miraiboot.permission.PermissionCheck;
+import net.mamoe.mirai.event.ListeningStatus;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -37,20 +34,20 @@ public class EventHandlerManager {
    * String: 指令开头与指令名<br/>
    * EventHandlerItem: 存储Handler的信息类
    */
-  private static final Map<String, List<EventHandlerItem>> STORE = new HashMap<String, List<EventHandlerItem>>();
+  private static final Map<String, List<EventHandlerItem>> STORE = new HashMap<>();
   /**
    * <h2>存储所有上下文监听注册的指令</h2>
    * Long: 监听的qq号<br/>
    * EventHandlerNextItem: 存储Handler的信息类
    */
-  private static final Map<Long, List<EventHandlerNextItem<? extends EventHandlerNext>>> LISTENING_STORE = new HashMap<Long, List<EventHandlerNextItem<? extends EventHandlerNext>>>();
+  private static final Map<Long, List<EventHandlerNextItem<? extends EventHandlerNext>>> LISTENING_STORE = new HashMap<>();
 
   /**
    * <h2>存储所有除了消息事件以外的事件</h2>
    * String: 有关的内容 暂时没用
    * EventHandlerItem: 存储Handler的信息类
    */
-  private static final Map<String, List<EventHandlerItem>> OTHER_EVENT_STORE = new HashMap<String, List<EventHandlerItem>>();
+  private static final Map<String, List<EventHandlerItem>> OTHER_EVENT_STORE = new HashMap<>();
 
   private static final String HANDLER_ANY_NAME = "HANDLER_ANY";
 
@@ -83,9 +80,9 @@ public class EventHandlerManager {
     }
     if (!b) return;
     List<EventHandlerItem> eventHandlerItems = OTHER_EVENT_STORE.get(target);
-    if (eventHandlerItems == null) eventHandlerItems = new ArrayList<EventHandlerItem>();
+    if (eventHandlerItems == null) eventHandlerItems = new ArrayList<>();
 
-    EventHandlerItem eventHandlerItem = new EventHandlerItem(target, invoker, handler, type);
+    EventHandlerItem eventHandlerItem = new EventHandlerItem(target, invoker, handler, type, null);
     if (!eventHandlerItems.contains(eventHandlerItem)) eventHandlerItems.add(eventHandlerItem);
     OTHER_EVENT_STORE.put(target, eventHandlerItems);
   }
@@ -95,8 +92,8 @@ public class EventHandlerManager {
    * @param invoker Handler所在的类
    * @param handler Handler
    */
-  public void onAny(Class<?> invoker, Method handler) {
-    on(HANDLER_ANY_NAME, invoker ,handler);
+  public void onAny(Class<?> invoker, Method handler, EventExceptionHandlerItem item) {
+    on(HANDLER_ANY_NAME, invoker ,handler, item);
   }
 
   /**
@@ -105,7 +102,7 @@ public class EventHandlerManager {
    * @param invoker Handler所在的类
    * @param handler Handler
    */
-  public void on(String target, Class<?> invoker, Method handler) {
+  public void on(String target, Class<?> invoker, Method handler, EventExceptionHandlerItem item) {
     // 检查类型
     EventHandler annotation = handler.getAnnotation(EventHandler.class);
     EventHandlerType[] type = annotation.type();
@@ -118,8 +115,8 @@ public class EventHandlerManager {
     }
     if (b) return;
     List<EventHandlerItem> eventHandlerItems = STORE.get(target);
-    if (eventHandlerItems == null) eventHandlerItems = new ArrayList<EventHandlerItem>();
-    EventHandlerItem eventHandlerItem = new EventHandlerItem(target, invoker, handler, type);
+    if (eventHandlerItems == null) eventHandlerItems = new ArrayList<>();
+    EventHandlerItem eventHandlerItem = new EventHandlerItem(target, invoker, handler, type, item);
     if (!eventHandlerItems.contains(eventHandlerItem)) eventHandlerItems.add(eventHandlerItem);
     STORE.put(target, eventHandlerItems);
   }
@@ -177,8 +174,7 @@ public class EventHandlerManager {
           method.invoke(invoker.getDeclaredConstructor().newInstance());
         }
       } catch (IllegalAccessException | InvocationTargetException | InstantiationException | NoSuchMethodException e) {
-        handlerException(e);
-//        return "其他事件执行失败: " + target;
+        handlerException(e, null, null);
       }
     }
     return null;
@@ -203,7 +199,6 @@ public class EventHandlerManager {
       if (method.isAnnotationPresent(MessageFilter.class) || method.isAnnotationPresent(MessageFilters.class)) {
         if (!CommandUtil.getInstance().checkFilter(eventPack, method, plainText)) {
           continue;
-//          return "filter 未通过";
         }
       }
       // 处理权限
@@ -214,7 +209,6 @@ public class EventHandlerManager {
         if(annotation.isStrictRestricted()){
           if(!PermissionCheck.strictRestrictedCheck(eventPack)){
             eventPack.reply("您当前的权限不足以对目标用户操作");
-//            return "您当前的权限不足以对目标用户操作";
           }
         }
         // 从FunctionId中获取以适应全局permissionIndex的设置
@@ -231,7 +225,6 @@ public class EventHandlerManager {
         if(PermissionCheck.checkGroupPermission(eventPack, commandId)){
           if(SQLNonTempAuth){
             continue;
-//            return "您的管理员已禁止您使用该功能";
           }
           flag = false;
         }
@@ -243,14 +236,13 @@ public class EventHandlerManager {
           if(!PermissionCheck.identityCheck(handler, eventPack) && flag){
             eventPack.reply("权限不足");
             continue;
-//            return "权限不足";
           }
         }
       }
       // 开始处理@PreProcessor
       int parameterCount = method.getParameterCount();
       Object[] parameters = null;
-      PreProcessorData processorData = new PreProcessorData();
+      PreProcessorData<?> processorData = new PreProcessorData<>();
       // 如果是多参数handler
       if (parameterCount > 1) {
         parameters = new Object[parameterCount];
@@ -274,7 +266,7 @@ public class EventHandlerManager {
           method.invoke(invoker.getDeclaredConstructor().newInstance(), eventPack);
         }
       } catch (IllegalAccessException | InvocationTargetException | InstantiationException | NoSuchMethodException e) {
-        handlerException(e);
+        handlerException(e, eventPack, processorData);
 //        return "事件执行出错";
       }
     }
@@ -494,15 +486,15 @@ public class EventHandlerManager {
     events.remove(next);
   }
 
-  private void handlerException(Throwable e) {
-    String res = "";
+  private void handlerException(Throwable e, MessageEventPack eventPack, PreProcessorData<?> data) {
+    boolean res;
     if (e instanceof InvocationTargetException) {
       Throwable ex = ((InvocationTargetException) e).getTargetException();
-      res = ExceptionHandlerManager.getInstance().emit(ex.getClass().getCanonicalName(), ex);
+      res = ExceptionHandlerManager.getInstance().emit(ex, eventPack, data);
     } else {
-      res = ExceptionHandlerManager.getInstance().emit(e.getClass().getCanonicalName(), e);
+      res = ExceptionHandlerManager.getInstance().emit(e, eventPack, data);
     }
-    if (res == null) {
+    if (!res) {
       e.printStackTrace();
     }
   }

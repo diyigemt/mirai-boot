@@ -17,7 +17,8 @@ import java.lang.reflect.Method;
 @AllArgsConstructor
 public class EventHandlerItem {
   private String target;
-  private Class<?> invoker;
-  private Method handler;
-  private EventHandlerType[] type;
+  private final Class<?> invoker;
+  private final Method handler;
+  private final EventHandlerType[] type;
+  private final EventExceptionHandlerItem exceptionHandler;
 }

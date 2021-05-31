@@ -2,14 +2,21 @@ package net.diyigemt.miraiboot.utils;
 
 
 import net.diyigemt.miraiboot.entity.ExceptionHandlerItem;
+import net.diyigemt.miraiboot.entity.MessageEventPack;
+import net.diyigemt.miraiboot.entity.PreProcessorData;
+import net.diyigemt.miraiboot.mirai.MiraiMain;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
+import java.util.stream.Collectors;
+
+import static net.diyigemt.miraiboot.constant.ConstantException.MAX_PARAM_COUNT;
 
 /**
  * <h2>异常总处理器</h2>
  * 管理着所有通过@ExceptionHandler注册的方法
+ *
  * @author diyigemt
  * @since 1.0.0
  */
@@ -21,52 +28,70 @@ public class ExceptionHandlerManager {
   /**
    * 存储所有通过@ExceptionHandler注册的方法
    */
-  private static final Map<String, List<ExceptionHandlerItem>> STORE = new HashMap<String, List<ExceptionHandlerItem>>();
+  private static final List<ExceptionHandlerItem> STORE = new ArrayList<>();
 
   /**
    * 获取全局唯一实例
+   *
    * @return 全局唯一实例
    */
-  public static ExceptionHandlerManager getInstance() { return INSTANCE; }
+  public static ExceptionHandlerManager getInstance() {
+    return INSTANCE;
+  }
 
   /**
    * 注册一个异常监听器
-   * @param target 监听的异常的全类名
-   * @param invoker 执行的类
-   * @param handler 执行的方法
-   * @param priority 执行优先级
+   * @param item 监听器本体
    */
-  public void on(String target, Class<?> invoker, Method handler, int priority) {
-    List<ExceptionHandlerItem> exceptionHandlerItems = STORE.get(target);
-    if (exceptionHandlerItems == null) exceptionHandlerItems = new ArrayList<ExceptionHandlerItem>();
-    ExceptionHandlerItem item = new ExceptionHandlerItem(target, invoker, handler, priority);
-    if (!exceptionHandlerItems.contains(item)) {
-      exceptionHandlerItems.add(item);
-      Collections.sort(exceptionHandlerItems);
-    }
-    STORE.put(target, exceptionHandlerItems);
+  public void on(ExceptionHandlerItem item) {
+    STORE.add(item);
   }
 
   /**
    * 触发异常类对应的异常处理器
-   * @param target 全类名
-   * @param e 异常本体
-   * @param <T> 异常泛型
+   * @param e         异常本体
+   * @param <T>       异常泛型
    * @return 处理结果 正常返回null 异常返回信息字符串
    */
-  public <T extends Throwable> String emit(String target, T e) {
-    List<ExceptionHandlerItem> exceptionHandlerItems = STORE.get(target);
-    if (exceptionHandlerItems == null) return null;
+  public <T extends Throwable> boolean emit(T e) {
+    return emit(e, null, null);
+  }
+
+  /**
+   * 触发异常类对应的异常处理器
+   *
+   * @param e         异常本体
+   * @param eventPack 引发的事件 可以为null
+   * @param data      引发事件的数据 可以为null
+   * @param <T>       异常泛型
+   * @return 处理结果 正常返回null 异常返回信息字符串
+   */
+  public <T extends Throwable> boolean emit(T e, MessageEventPack eventPack, PreProcessorData<?> data) {
+    String canonicalName = e.getClass().getCanonicalName();
+    List<ExceptionHandlerItem> collect = STORE.stream().filter(item -> item.check(e.getClass())).collect(Collectors.toList());
+    if (collect.isEmpty()) return false;
+    // 排序
+    Collections.sort(collect);
     int priority = 0;
     boolean isBlock = false;
     boolean lock = true;
-    for (ExceptionHandlerItem item : exceptionHandlerItems) {
+    for (ExceptionHandlerItem item : collect) {
       if (isBlock && item.getPriority() < priority) continue;
       Class<?> invoker = item.getInvoker();
       Method handler = item.getHandler();
+      int parameterCount = handler.getParameterCount();
+      Object[] param = new Object[parameterCount];
+      Object[] pre = new Object[]{e, eventPack, data};
+      for (int i = 0; i < parameterCount; i++) {
+        if (i >= MAX_PARAM_COUNT) {
+          param[i] = null;
+          continue;
+        }
+        param[i] = pre[i];
+      }
       priority = item.getPriority();
       try {
-        Object o = handler.invoke(invoker.getDeclaredConstructor().newInstance(), e);
+        Object o = handler.invoke(invoker.getDeclaredConstructor().newInstance(), param);
         if (o != null && lock) {
           isBlock = Boolean.parseBoolean(o.toString());
           if (isBlock) {
@@ -75,19 +100,26 @@ public class ExceptionHandlerManager {
         }
       } catch (IllegalAccessException | InvocationTargetException | InstantiationException | NoSuchMethodException ex) {
         ex.printStackTrace();
-        return "执行exception handler: " + target + " 时出错!";
+//        MiraiMain.logger.error("执行exception handler: " + target + " 时出错!");
+        return false;
       }
     }
-    return "";
+    return true;
   }
 
   /**
-   * 根据异常类移除对应的异常监听器组
-   * @param target
-   * @return
+   * 根据异常处理器的名称移除一个异常处理器
+   * @param name 要移除的异常处理器的名称
+   * @return 被移除的异常处理器
    */
-  public List<ExceptionHandlerItem> remove(Class<? extends Exception> target) {
-    String s = target.getCanonicalName();
-    return STORE.remove(s);
+  public ExceptionHandlerItem remove(String name) {
+    for (int i = 0; i < STORE.size(); i++) {
+      ExceptionHandlerItem item = STORE.get(i);
+      if (item.getName().equals(name)) {
+        STORE.remove(i);
+        return item;
+      }
+    }
+    return null;
   }
 }

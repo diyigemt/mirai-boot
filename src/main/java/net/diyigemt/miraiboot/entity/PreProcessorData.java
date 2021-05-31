@@ -15,7 +15,7 @@ import java.util.List;
  * @since 1.0.0
  */
 @Data
-public class PreProcessorData {
+public class PreProcessorData<T> {
   /**
    * 匹配到的包含指令开头所有内容<br/>
    * 例如: start: "/" target: "help"<br/>
@@ -45,6 +45,12 @@ public class PreProcessorData {
    * 上下文触发剩余次数
    */
   private int triggerCount;
+
+  /**
+   * 用户自定义预处理器处理结果
+   * @since 1.0.5
+   */
+  private T data;
 
   public PreProcessorData() {
     this.args = new ArrayList<String>();
