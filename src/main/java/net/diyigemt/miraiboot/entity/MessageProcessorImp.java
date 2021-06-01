@@ -93,7 +93,7 @@ public class MessageProcessorImp implements MessageProcessor<Object> {
   }
 
   @Override
-  public PreProcessorData<Object> parseMessage(String source, MessageEventPack eventPack, PreProcessorData<?> data) {
+  public PreProcessorData<?> parseMessage(String source, MessageEventPack eventPack, PreProcessorData<Object> data) {
     PreProcessorData<Object> res = new PreProcessorData<>();
     res.setClassified(parseMessage(eventPack));
     return res;

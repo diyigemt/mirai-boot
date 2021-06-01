@@ -4,5 +4,5 @@ import net.diyigemt.miraiboot.entity.MessageEventPack;
 import net.diyigemt.miraiboot.entity.PreProcessorData;
 
 public interface MessageProcessor<T> {
-	PreProcessorData<T> parseMessage(String source, MessageEventPack eventPack, PreProcessorData<?> data);
+	PreProcessorData<?> parseMessage(String source, MessageEventPack eventPack, PreProcessorData<T> data);
 }

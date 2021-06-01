@@ -24,8 +24,8 @@ import net.diyigemt.miraiboot.entity.MessageEventPack;
  * 如果超时时间也对事件本身起作用 需要调用 EventHandlerManager.getInstance().onNextNow()
  * }
  * </pre>
- * <strong>详细用法请参考{@link EventHandlerManager} -> onNext</strong><br/>
- * <strong>详细用法请参考{@link EventHandlerManager} -> onNextNow</strong>
+ * <strong>详细用法请参考{@link EventHandlerManager#onNext}</strong><br/>
+ * <strong>详细用法请参考{@link EventHandlerManager#onNextNow}</strong>
  * @author diyigemt
  * @since 1.0.0
  */
@@ -61,6 +61,14 @@ public abstract class EventHandlerNext<T> {
    */
   public void onTriggerOut(MessageEventPack eventPack, PreProcessorData<T> data) { }
 
+  /**
+   * <h2>在监听器处理过程中如果抛出异常由此方法处理</h2>
+   * 默认直接交给全局异常处理器处理
+   * @param e 异常
+   * @param eventPack 触发的事件
+   * @param data 触发事件的数据
+   * @return 是否继续监听
+   */
   public ListeningStatus onException(Throwable e, MessageEventPack eventPack, PreProcessorData<T> data) {
     ExceptionHandlerManager.getInstance().emit(e, eventPack, data);
     return ListeningStatus.STOPPED;

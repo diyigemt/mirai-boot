@@ -173,7 +173,7 @@ public class CommandUtil {
 		Class<? extends MessageProcessor<?>> filter = annotation.filter();
 		if (filter != MessageProcessorImp.class) {
 			try {
-				MessageProcessor<?> messageProcessor = filter.getDeclaredConstructor().newInstance();
+				MessageProcessor messageProcessor = filter.getDeclaredConstructor().newInstance();
 				data = messageProcessor.parseMessage(source, eventPack, data);
 			} catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
 				e.printStackTrace();
