@@ -1,6 +1,7 @@
 package net.diyigemt.miraiboot.utils;
 
 import net.diyigemt.miraiboot.annotation.MessagePreProcessor;
+import net.diyigemt.miraiboot.interfaces.IMessageFilter;
 import net.mamoe.mirai.message.data.SingleMessage;
 import net.diyigemt.miraiboot.annotation.EventHandler;
 import net.diyigemt.miraiboot.annotation.MessageFilter;
@@ -10,6 +11,7 @@ import net.diyigemt.miraiboot.entity.MessageFilterItem;
 import net.diyigemt.miraiboot.entity.MessagePreProcessorItem;
 import net.diyigemt.miraiboot.entity.PreProcessorData;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -149,7 +151,14 @@ public class CommandUtil {
 		MessageFilter[] filters = handler.getDeclaredAnnotationsByType(MessageFilter.class);
 		for (MessageFilter filter : filters) {
 			MessageFilterItem item = new MessageFilterItem(filter);
-			if (!item.check(eventPack, source)) return false;
+			Class<? extends IMessageFilter> self = filter.filter();
+			try {
+				IMessageFilter iMessageFilter = self.getDeclaredConstructor().newInstance();
+				boolean check = iMessageFilter.check(source, eventPack, item);
+				if (!check) return false;
+			} catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+				e.printStackTrace();
+			}
 		}
 		return true;
 	}

@@ -1,6 +1,8 @@
 package net.diyigemt.miraiboot.annotation;
 
 import net.diyigemt.miraiboot.constant.MessageFilterMatchType;
+import net.diyigemt.miraiboot.entity.MessageFilterImp;
+import net.diyigemt.miraiboot.interfaces.IMessageFilter;
 
 import java.lang.annotation.*;
 
@@ -69,4 +71,10 @@ public @interface MessageFilter {
    * @since 1.0.0
    */
   boolean isAtAny() default false;
+
+  /**
+   * 自定义消息过滤器<br/>
+   * 不为默认值时将与以上设置共存
+   */
+  Class<? extends IMessageFilter> filter() default MessageFilterImp.class;
 }
