@@ -43,6 +43,7 @@ public class FileUtil {
     String base = getJARRootPath(mainClass) + SYSTEM_PATH_DIV;
     RESOURCE_ROOT_FOLDER_PATH = base + "data";
     CONFIG_ROOT_FOLDER_PATH = base + "config";
+    PLUGIN_ROOT_FOLDER_PATH = RESOURCE_ROOT_FOLDER_PATH + SYSTEM_PATH_DIV + "plugin";
     String dBRootFolderPath = CONFIG_ROOT_FOLDER_PATH + SYSTEM_PATH_DIV + "dbs";
     // 初始化资源文件夹
     File resourceFileDir = new File(RESOURCE_ROOT_FOLDER_PATH);
@@ -55,7 +56,7 @@ public class FileUtil {
     File configFileDir = new File(CONFIG_ROOT_FOLDER_PATH);
     if (!configFileDir.exists()) configFileDir.mkdirs();
     // 初始化插件文件夹
-    File pluginFileDir = new File(RESOURCE_ROOT_FOLDER_PATH + SYSTEM_PATH_DIV + "data");
+    File pluginFileDir = new File(RESOURCE_ROOT_FOLDER_PATH);
     if (!pluginFileDir.exists()) pluginFileDir.mkdir();
     // 初始化机器人device文件位置文件夹
     BOT_DEVICE_FOLDER_PATH = CONFIG_ROOT_FOLDER_PATH + SYSTEM_PATH_DIV + "bots";
