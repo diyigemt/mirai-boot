@@ -6,6 +6,7 @@ import net.diyigemt.miraiboot.annotation.EventHandler;
 import net.diyigemt.miraiboot.constant.EventHandlerType;
 
 import java.lang.reflect.Method;
+import java.util.List;
 
 /**
  * <h2>EventHandler信息存储类</h2>
@@ -17,7 +18,11 @@ import java.lang.reflect.Method;
 @AllArgsConstructor
 public class EventHandlerItem {
   private String target;
-  private Class<?> invoker;
-  private Method handler;
-  private EventHandlerType[] type;
+  private final Class<?> invoker;
+  private final Method handler;
+  private final EventHandlerType[] type;
+  /**
+   * 同一个类中处理异常的方法
+   */
+  private final List<ExceptionHandlerItem> exceptionHandlers;
 }

@@ -19,7 +19,7 @@ import java.util.stream.Collectors;
  * @author diyigemt
  * @since 1.0.0
  */
-public class MessageEventPack {
+public class MessageEventPack extends BaseEventPack{
 	/**
 	 * 消息事件本身
 	 */
@@ -277,7 +277,7 @@ public class MessageEventPack {
 	 * @see EventHandlerManager
 	 * @see EventHandlerNext
 	 */
-	public <T extends EventHandlerNext> void onNext(T next) {
+	public <T extends EventHandlerNext<T>> void onNext(T next) {
 		EventHandlerManager.getInstance().onNext(getSenderId(), next);
 	}
 
@@ -291,7 +291,7 @@ public class MessageEventPack {
 	 * @see EventHandlerManager
 	 * @see EventHandlerNext
 	 */
-	public <T extends EventHandlerNext> void onNext(T next, long timeOut) {
+	public <T extends EventHandlerNext<T>> void onNext(T next, long timeOut) {
 		EventHandlerManager.getInstance().onNext(getSenderId(), next, timeOut);
 	}
 
@@ -305,7 +305,7 @@ public class MessageEventPack {
 	 * @see EventHandlerManager
 	 * @see EventHandlerNext
 	 */
-	public <T extends EventHandlerNext> void onNext(T next, int triggerCount) {
+	public <T extends EventHandlerNext<T>> void onNext(T next, int triggerCount) {
 		EventHandlerManager.getInstance().onNext(getSenderId(), next, triggerCount);
 	}
 
@@ -315,12 +315,12 @@ public class MessageEventPack {
 	 * <strong>超时时间只会在该监听器第一次被触发时才开始倒计时</strong>
 	 * EventHandlerNext的具体用法请参照{@link EventHandlerNext}
 	 * @param next 监听器本体
-	 * @param  timeOut 超时时间
+	 * @param timeOut 超时时间
 	 * @param triggerCount 最高触发次数
 	 * @see EventHandlerManager
 	 * @see EventHandlerNext
 	 */
-	public <T extends EventHandlerNext> void onNext(T next, long timeOut, int triggerCount) {
+	public <T extends EventHandlerNext<T>> void onNext(T next, long timeOut, int triggerCount) {
 		EventHandlerManager.getInstance().onNext(getSenderId(), next, timeOut, triggerCount);
 	}
 
@@ -336,7 +336,7 @@ public class MessageEventPack {
 	 * @see EventHandlerManager
 	 * @see EventHandlerNext
 	 */
-	public <T extends EventHandlerNext> void onNext(long target, T next, long timeOut, int triggerCount) {
+	public <T extends EventHandlerNext<T>> void onNext(long target, T next, long timeOut, int triggerCount) {
 		EventHandlerManager.getInstance().onNext(target, next, timeOut, triggerCount);
 	}
 
@@ -350,7 +350,7 @@ public class MessageEventPack {
 	 * @see EventHandlerManager
 	 * @see EventHandlerNext
 	 */
-	public <T extends EventHandlerNext> void onNextNow(T next, PreProcessorData data) {
+	public <T extends EventHandlerNext<T>> void onNextNow(T next, PreProcessorData<T> data) {
 		EventHandlerManager.getInstance().onNextNow(getSenderId(), next, -1, -1, this, data);
 	}
 
@@ -366,7 +366,7 @@ public class MessageEventPack {
 	 * @see EventHandlerManager
 	 * @see EventHandlerNext
 	 */
-	public <T extends EventHandlerNext> void onNextNow(T next, PreProcessorData data, long timeOut, int triggerCount) {
+	public <T extends EventHandlerNext<T>> void onNextNow(T next, PreProcessorData<T> data, long timeOut, int triggerCount) {
 		EventHandlerManager.getInstance().onNextNow(getSenderId(), next, timeOut, triggerCount, this, data);
 	}
 
@@ -383,7 +383,7 @@ public class MessageEventPack {
 	 * @see EventHandlerManager
 	 * @see EventHandlerNext
 	 */
-	public <T extends EventHandlerNext> void onNextNow(long target, T next, PreProcessorData data, long timeOut, int triggerCount) {
+	public <T extends EventHandlerNext<T>> void onNextNow(long target, T next, PreProcessorData<T> data, long timeOut, int triggerCount) {
 		EventHandlerManager.getInstance().onNextNow(target, next, timeOut, triggerCount, this, data);
 	}
 

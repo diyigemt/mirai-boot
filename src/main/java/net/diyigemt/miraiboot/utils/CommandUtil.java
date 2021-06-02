@@ -2,13 +2,14 @@ package net.diyigemt.miraiboot.utils;
 
 import net.diyigemt.miraiboot.annotation.MessagePreProcessor;
 import net.diyigemt.miraiboot.interfaces.IMessageFilter;
+import net.diyigemt.miraiboot.interfaces.IMessagePreProcessor;
 import net.mamoe.mirai.message.data.SingleMessage;
 import net.diyigemt.miraiboot.annotation.EventHandler;
 import net.diyigemt.miraiboot.annotation.MessageFilter;
 import net.diyigemt.miraiboot.constant.ConstantGlobal;
 import net.diyigemt.miraiboot.entity.MessageEventPack;
 import net.diyigemt.miraiboot.entity.MessageFilterItem;
-import net.diyigemt.miraiboot.entity.MessagePreProcessorItem;
+import net.diyigemt.miraiboot.entity.MessageProcessorImp;
 import net.diyigemt.miraiboot.entity.PreProcessorData;
 
 import java.lang.reflect.InvocationTargetException;
@@ -166,18 +167,26 @@ public class CommandUtil {
 	/**
 	 * <h2>进行消息预处理</h2>
 	 * @param eventPack 要处理的事件
-	 * @param handler 要处理的事件Handler
 	 * @param data 存放结果
+	 * @param handler 要处理的事件Handler
+	 * @param source 消息纯文本
 	 * @return 结果
 	 */
-	public PreProcessorData parsePreProcessor(MessageEventPack eventPack, Method handler, PreProcessorData data) {
-		MessagePreProcessor[] annotations = handler.getDeclaredAnnotationsByType(MessagePreProcessor.class);
-		MessagePreProcessorItem preProcessorItem = new MessagePreProcessorItem();
-		for (MessagePreProcessor preProcessor : annotations) {
-			preProcessorItem.addFilterType(preProcessor.filterType());
-		}
+	public PreProcessorData<?> parsePreProcessor(MessageEventPack eventPack, PreProcessorData<?> data, Method handler, String source) {
+		MessagePreProcessor annotation = handler.getAnnotation(MessagePreProcessor.class);
+		MessageProcessorImp preProcessorItem = new MessageProcessorImp();
+		preProcessorItem.addFilterType(annotation.filterType());
 		List<SingleMessage> singleMessages = preProcessorItem.parseMessage(eventPack);
 		data.addClassified(singleMessages);
+		Class<? extends IMessagePreProcessor<?>> filter = annotation.filter();
+		if (filter != MessageProcessorImp.class) {
+			try {
+				IMessagePreProcessor messageProcessor = filter.getDeclaredConstructor().newInstance();
+				data = messageProcessor.parseMessage(source, eventPack, data);
+			} catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+				ExceptionHandlerManager.getInstance().emit(e);
+			}
+		}
 		return data;
 	}
 }

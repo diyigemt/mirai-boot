@@ -1,33 +1,30 @@
 package net.diyigemt.miraiboot.autoconfig;
 
 import net.diyigemt.miraiboot.annotation.*;
+import net.diyigemt.miraiboot.constant.ConstantGlobal;
+import net.diyigemt.miraiboot.constant.EventHandlerType;
+import net.diyigemt.miraiboot.constant.FunctionId;
+import net.diyigemt.miraiboot.dao.PermissionDAO;
 import net.diyigemt.miraiboot.entity.*;
+import net.diyigemt.miraiboot.function.Alias;
+import net.diyigemt.miraiboot.listener.BotEventListener;
+import net.diyigemt.miraiboot.listener.MessageEventListener;
+import net.diyigemt.miraiboot.mirai.MiraiMain;
+import net.diyigemt.miraiboot.permission.AuthMgr;
+import net.diyigemt.miraiboot.permission.CheckPermission;
 import net.diyigemt.miraiboot.utils.*;
 import net.mamoe.mirai.Bot;
 import net.mamoe.mirai.BotFactory;
 import net.mamoe.mirai.event.events.BotEvent;
 import net.mamoe.mirai.event.events.MessageEvent;
-import net.diyigemt.miraiboot.constant.ConstantGlobal;
-import net.diyigemt.miraiboot.constant.EventHandlerType;
-import net.diyigemt.miraiboot.constant.FunctionId;
-import net.diyigemt.miraiboot.dao.PermissionDAO;
-import net.diyigemt.miraiboot.function.Alias;
-import net.diyigemt.miraiboot.listener.BotEventListener;
-import net.diyigemt.miraiboot.listener.ExceptionListener;
-import net.diyigemt.miraiboot.listener.MessageEventListener;
-import net.diyigemt.miraiboot.mirai.MiraiMain;
-import net.diyigemt.miraiboot.permission.AuthMgr;
-import net.diyigemt.miraiboot.permission.CheckPermission;
 import org.yaml.snakeyaml.Yaml;
 
 import java.io.*;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Scanner;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
 
 /**
  * <h2>主实现逻辑</h2>
@@ -40,7 +37,7 @@ public class MiraiApplication {
     InputStream banner = mainClass.getResourceAsStream("/banner.txt");
     if (banner != null) {
       BufferedReader bannerReader = new BufferedReader(new InputStreamReader(banner));
-      String line = null;
+      String line;
       try {
         while ((line = bannerReader.readLine()) != null) {
           System.out.println(line);
@@ -76,7 +73,7 @@ public class MiraiApplication {
       }
       return;
     }
-    ConfigFile config = null;
+    ConfigFile config;
     try {
       config = new Yaml().loadAs(new InputStreamReader(new FileInputStream(configFile)), ConfigFile.class);
     } catch (FileNotFoundException e) {
@@ -97,7 +94,7 @@ public class MiraiApplication {
     // 初始化permission数据库
     classes.add(PermissionDAO.class);
     // 开始处理事件handler和autoInit
-    List<AutoInitItem> inits = new ArrayList<AutoInitItem>();
+    List<AutoInitItem> inits = new ArrayList<>();
     if (!classes.isEmpty()) {
       for (Class<?> clazz : classes) {
         if (clazz.isAnnotationPresent(AutoInit.class)) {
@@ -196,7 +193,21 @@ public class MiraiApplication {
    * @param clazz 被@EventHandlerComponent注册的类
    */
   private static void handleEventHandler(Class<?> clazz) {
-    for (Method method : clazz.getMethods()) {
+    // 提取类私有的异常处理器
+    List<ExceptionHandlerItem> handlers = null;
+    Method[] methods = clazz.getMethods();
+    for (Method method : methods) {
+      if (!method.isAnnotationPresent(ExceptionHandler.class)) continue;
+      if (handlers == null) handlers = new ArrayList<>();
+      ExceptionHandler annotation = method.getAnnotation(ExceptionHandler.class);
+      Class<? extends Exception> value = annotation.value();
+      int priority = annotation.priority();
+      String name = annotation.name();
+      ExceptionHandlerItem item = new ExceptionHandlerItem(name, value, clazz, method, priority);
+      handlers.add(item);
+    }
+
+    for (Method method : methods) {
       if (!method.isAnnotationPresent(EventHandler.class)) continue;
       EventHandler methodAnnotation = method.getAnnotation(EventHandler.class);
       // 注册其他事件Handler
@@ -204,7 +215,7 @@ public class MiraiApplication {
       EventHandlerType[] types = methodAnnotation.type();
       for (EventHandlerType type : types) {
         if (type == EventHandlerType.OTHER_HANDLER) {
-          EventHandlerManager.getInstance().onOther("", clazz, method);
+          EventHandlerManager.getInstance().onOther("", clazz, method, handlers);
           b.set(true);
           break;
         }
@@ -220,7 +231,7 @@ public class MiraiApplication {
       }
       // 注册强制触发EventHandler
       if (methodAnnotation.isAny()) {
-        EventHandlerManager.getInstance().onAny(clazz, method);
+        EventHandlerManager.getInstance().onAny(clazz, method, handlers);
         String target = methodAnnotation.target();
         // 注册权限id
         String methodName = method.getName();
@@ -244,27 +255,28 @@ public class MiraiApplication {
       }
 
       FunctionId.put(targetName, permissionIndex);
-      EventHandlerManager.getInstance().on(targetName, clazz, method);
+      EventHandlerManager.getInstance().on(targetName, clazz, method, handlers);
     }
   }
   private static void handleExceptionHandler(Class<?> clazz) {
+    // 不在事件处理器类中扫描异常处理器 防止重复注册
+    if (clazz.isAnnotationPresent(EventHandlerComponent.class)) return;
+
     ExceptionHandlerComponent classAnnotation = clazz.getAnnotation(ExceptionHandlerComponent.class);
     int classPriority = classAnnotation.value();
     for (Method method : clazz.getMethods()) {
       if (!method.isAnnotationPresent(ExceptionHandler.class)) continue;
       ExceptionHandler annotation = method.getAnnotation(ExceptionHandler.class);
-      Class<? extends Exception>[] targets = annotation.targets();
-      if (targets.length == 0) return;
       if (!method.isAnnotationPresent(ExceptionHandler.class)) continue;
       // 检查返回值类型
       Class<?> returnType = method.getReturnType();
       if (!(returnType == void.class || returnType == boolean.class)) continue;
       int priority = annotation.priority();
       if (priority == 0 && classPriority != 0) priority = classPriority;
-      for (Class<? extends Exception> c : targets) {
-        String target = c.getCanonicalName();
-        ExceptionHandlerManager.getInstance().on(target, clazz, method, priority);
-      }
+      Class<? extends Exception> value = annotation.value();
+      String name = annotation.name();
+      ExceptionHandlerItem item = new ExceptionHandlerItem(name, value, clazz, method, priority);
+      ExceptionHandlerManager.getInstance().on(item);
     }
   }
 }

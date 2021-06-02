@@ -10,41 +10,15 @@ import net.diyigemt.miraiboot.entity.PreProcessorData;
 import net.diyigemt.miraiboot.interfaces.EventHandlerNext;
 import net.diyigemt.miraiboot.utils.BotManager;
 
-//@ExceptionHandlerComponent(value = -1)
-//@EventHandlerComponent
+@EventHandlerComponent
 public class TestException {
-  @ExceptionHandler(targets = IllegalArgumentException.class, priority = 0)
-  public void testException6(Throwable e) {
-    BotManager.getInstance().get(1741557205L).getGroup(1002484182L).sendMessage("error: " + e.getMessage() + " priority: -1");
-  }
-  @ExceptionHandler(targets = IllegalArgumentException.class, priority = 0)
-  public void testException1(Throwable e) {
-    BotManager.getInstance().get(1741557205L).getGroup(1002484182L).sendMessage("error: " + e.getMessage() + " priority: -1");
-  }
-  @ExceptionHandler(targets = IllegalArgumentException.class, priority = 1)
-  public void testException2(Throwable e) {
-    BotManager.getInstance().get(1741557205L).getGroup(1002484182L).sendMessage("error: " + e.getMessage() + " priority: 1.1");
-  }
-  @ExceptionHandler(targets = IllegalArgumentException.class, priority = 1)
-  public boolean testException4(Throwable e) {
-    BotManager.getInstance().get(1741557205L).getGroup(1002484182L).sendMessage("error: " + e.getMessage() + " priority: 1.2");
-    return false;
-  }
-  @ExceptionHandler(targets = IllegalArgumentException.class, priority = 1)
-  public void testException5(Throwable e) {
-    BotManager.getInstance().get(1741557205L).getGroup(1002484182L).sendMessage("error: " + e.getMessage() + " priority: 1.3");
-  }
-  @ExceptionHandler(targets = IllegalArgumentException.class, priority = 2)
-  public void testException3(Throwable e) {
-    BotManager.getInstance().get(1741557205L).getGroup(1002484182L).sendMessage("error: " + e.getMessage() + " priority: 2");
-  }
-  @EventHandler(target = "error")
-  public void testSendError() {
-    throw new RuntimeException("RuntimeException");
+  @EventHandler(target = "error1")
+  public void testSendError1(MessageEventPack eventPack) {
+    throw new RuntimeException("测试");
   }
 
   @EventHandler(target = "error2")
-  public void testSendError(MessageEventPack eventPack) {
+  public void testSendError2(MessageEventPack eventPack) {
     eventPack.onNext(new EventHandlerNext() {
       @Override
       public ListeningStatus onNext(MessageEventPack eventPack, PreProcessorData data) {
@@ -53,6 +27,41 @@ public class TestException {
         }
         return ListeningStatus.STOPPED;
       }
+
+      @Override
+      public ListeningStatus onException(Throwable e, MessageEventPack eventPack, PreProcessorData data) {
+        eventPack.reply("事件处理器收到error:" + e.getMessage());
+        return ListeningStatus.STOPPED;
+      }
+
+      @Override
+      public void onDestroy(MessageEventPack eventPack, PreProcessorData data) {
+        eventPack.reply("停止监听");
+      }
     });
+  }
+
+  @EventHandler(target = "error3")
+  public void testSendError3(MessageEventPack eventPack) {
+    eventPack.onNext(new EventHandlerNext() {
+      @Override
+      public ListeningStatus onNext(MessageEventPack eventPack, PreProcessorData data) {
+        if (data.getText().contains("error2")) {
+          throw new IllegalArgumentException("测试error");
+        }
+        return ListeningStatus.STOPPED;
+      }
+
+      @Override
+      public ListeningStatus onException(Throwable e, MessageEventPack eventPack, PreProcessorData data) {
+        eventPack.reply("事件处理器收到error:" + e.getMessage());
+        return ListeningStatus.LISTENING;
+      }
+    }, 1000L);
+  }
+
+  @ExceptionHandler(RuntimeException.class)
+  public void handlerError(RuntimeException e, MessageEventPack eventPack) {
+    eventPack.reply("收到error: " + e.getMessage());
   }
 }

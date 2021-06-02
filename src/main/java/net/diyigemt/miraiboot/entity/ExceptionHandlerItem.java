@@ -14,14 +14,19 @@ import java.lang.reflect.Method;
  */
 @Data
 @AllArgsConstructor
-public class ExceptionHandlerItem implements Comparable<ExceptionHandlerItem> {
-  private String target;
-  private Class<?> invoker;
-  private Method handler;
-  private int priority;
+public final class ExceptionHandlerItem implements Comparable<ExceptionHandlerItem> {
+  private String name;
+  private final Class<? extends Throwable> target;
+  private final Class<?> invoker;
+  private final Method handler;
+  private final int priority;
 
   @Override
   public int compareTo(@NotNull ExceptionHandlerItem o) {
     return -Integer.compare(priority, o.priority);
+  }
+
+  public boolean check(Class<? extends Throwable> t) {
+    return target.isAssignableFrom(t);
   }
 }
