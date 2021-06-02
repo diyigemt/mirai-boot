@@ -157,8 +157,9 @@ public class CommandUtil {
 				IMessageFilter iMessageFilter = self.getDeclaredConstructor().newInstance();
 				boolean check = iMessageFilter.check(source, eventPack, item);
 				if (!check) return false;
-			} catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
-				e.printStackTrace();
+			} catch (Throwable e) {
+				ExceptionHandlerManager.getInstance().emit(e);
+				return false;
 			}
 		}
 		return true;
@@ -183,7 +184,7 @@ public class CommandUtil {
 			try {
 				IMessagePreProcessor messageProcessor = filter.getDeclaredConstructor().newInstance();
 				data = messageProcessor.parseMessage(source, eventPack, data);
-			} catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+			} catch (Throwable e) {
 				ExceptionHandlerManager.getInstance().emit(e);
 			}
 		}

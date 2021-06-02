@@ -6,7 +6,6 @@ import net.diyigemt.miraiboot.annotation.MessagePreProcessor;
 import net.diyigemt.miraiboot.entity.MessageEventPack;
 import net.diyigemt.miraiboot.entity.PreProcessorData;
 
-@EventHandlerComponent
 public class TestPreProcess {
 
   @EventHandler(target = "预处理测试")
