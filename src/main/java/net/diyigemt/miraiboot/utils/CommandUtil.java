@@ -176,7 +176,7 @@ public class CommandUtil {
 				IMessagePreProcessor messageProcessor = filter.getDeclaredConstructor().newInstance();
 				data = messageProcessor.parseMessage(source, eventPack, data);
 			} catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
-				e.printStackTrace();
+				ExceptionHandlerManager.getInstance().emit(e);
 			}
 		}
 		return data;
