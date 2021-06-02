@@ -20,6 +20,10 @@ public class FileUtil {
    */
   private static String CONFIG_ROOT_FOLDER_PATH;
   /**
+   * 插件文件根目录
+   */
+  private static String PLUGIN_ROOT_FOLDER_PATH;
+  /**
    * Bot设备信息根目录
    */
   private static String BOT_DEVICE_FOLDER_PATH;
@@ -50,6 +54,9 @@ public class FileUtil {
     // 初始化配置文件夹
     File configFileDir = new File(CONFIG_ROOT_FOLDER_PATH);
     if (!configFileDir.exists()) configFileDir.mkdirs();
+    // 初始化插件文件夹
+    File pluginFileDir = new File(RESOURCE_ROOT_FOLDER_PATH + SYSTEM_PATH_DIV + "data");
+    if (!pluginFileDir.exists()) pluginFileDir.mkdir();
     // 初始化机器人device文件位置文件夹
     BOT_DEVICE_FOLDER_PATH = CONFIG_ROOT_FOLDER_PATH + SYSTEM_PATH_DIV + "bots";
     File botDeviceFileDir = new File(BOT_DEVICE_FOLDER_PATH);
@@ -192,5 +199,12 @@ public class FileUtil {
       return path.substring(0, path.lastIndexOf("/"));
     }
     return path.replace("target/classes/", "");
+  }
+
+  /**
+   * <h2>获取插件文件夹下的所有jar文件</h2>
+   */
+  public File[] getPlugins() {
+    return new File(PLUGIN_ROOT_FOLDER_PATH).listFiles();
   }
 }

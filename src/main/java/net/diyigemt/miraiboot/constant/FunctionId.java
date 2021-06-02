@@ -35,10 +35,10 @@ public class FunctionId {
     }
 
     public static String getKey(int value){
-        Set set=map.entrySet();
-        Iterator it=set.iterator();
+        Set set = map.entrySet();
+        Iterator it = set.iterator();
         while(it.hasNext()) {
-            Map.Entry entry=(Map.Entry)it.next();
+            Map.Entry entry = (Map.Entry) it.next();
             if(entry.getValue().equals(value)) {
                 return entry.getKey().toString();
             }

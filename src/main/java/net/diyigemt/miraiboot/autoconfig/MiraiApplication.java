@@ -93,6 +93,9 @@ public class MiraiApplication {
     classes.add(AuthMgr.class);
     // 初始化permission数据库
     classes.add(PermissionDAO.class);
+//    Thread.currentThread().setContextClassLoader(PluginLoader.loader);
+    List<Class<?>> pluginClasses = PluginLoader.getPluginClasses();
+    classes.addAll(pluginClasses);
     // 开始处理事件handler和autoInit
     List<AutoInitItem> inits = new ArrayList<>();
     if (!classes.isEmpty()) {
@@ -148,6 +151,7 @@ public class MiraiApplication {
       }
       try {
         if (parameterCount == 0) {
+          int i = 0;
           item.getHandler().invoke(null);
         } else {
           item.getHandler().invoke(null, param);
