@@ -3,19 +3,19 @@ package net.diyigemt.miraiboot.entity;
 import lombok.Data;
 import net.diyigemt.miraiboot.annotation.MessagePreProcessor;
 import net.diyigemt.miraiboot.constant.MessagePreProcessorMessageType;
-import net.diyigemt.miraiboot.interfaces.MessageProcessor;
+import net.diyigemt.miraiboot.interfaces.IMessagePreProcessor;
 import net.mamoe.mirai.message.data.*;
 
 import java.util.*;
 
 /**
- * <h2>用于保存MessagePreProcessor的参数</h2>
+ * <h2>默认的消息预处理器</h2>
  * @see MessagePreProcessor
  * @author diyiegmt
  * @since 1.0.0
  */
 @Data
-public class MessageProcessorImp implements MessageProcessor<Object> {
+public class MessageProcessorImp implements IMessagePreProcessor<Object> {
   private final boolean isTextProcessor = true;
   private final Set<MessagePreProcessorMessageType> filterType;
 

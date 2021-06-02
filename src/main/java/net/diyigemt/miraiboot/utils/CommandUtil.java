@@ -1,7 +1,7 @@
 package net.diyigemt.miraiboot.utils;
 
 import net.diyigemt.miraiboot.annotation.MessagePreProcessor;
-import net.diyigemt.miraiboot.interfaces.MessageProcessor;
+import net.diyigemt.miraiboot.interfaces.IMessagePreProcessor;
 import net.mamoe.mirai.message.data.SingleMessage;
 import net.diyigemt.miraiboot.annotation.EventHandler;
 import net.diyigemt.miraiboot.annotation.MessageFilter;
@@ -170,10 +170,10 @@ public class CommandUtil {
 		preProcessorItem.addFilterType(annotation.filterType());
 		List<SingleMessage> singleMessages = preProcessorItem.parseMessage(eventPack);
 		data.addClassified(singleMessages);
-		Class<? extends MessageProcessor<?>> filter = annotation.filter();
+		Class<? extends IMessagePreProcessor<?>> filter = annotation.filter();
 		if (filter != MessageProcessorImp.class) {
 			try {
-				MessageProcessor messageProcessor = filter.getDeclaredConstructor().newInstance();
+				IMessagePreProcessor messageProcessor = filter.getDeclaredConstructor().newInstance();
 				data = messageProcessor.parseMessage(source, eventPack, data);
 			} catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
 				e.printStackTrace();

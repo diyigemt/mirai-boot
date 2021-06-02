@@ -3,7 +3,7 @@ package net.diyigemt.miraiboot.annotation;
 import net.diyigemt.miraiboot.constant.MessagePreProcessorMessageType;
 import net.diyigemt.miraiboot.entity.MessageProcessorImp;
 import net.diyigemt.miraiboot.entity.PreProcessorData;
-import net.diyigemt.miraiboot.interfaces.MessageProcessor;
+import net.diyigemt.miraiboot.interfaces.IMessagePreProcessor;
 
 import java.lang.annotation.*;
 
@@ -47,5 +47,5 @@ public @interface MessagePreProcessor {
    * 自定义消息过滤器, 默认使用内置实现
    * @since 1.0.5
    */
-  Class<? extends MessageProcessor<?>> filter() default MessageProcessorImp.class;
+  Class<? extends IMessagePreProcessor<?>> filter() default MessageProcessorImp.class;
 }
