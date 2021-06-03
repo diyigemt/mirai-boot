@@ -1,4 +1,4 @@
-## 声明
+## xm声明
 
 <h3>一切开发旨在学习，请勿用于非法用途</h3>
 
@@ -219,6 +219,8 @@ targets可以接受一个数组，priority指代执行优先级。
 关于其他demo  可以去function包下看看
 
 # 详细开发文档
+
+本开发文档由Typora编写，建议使用Typora浏览已获得最佳体验
 
 ## 目录
 
@@ -1117,3 +1119,387 @@ permit cancel reply @1235472346
 | getConfigFile():File                       | 获取配置文件                                    |
 
 具体方法请参考注释
+
+
+
+## 插件式开发
+
+​	MiraiBoot支持插件式开发模式
+
+### MiraiBootPlugin插件类
+
+​	MiraiBootPlugin插件类是在主类上继承使用的类，继承MiraiBootPlugin的主类打包后将会被MiraiBoot识别为MiraiBoot插件。
+
+该类拥有以下变量：
+
+| 类型          | 名称               | 说明                                      |
+| ------------- | ------------------ | ----------------------------------------- |
+| List<JarFile> | PluginDependencies | 该变量为存储用户自定义加载项的JarFile对象 |
+| Boolean       | UEFIMode           | UEFI模式开关，默认开启                    |
+
+注：[UEFI模式](UEFI和Legacy两种加载模式)
+
+该类拥有以下方法：
+
+| 返回类型 | 方法名              | 参数          | 说明                                                        |
+| -------- | ------------------- | ------------- | ----------------------------------------------------------- |
+| void     | onLoad（）          | null          | 插件加载前执行的方法，默认为空                              |
+| void     | addDependencies（） | List<JarFile> | 在onLoad中使用该方法，MiraiBoot会按照List顺序加载jar包【1】 |
+
+​	注：
+
+ 	1. addDependencies方法使用的加载方式为Legacy（全包扫描），无法修改。
+
+
+
+使用样例：
+
+```java
+@MiraiBootApplication(description = "测试项目")
+public class Main extends MiraiBootPlugin{//在主类上继承插件类
+    
+    @Override
+    public void onLoad(){//重写onLoad方法，MiraiBoot将会在加载该插件被加载前执行该方法代码块中的内容
+        UEFIMode = false;//该插件将使用全包扫描的方式加载
+        
+        List<JarFile> files = new ArrayList<>;
+        files.add(new JarFile("Put your path here."));//定义List并添加
+        addPluginDependencies(file);//在插件加载前，MiraiBoot会优先加载List中的内容。
+    }
+  public static void main(String[] args){
+    MiraiApplication.run(Main.class, args);
+  }
+}
+```
+
+
+
+使用结果：
+
+```java
+2021-06-03 17:42:04 I/mirai-boot-status: 测试项目
+2021-06-03 17:42:04 I/mirai-boot-status: 开始读取配置文件
+2021-06-03 17:42:04 I/mirai-boot-status: 配置文件读取成功
+2021-06-03 17:42:04 I/mirai-boot-status: 开始扫描插件
+2021-06-03 17:42:04 I/mirai-boot-status: 发现插件：qqbot-re-1.0.2-jar-with-dependencies.jar
+2021-06-03 17:42:04 I/mirai-boot-status: 解析到自定义加载项，正在加载 //加载List内容的提示
+2021-06-03 17:42:04 I/mirai-boot-status: 正在加载： qqbot-re-1.0.2-jar-with-dependencies.jar//开始加载插件本身
+2021-06-03 17:42:04 I/mirai-boot-status: 插件: qqbot-re-1.0.2-jar-with-dependencies.jar，加载成功//加载成功
+2021-06-03 17:42:04 I/Mirai: Mirai 正在使用桌面环境. 如遇到验证码将会弹出对话框. 可添加 JVM 属性 `mirai.no-desktop` 以关闭.
+...
+```
+
+### UEFI和Legacy两种加载模式
+
+​	这两个词想必各位电脑爱好者都有所耳闻，这两个词指个人计算机启动模式，常见于主板的BIOS中。
+
+​	UEFI（统一可扩展固件接口）：当然严格说应该叫UEPI，因为插件和固件本质上有很大的区别，叫UEFI只是便于认识。该模式下，MiraiBoot只会加载和扫描主类所在的包和该包下的子包，并将所有扫描到的class文件加载进JVM中【1】。在主类包之外的Class文件将不会扫描和加载【2】。推荐使用此模式（该模式为默认加载方式）加载插件。此模式优点在于，跳过了所有依赖包，扫描速度极快，而且可以甩掉全包加载有时需要添加间接依赖的问题。
+
+​	Legacy（全包扫描）：该模式下，MiraiBoot将使用传统的加载方式——即遍历jar包中的所有Class文件并加载和扫描【3】，速度很慢（具体取决于jar中文件目录复杂程度），该模式只适合用来加载某些依赖，并不适合用来加载插件。
+
+​	
+
+​	使用方法：在MiraiBoot框架根目录创建data文件夹，在data文件夹中创建plugin子文件夹，将MiraiBoot插件放进plugin子文件夹（您也可以直接运行MiraiBoot等待登录完成后关闭，此时MiraiBoot会帮你新建文件系统结构）。下次程序启动时会自动检索该目录的jar文件并解析onLoad方法以应用设置。
+
+
+
+​	注：
+
+ 	1. class文件标准:不是所有带class后缀的文件都是被JVM承认的，JVM会通过检查16进制元数据下头四位数据来识别是否可以作为运行时依赖被JVM加载，您需要保证头四位元数据为：
+
+```
+CAFEBABE
+```
+
+​	使用十六进制打开样例：
+
+```assembly
+00000000: cafe babe 0000 0034 001f 0a00 0500 1909  .......4........
+00000010: 0004 001a 0800 1b07 001c 0700 1d07 001e  ................
+```
+
+​		
+
+​	可以看见头八位为CAFEBABE，是可以被JVM加载的class文件。您可以通过此方式来判断对应的class类可否被JVM加载，类所属的依赖是否是运行时使用。
+
+ 	1. 您可能会担心只加载主类包会不会导致依赖没有被加载？其实并不会，加载class时存在迭代的，如果A类Import了B类，将自动加载前提B类，以此类推，直到前提全部加载完成后才会加载A类。
+ 	2. 全包扫描模式有个比较恼火的问题，无法排除间接依赖（指您依赖的包自身依赖了其它的包），由于是整个jar包遍历加载，即使是依赖中您从来没有引用的class也会被加载，这些无用的class加载时还可能会弹出大量的缺少间接依赖提示，给插件带来不必要的臃肿。所以再次提醒您，如无特殊需求，不要使用该模式加载插件。
+
+
+
+#### 两种模式查找的对象
+
+无论是上面哪种模式，MiraiBoot都会在加载Class的同时寻找该class中是否含有以下注解：
+
+@EventHandlerComponent
+
+@ExceptionHandlerComponent
+
+@AutoInit
+
+MiraiBoot将会对扫描到以上注解的class进行相应的注册和初始化等操作。
+
+
+
+#### 加载规则
+
+	1. MiraiBoot在加载插件时不允许出现任何有关缺少依赖的异常抛出，只要抛出哪怕只有一条，MiraiBoot便会直接放弃该插件的所有加载并屏蔽该插件所有功能。
+ 	2. 自定义加载项只能使用Legacy模式加载。
+ 	3. 加载时，JVM会先检查该类是否已被加载过，如果已被加载，即使后者是新版本，它也不会加载后者。
+
+
+
+​	样例：
+
+​	假设您插件工程有以下结构:
+
+```java
+	src
+		java
+			com.example.mybot
+        		TextFunction.java
+				core
+					Class1.java
+					Class2.java
+					Class3.java
+				Main.java
+    		com.example.lib
+        			Class4.java
+        
+    External libraries
+    	Maven: xxx.jar
+```
+
+​	
+
+此时您对插件打包后使用默认的UEFI启动方式时：
+
+	1. MiraiBoot会加载com.example.mybot包下所有的class，不会加载外部依赖xxx.jar和com.example.lib包。
+
+而加载时也会给你一个UEFI标识
+
+```java
+2021-06-03 19:09:38 I/mirai-boot-status: 正在加载： qqbot-re-1.0.2-jar-with-dependencies.jar(UEFI)//UEFI标识
+```
+
+
+
+如果您关闭了UEFI使用Legacy模式加载时：
+
+	1. 以上工程中的所有文件都会被加载。
+
+加载时的提示也是普通的
+
+```
+2021-06-03 19:09:38 I/mirai-boot-status: 正在加载： qqbot-re-1.0.2-jar-with-dependencies.jar//没有标识
+```
+
+
+
+### MiraiBoot插件打包规范
+
+#### 打包方法
+
+​	虽说这个大家都会，但为了照顾新人，这里还是介绍一种测试过程中使用的打包插件：maven-assembly-plugin，它可以将您构造的包结构和依赖包额结构合并在一起。
+
+```xml
+<Project>
+    <dependencies>
+        ...//您加入的依赖
+    </dependencies>
+	<build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <version>3.3.0</version>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <mainClass>com.example.mybot.Main</mainClass>//您的主类
+                            <addClasspath>true</addClasspath>
+                        </manifest>
+                    </archive>
+                    <appendAssemblyId>true</appendAssemblyId>
+                    <descriptorRefs>
+                        <descriptorRef>jar-with-dependencies</descriptorRef>
+                    </descriptorRefs>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>make-assembly</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+</Project>
+```
+
+
+
+#### 打包时需要排除的依赖
+
+​	MiraiBoot本身已经使用了一些依赖如下，无需重复添加依赖，否则可能会出现一些多重加载的异常：
+
+```xml
+<dependencies>
+        <!-- https://mvnrepository.com/artifact/org.slf4j/slf4j-simple -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-simple</artifactId>
+            <version>1.7.30</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/org.mybatis/mybatis -->
+
+        <dependency>
+            <groupId>org.jetbrains.kotlin</groupId>
+            <artifactId>kotlin-stdlib</artifactId>
+            <version>1.4.32</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/com.github.pagehelper/pagehelper -->
+        <dependency>
+            <groupId>com.github.pagehelper</groupId>
+            <artifactId>pagehelper</artifactId>
+            <version>5.2.0</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-databind -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>2.12.3</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-core -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-core</artifactId>
+            <version>2.12.3</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-annotations -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-annotations</artifactId>
+            <version>2.12.3</version>
+        </dependency>
+
+
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-api</artifactId>
+            <version>5.5.0</version>
+            <scope>test</scope>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/org.projectlombok/lombok -->
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>1.18.16</version>
+            <scope>compile</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>net.mamoe</groupId>
+            <artifactId>mirai-core-jvm</artifactId>
+            <version>2.6.4</version>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/org.yaml/snakeyaml -->
+        <dependency>
+            <groupId>org.yaml</groupId>
+            <artifactId>snakeyaml</artifactId>
+            <version>1.28</version>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/org.xerial/sqlite-jdbc -->
+        <dependency>
+            <groupId>org.xerial</groupId>
+            <artifactId>sqlite-jdbc</artifactId>
+            <version>3.34.0</version>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/com.j256.ormlite/ormlite-core -->
+        <dependency>
+            <groupId>com.j256.ormlite</groupId>
+            <artifactId>ormlite-core</artifactId>
+            <version>5.3</version>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/com.j256.ormlite/ormlite-jdbc -->
+        <dependency>
+            <groupId>com.j256.ormlite</groupId>
+            <artifactId>ormlite-jdbc</artifactId>
+            <version>5.3</version>
+        </dependency>
+
+    </dependencies>
+```
+
+
+
+以及在插件工程中的MiraiBoot依赖本身
+
+```xml
+        <dependency>
+            <groupId>net.diyigemt.miraiboot</groupId>
+            <artifactId>mirai-boot</artifactId>
+            <version>1.0.3</version>
+            <scope>provided</scope>
+        </dependency>
+```
+
+
+
+在需要排除的依赖下加入<scrope>标签，打包时即可排除。样例如上。
+
+然后在Maven Lifecycle中执行Package即可。
+
+### 开发时常见的问题
+
+#### ClassNotFoundException和ClassDefNotFoundErr
+
+下面是一个错误例子：
+
+```
+2021-06-03 17:37:51 E/Mirai-boot-status: org.apache.ibatis.executor.loader.cglib.CglibProxyFactory$EnhancedDeserializationProxyImpl：加载失败
+缺少依赖：net.sf.cglib/proxy.MethodInterceptor
+2021-06-03 17:37:51 E/mirai-boot-status: 插件：qqbot-re-1.0.2-jar-with-dependencies.jar 加载失败，缺少部分依赖
+```
+
+可以导致该异常的原因有很多，常见的原因如下：
+
+1. 您的插件包里确是缺少依赖或路径有误，可以使用压缩软件按包路径依次打开看看有没有该依赖，没有的话请在pom.xml中加入缺少的依赖
+2. 您可能把一些不在运行时工作的依赖加入了jar包，例如lambook
+3. 您的依赖可能存在版本兼容性或依赖冲突的问题
+
+
+
+以上仅仅是提示，实际情况还请您多发散思维，多考虑一些情况。
+
+
+
+#### 加载时错误提示解释
+
+| 错误提示样例                                                 | 解释                                                         |
+| ------------------------------------------------------------ | ------------------------------------------------------------ |
+| myBotPlugin.jar: 未知的MiraiBoot插件格式                     | 该错误是因为MANIFEST.MF中Main-Class属性记载的主类没有继承MiraiBootPlugin插件类。 |
+| 自定义加载项: myBotPlugin.jar: 加载失败，缺少部分依赖，已放弃该插件所有加载 | 因为您在onLoad中调用addDependencies方法加载的jar中出现了缺少依赖异常，导致MiraiBoot停止了该插件和自定义加载项的工作。 |
+| 插件: myBotPlugin.jar: 启动失败，缺少部分依赖                | 因为插件本体加载时出现了缺少依赖异常，导致MiraiBoot放弃该插件的加载。 |
+| org.apache.ibatis.executor.loader.cglib.CglibProxyFactory$EnhancedDeserializationProxyImpl：加载失败<br/>缺少依赖：net.sf.cglib/proxy.MethodInterceptor | 目标Class在加载Import的间接依赖时失败                        |
+
+
+
+#### 
+
+## MiraiBoot控制台
+
+​	当MiraiBoot登录QQ完成后，控制台即可使用，控制台拥有以下命令：
+
+| 指令   | 参数 | 说明                            |
+| ------ | ---- | ------------------------------- |
+| exit   | null | 停止所有BOT活动并关闭程序       |
+| plugin | null | 查询已被加载的所有MiraiBoot插件 |
+

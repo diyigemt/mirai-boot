@@ -68,6 +68,7 @@ public class PluginLoader {
                         MiraiMain.logger.error(file.getName() + ": 未知的MiraiBoot插件格式");
                         continue;
                     }
+                    MiraiMain.logger.info("发现插件：" + file.getName());
                     onLoad.invoke(main);
 
                     if(flag){//在onLoad中加载其它包时存在失败，放弃该插件的加载。
