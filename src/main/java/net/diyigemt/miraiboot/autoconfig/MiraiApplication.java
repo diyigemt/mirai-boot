@@ -4,6 +4,7 @@ import net.diyigemt.miraiboot.annotation.*;
 import net.diyigemt.miraiboot.constant.ConstantGlobal;
 import net.diyigemt.miraiboot.constant.EventHandlerType;
 import net.diyigemt.miraiboot.constant.FunctionId;
+import net.diyigemt.miraiboot.core.MiraiBootConsole;
 import net.diyigemt.miraiboot.dao.PermissionDAO;
 import net.diyigemt.miraiboot.entity.*;
 import net.diyigemt.miraiboot.function.Alias;
@@ -163,15 +164,7 @@ public class MiraiApplication {
     BotManager.getInstance().loginAll();
     MiraiMain.logger.info("bot登录成功 系统启动完成");
     // 阻塞主线程
-    Scanner scanner = new Scanner(System.in);
-    while (true) {
-      String command = scanner.next();
-      if (command.equals("exit")) {
-        EventHandlerManager.getInstance().cancelAll();
-        BotManager.getInstance().logoutAll();
-        break;
-      }
-    }
+    MiraiBootConsole.ConsoleListener();
   }
 
   /**
