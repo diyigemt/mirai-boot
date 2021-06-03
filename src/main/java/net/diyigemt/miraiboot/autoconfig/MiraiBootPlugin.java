@@ -13,16 +13,17 @@ public class MiraiBootPlugin {
 
     private List<JarFile> PluginDependencies = new ArrayList<>();
 
-    private boolean UEFIMode = true;
+    /**
+     * <h2>UEFI模式</h2>
+     * <p>仅加载主类所在的包，其余的包均不加载，大幅提升加载速度</p>
+     * <p>（前提是将必须的依赖打入插件包中）</p>
+     */
+    public boolean UEFIMode = true;
 
     /**
      * <h2>插件被加载前执行的方法</h2>
      */
     public void onLoad(){}
-
-    protected void setUEFIMode(boolean flag){
-        this.UEFIMode = flag;
-    }
 
     /**
      * <h2>单独加载依赖</h2>

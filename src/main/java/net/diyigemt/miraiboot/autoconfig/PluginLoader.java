@@ -9,7 +9,6 @@ import net.diyigemt.miraiboot.mirai.MiraiMain;
 import net.diyigemt.miraiboot.utils.FileUtil;
 
 import java.io.File;
-import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.net.JarURLConnection;
@@ -54,12 +53,14 @@ public class PluginLoader {
                     JarFile jar = connection.getJarFile();
                     loader = new URLClassLoader(new URL[]{url}, Thread.currentThread().getContextClassLoader());
                     Plugin_Temp.clear();//重新初始化
+                    flag = false;
                     Enumeration<JarEntry> files = jar.entries();
                     Manifest manifest = jar.getManifest();
                     String MainClass = manifest.getMainAttributes().getValue("Main-Class");
                     String PackName = MainClass.substring(0, MainClass.lastIndexOf(".")).replace(".", "/");//获取主方法所在的包路径
                     //反射onLoad方法
                     Class<?> mainClass = loader.loadClass(MainClass);
+                    Object main = mainClass.newInstance();
                     Method onLoad = null;
                     try{
                         onLoad = mainClass.getMethod("onLoad");
@@ -67,11 +68,17 @@ public class PluginLoader {
                         MiraiMain.logger.error(file.getName() + ": 未知的MiraiBoot插件格式");
                         continue;
                     }
-                    onLoad.invoke(mainClass.newInstance());
+                    onLoad.invoke(main);
 
-                    Field UEFI = mainClass.getDeclaredField("UEFIMode");//获取UEFI设置
+                    if(flag){//在onLoad中加载其它包时存在失败，放弃该插件的加载。
+                        MiraiMain.logger.error("自定义加载项: " + file.getName() + ": 加载失败，缺少部分依赖，已放弃该插件所有加载");
+                        continue;
+                    }
+
+                    Field UEFI = mainClass.getField("UEFIMode");//获取UEFI设置
+                    int i = 0;
                     UEFI.setAccessible(true);
-                    isUEFI = (boolean) UEFI.get(mainClass);
+                    isUEFI = (boolean) UEFI.get(main);
 
                     if(isUEFI){
                         MiraiMain.logger.info("正在加载： " + fileName + "(UEFI)");
@@ -110,6 +117,9 @@ public class PluginLoader {
 
     public static void LoadPluginDependencies(List<JarFile> dependencies){
         for(JarFile file : dependencies){
+            MiraiMain.logger.info("解析到自定义加载项，开始加载");
+            Plugin_Temp.clear();//重新初始化
+            flag = false;
             Enumeration<JarEntry> files = file.entries();
             GlobalJarScanner(files);
         }
@@ -142,7 +152,7 @@ public class PluginLoader {
         Class<?> classFile = null;
         try{
             classFile = loader.loadClass(className);
-        }catch (ClassNotFoundException e){
+        }catch (ClassNotFoundException | NoClassDefFoundError e){
             MiraiMain.logger.error( className + ": 加载失败\n缺少依赖: " + e.getMessage().replace("/", "."));
             flag = true;
             return;
