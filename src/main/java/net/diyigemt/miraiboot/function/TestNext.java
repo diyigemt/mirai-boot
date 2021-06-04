@@ -23,7 +23,7 @@ public class TestNext {
     List<SingleMessage> filter = data.getClassified();
     if (filter.isEmpty()) {
       eventPack.reply("图呢");
-      eventPack.onNextNow(new EventHandlerNext() {
+      eventPack.onNext(new EventHandlerNext() {
         @Override
         @MessagePreProcessor(filterType = MessagePreProcessorMessageType.Image)
         public ListeningStatus onNext(MessageEventPack eventPack, PreProcessorData nextData) {
@@ -45,7 +45,7 @@ public class TestNext {
         public void onTimeOut(MessageEventPack eventPack, PreProcessorData nextData) {
           eventPack.reply("已经超时 停止监听");
         }
-      }, data, 5* 1000L, -1);
+      }, 5* 1000L, -1);
       return;
     }
     SingleMessage image = filter.get(0);

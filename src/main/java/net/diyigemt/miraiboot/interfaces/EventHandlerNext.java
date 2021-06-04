@@ -21,7 +21,6 @@ import net.diyigemt.miraiboot.entity.MessageEventPack;
  * 超时时间 不合理时取全局配置或者默认5min, 剩余触发次数 不合理时取1)
  *
  * 除了以上四个参数, 还需要额外传入MessageEvent和PreProcessorData用于销毁和超时事件调用
- * 如果超时时间也对事件本身起作用 需要调用 EventHandlerManager.getInstance().onNextNow()
  * }
  * </pre>
  * <strong>详细用法请参考{@link EventHandlerManager#onNext}</strong><br/>

@@ -410,7 +410,8 @@ public void test1() {}
 上下文监听器`EventHandlerNext`是一个抽象类，任何继承并实现其中`onNext`方法的类均可以被注册成为上下文监听器
 
 ```java
-public abstract class EventHandlerNext {
+public abstract class EventHandlerNext<T> {
+
   /**
    * <h2>上下文监听器方法</h2>
    * 该方法可以使用@MessageEventFilter注解来过滤信息
@@ -418,42 +419,53 @@ public abstract class EventHandlerNext {
    * @param data 预处理器
    * @return 返回是否继续监听事件 ListeningStatus.LISTENING表示继续监听 STOPPED表示停止监听
    */
-  public abstract ListeningStatus onNext(MessageEventPack eventPack, PreProcessorData data);
+  public abstract ListeningStatus onNext(MessageEventPack eventPack, PreProcessorData<T> data);
 
   /**
    * <h2>监听器销毁时调用</h2>
    * @param eventPack 最后一次触发监听器的事件Event
    * @param data 最后一次触发监听器的PreProcessorData
    */
-  public void onDestroy(MessageEventPack eventPack, PreProcessorData data) { }
+  public void onDestroy(MessageEventPack eventPack, PreProcessorData<T> data) { }
 
   /**
    * <h2>监听器超时时调用</h2>
    * @param eventPack 最后一次触发监听器的事件Event
    * @param data 最后一次触发监听器的PreProcessorData
    */
-  public void onTimeOut(MessageEventPack eventPack, PreProcessorData data) { }
+  public void onTimeOut(MessageEventPack eventPack, PreProcessorData<T> data) { }
 
   /**
    * <h2>监听器触发次数耗尽时调用</h2>
    * @param eventPack 最后一次触发监听器的事件Event
    * @param data 最后一次触发监听器的PreProcessorData
    */
-  public void onTriggerOut(MessageEventPack eventPack, PreProcessorData data) { }
+  public void onTriggerOut(MessageEventPack eventPack, PreProcessorData<T> data) { }
+
+  /**
+   * <h2>在监听器处理过程中如果抛出异常由此方法处理</h2>
+   * 默认直接交给全局异常处理器处理
+   * @param e 异常
+   * @param eventPack 触发的事件
+   * @param data 触发事件的数据
+   * @return 是否继续监听
+   */
+  public ListeningStatus onException(Throwable e, MessageEventPack eventPack, PreProcessorData<T> data) {
+    ExceptionHandlerManager.getInstance().emit(e, eventPack, data);
+    return ListeningStatus.STOPPED;
+  }
+}
 ```
 
 | 方法原型                                                     | 说明                                                         |
 | ------------------------------------------------------------ | ------------------------------------------------------------ |
-| <T extends EventHandlerNext> onNext(T):void                  | 注册一个上下文监听器，使用全局配置的超时时间，监听本事件的发送者 |
-| <T extends EventHandlerNext> onNext(T, long):void            | 注册一个上下文监听器，设置超时时间为long，监听本事件的发送者 |
-| <T extends EventHandlerNext> onNext(T, int):void             | 注册一个上下文监听器，使用全局配置的超时时间，监听本事件的发送者，并至多触发int次 |
-| <T extends EventHandlerNext> onNext(T, long, int):void       | 注册一个上下文监听器，设置超时时间为long，监听本事件的发送者，并至多触发int次 |
-| <T extends EventHandlerNext> onNext(long, T, long, int):void | 注册一个上下文监听器，设置超时时间为long，监听第一个long对应的群友，并至多触发int次 |
-| <T extends EventHandlerNext> onNextNow(T, PreProcessorData):void | 注册一个上下文监听器，使用全局配置的超时时间，监听本事件的发送者，并立即开始倒计时 |
-| <T extends EventHandlerNext> onNextNow(T, PreProcessorData, long, int):void | 注册一个上下文监听器，设置超时时间为long，监听本事件的发送者，至多触发int次，并立即开始倒计时 |
-| <T extends EventHandlerNext> onNextNow(long, T, PreProcessorData, long, int):void | 注册一个上下文监听器，设置超时时间为long，监听第一个long对应的群友，至多触发int次，并立即开始倒计时 |
+| <T extends EventHandlerNext> onNext(T, PreProcessorData):void | 注册一个上下文监听器，使用全局配置的超时时间，监听本事件的发送者 |
+| <T extends EventHandlerNext> onNext(T, long, PreProcessorData):void | 注册一个上下文监听器，设置超时时间为long，监听本事件的发送者 |
+| <T extends EventHandlerNext> onNext(T, int, PreProcessorData):void | 注册一个上下文监听器，使用全局配置的超时时间，监听本事件的发送者，并至多触发int次 |
+| <T extends EventHandlerNext> onNext(T, long, int, PreProcessorData):void | 注册一个上下文监听器，设置超时时间为long，监听本事件的发送者，并至多触发int次 |
+| <T extends EventHandlerNext> onNext(long, T, long, int, PreProcessorData):void | 注册一个上下文监听器，设置超时时间为long，监听第一个long对应的群友，并至多触发int次 |
 
-#### PreProcessorData
+#### PreProcessorData<T>
 
 `PreProcessorData`是对消息事件的处理结果，包含了解析出的指令、参数、纯文本和@MessagePreProcessor的预处理结果
 
@@ -465,6 +477,7 @@ public abstract class EventHandlerNext {
 | text         | String              | 消息纯文本                                   |
 | classified   | List<SingleMessage> | 过滤出的消息内容                             |
 | triggerCount | int                 | 上下文触发剩余次数(仅在上下文监听事件中有用) |
+| data         | T                   | 使用自定义消息预处理器时的处理结果           |
 
 ### 其他事件处理
 
@@ -494,16 +507,17 @@ public class Test {
 
 消息事件过滤器，在所有规则通过时EventHandler才会被触发
 
-| 类型                   | 属性名    | 默认值                      | 说明                                              |
-| ---------------------- | --------- | --------------------------- | ------------------------------------------------- |
-| String                 | value     | ""                          | 匹配的内容，为空表示忽略                          |
-| MessageFilterMatchType | matchType | MessageFilterMatchType.NULL | 关键词的匹配类型，为NULL表示忽略                  |
-| String[]               | accounts  | {}                          | 若消息发送着不在列表内则不做响应，为空表示忽略    |
-| String[]               | groups    | {}                          | 若消息发送着不在列表内则不做响应，为空表示忽略    |
-| String[]               | bots      | {}                          | 若消息接受的bot不在列表内则不做响应，为空表示忽略 |
-| boolean                | isAt      | false                       | 是否当bot被at时才触发                             |
-| boolean                | isAtAll   | false                       | 是否at全体时才触发                                |
-| boolean                | isAtAny   | false                       | 是否有人被at时才触发，不一定是bot被at             |
+| 类型                            | 属性名    | 默认值                      | 说明                                              |
+| ------------------------------- | --------- | --------------------------- | ------------------------------------------------- |
+| String                          | value     | ""                          | 匹配的内容，为空表示忽略                          |
+| MessageFilterMatchType          | matchType | MessageFilterMatchType.NULL | 关键词的匹配类型，为NULL表示忽略                  |
+| String[]                        | accounts  | {}                          | 若消息发送着不在列表内则不做响应，为空表示忽略    |
+| String[]                        | groups    | {}                          | 若消息发送着不在列表内则不做响应，为空表示忽略    |
+| String[]                        | bots      | {}                          | 若消息接受的bot不在列表内则不做响应，为空表示忽略 |
+| boolean                         | isAt      | false                       | 是否当bot被at时才触发                             |
+| boolean                         | isAtAll   | false                       | 是否at全体时才触发                                |
+| boolean                         | isAtAny   | false                       | 是否有人被at时才触发，不一定是bot被at             |
+| Class<? extends IMessageFilter> | filter    | MessageFilterImp.class      | 用户自定义的消息过滤器                            |
 
 ##### `value`：
 
@@ -526,14 +540,23 @@ public class Test {
 | REGEX_MATCHES      | 正则全文匹配         |
 | REGEX_FIND         | 正则查找匹配         |
 
+##### `filter`:
+
+用户自定义的消息过滤器，可以与原属性并行生效
+
+所有自定义的消息过滤器必须实现`IMessageFilter`接口，其中的`check`方法返回值标识过滤器是否通过
+
+具体可查看`IMessageFilter`和`MessageFilterImp`的注释
+
 #### @MessagePreProcessor
 
 消息事件预处理器，对收到的消息事件进行预处理
 
-| 类型                             | 属性名        | 默认值 | 说明                                                        |
-| -------------------------------- | ------------- | ------ | ----------------------------------------------------------- |
-| boolean                          | textProcessor | false  | 将所有纯文本消息提取出来保存在PreProcessorData.text         |
-| MessagePreProcessorMessageType[] | filterType    | {}     | 将对应类型的消息提取出来保存在PreProcessorData.classified中 |
+| 类型                                     | 属性名        | 默认值                    | 说明                                                        |
+| ---------------------------------------- | ------------- | ------------------------- | ----------------------------------------------------------- |
+| boolean                                  | textProcessor | false                     | 将所有纯文本消息提取出来保存在PreProcessorData.text         |
+| MessagePreProcessorMessageType[]         | filterType    | {}                        | 将对应类型的消息提取出来保存在PreProcessorData.classified中 |
+| Class<? extends IMessagePreProcessor<?>> | filter        | MessageProcessorImp.class | 用户自定义的消息预处理器                                    |
 
 ##### `textProcessor`：
 
@@ -561,6 +584,24 @@ public class Test {
 | MusicShare           | 音乐分享                       |
 | Dice                 | 骰子消息                       |
 | FileMessage          | 文件消息                       |
+
+##### `filter`:
+
+用户自定义的消息预处理器，可以与原属性并行生效
+
+所有自定义的消息预处理器必须实现`IMessagePreProcessor`接口，其中的parseMessage方法对消息进行预处理
+
+具体可查看`IMessagePreProcessor`和`MessageProcessorImp`的注释
+
+用户可以将处理结果放在
+
+```java
+PreProcessorData<T>.setData(T)
+```
+
+中，并在事件处理器中通过`T PreProcessorData<T>.getData()`获取自己的处理结果
+
+
 
 ## 消息的构造和发送
 
@@ -850,7 +891,7 @@ public class TestNext {
         public void onTimeOut(MessageEventPack eventPack, PreProcessorData nextData) {
           eventPack.reply("已经超时 停止监听");
         }
-      }, data, 1 * 60 * 1000L, -1);
+      }, data, 5* 1000L, -1);
       return;
     }
     SingleMessage image = filter.get(0);
@@ -865,13 +906,25 @@ public class TestNext {
 
 `1 * 60 * 1000L`表示监听1min，超时时调用`onTimeOut`发送消息停止监听。
 
-更详细的内容可以看注释
+更详细的内容可以看`MessageEventPack#onNext`、`EventHandlerNext`
 
 ## 异常处理
 
-通过对类加上`@ExceptionHandlerComponent`的注解，并对其中的方法加上`@ExceptionHandler`的注解，可以将一个方法注册为异常处理器。例如：
+`miraiboot`的异常处理分为局部异常处理和全局异常处理
 
-```
+1. 局部异常处理指在`@EventHandlerComponet`注解的类中注册的`@ExceptionHandler`
+
+   被注册的处理方法将会处理在该类中注册的事件处理器中抛出的异常，当没有对应的异常处理器是才转交由全局异常处理；
+
+   对于上下文监听器，可以通过重载`EventHandlerNext`中的`onException`方法对监听处理中发生的异常进行处理，当然，如果你希望某些异常交由全局异常处理，可以调用父类的`super`方法并将异常传入
+
+2. 全局异常处理指在`@ExceptionHandlerComponent`注解的类中注册的`@ExceptionHandler`
+
+   被注册的处理器将会处理事件监听器中的所有异常，当异常没有对应的处理器时，将会简单的进行`printStackTrace`
+
+通过对类加上`@ExceptionHandlerComponent`的注解，并对其中的方法加上`@ExceptionHandler`的注解，可以将一个方法注册为全局异常处理器。例如：
+
+```java
 @ExceptionHandlerComponent
 public class TestException {
   @ExceptionHandler(targets = IllegalArgumentException.class)
@@ -885,7 +938,24 @@ public class TestException {
 
 **注意**当异常没有对应的异常处理器时，不会被抛出，但是会打印stacktrce。
 
-**注意**目前的异常处理器执行的是精确匹配，即全类名必须相等时异常处理器才会被触发。
+**注意**异常处理器执行的匹配为`Cast`匹配，即当异常可以被`Cast`·为异常处理器处理的异常时将会被异常处理器捕获。
+
+通过对被`@EventHandlerComponent`注解的类中的方法加上`@ExceptionHandler`注解，可以将该方法注册为局部异常处理器。例如:
+
+```java
+@EventHandlerComponent
+public class TestException {
+  @EventHandler(target = "error1")
+  public void testSendError1(MessageEventPack eventPack) {
+    throw new RuntimeException("测试");
+  }
+
+	@ExceptionHandler(RuntimeException.class)
+  public void handlerError(RuntimeException e, MessageEventPack eventPack) {
+    eventPack.reply("收到error: " + e.getMessage());
+  }
+}
+```
 
 以上的代码使用了两个注解，下面将详细介绍它们的参数和用法
 
@@ -901,18 +971,23 @@ public class TestException {
 
 将受到注解的方法指定为异常处理器
 
-| 类型                         | 属性名   | 默认值 | 说明             |
-| ---------------------------- | -------- | ------ | ---------------- |
-| Class<? extends Exception>[] | targets  | {}     | 要处理的异常列表 |
-| int                          | priority | 0      | 触发优先级       |
+| 类型                       | 属性名   | 默认值 | 说明                                         |
+| -------------------------- | -------- | ------ | -------------------------------------------- |
+| Class<? extends Exception> | vlaue    | 无     | 要处理的异常类                               |
+| int                        | priority | 0      | 触发优先级                                   |
+| String                     | name     | ""     | 可以根据name主动删除一个异常处理器(现在没用) |
 
-##### `targerts`：
+##### `value`：
 
-需要监听的异常类数组
+需要监听的异常类，所有可以Cast到该类的异常均会被捕获
 
 ##### `priority`：
 
 处理器的优先级，当同一个异常有多个处理器时，将会按顺序从高优先级至低优先级依次执行，高优先级的处理器方法可以返回一个boolean值，主动阻止低优先级异常处理器的执行，但是**无法**阻止同优先级的处理器。
+
+##### `name`:
+
+一个异常处理器的唯一标识，可以通过该标识删除异常处理器
 
 ## 自动初始化
 
