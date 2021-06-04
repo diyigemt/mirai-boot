@@ -14,7 +14,6 @@ import net.diyigemt.miraiboot.utils.builder.VoiceMessageBuilder;
 
 import java.io.File;
 
-@EventHandlerComponent
 public class TextFileMsgBuilder {
 
     private static final String FileLocalPath = "fff";//TODO: 群文件素材本地路径,自己填

@@ -13,7 +13,6 @@ import net.diyigemt.miraiboot.utils.builder.ImageMessageBuilder;
 
 import java.io.File;
 
-@EventHandlerComponent
 public class TextImgMsgBuilder {
 
     private static final String ImageLocalPath = "";//TODO: 图片素材本地路径,自己填

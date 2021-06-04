@@ -45,7 +45,7 @@ public class TestNext {
         public void onTimeOut(MessageEventPack eventPack, PreProcessorData nextData) {
           eventPack.reply("已经超时 停止监听");
         }
-      }, 5* 1000L, -1);
+      }, 5* 1000L, -1, data);
       return;
     }
     SingleMessage image = filter.get(0);
@@ -78,9 +78,9 @@ public class TestNext {
   }
 
   @EventHandler(target = "myhandler")
-  public void test(MessageEventPack eventPack) {
+  public void test(MessageEventPack eventPack, PreProcessorData data) {
     eventPack.reply("开始了");
-    eventPack.onNext(new MyEventHandlerNext());
+    eventPack.onNext(new MyEventHandlerNext(), data);
   }
 
   class MyEventHandlerNext extends EventHandlerNext {

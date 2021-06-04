@@ -8,7 +8,6 @@ import net.diyigemt.miraiboot.annotation.EventHandler;
 import net.diyigemt.miraiboot.annotation.EventHandlerComponent;
 import net.diyigemt.miraiboot.entity.MessageEventPack;
 
-@EventHandlerComponent
 public class TestBotEvent {
 
   public void testBotEvent(BotEventPack eventPack) {
