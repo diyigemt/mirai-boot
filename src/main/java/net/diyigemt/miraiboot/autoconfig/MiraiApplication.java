@@ -24,7 +24,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.stream.Collectors;
 
 /**
  * <h2>主实现逻辑</h2>
@@ -151,7 +150,6 @@ public class MiraiApplication {
       }
       try {
         if (parameterCount == 0) {
-          int i = 0;
           item.getHandler().invoke(null);
         } else {
           item.getHandler().invoke(null, param);

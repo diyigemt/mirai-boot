@@ -271,48 +271,44 @@ public class MessageEventPack extends BaseEventPack{
 	/**
 	 * <h2>注册一个上下文监听器</h2>
 	 * 使用全局配置的超时时间 监听本事件的发送者<br/>
-	 * <strong>超时时间只会在该监听器第一次被触发时才开始倒计时</strong>
 	 * EventHandlerNext的具体用法请参照{@link EventHandlerNext}
 	 * @param next 监听器本体
 	 * @see EventHandlerManager
 	 * @see EventHandlerNext
 	 */
-	public <T, K extends EventHandlerNext<T>> void onNext(K next) {
-		EventHandlerManager.getInstance().onNext(getSenderId(), next);
+	public <T, K extends EventHandlerNext<T>> void onNext(K next, PreProcessorData<T> data) {
+		EventHandlerManager.getInstance().onNext(getSenderId(), next, this, data);
 	}
 
 	/**
 	 * <h2>注册一个上下文监听器</h2>
 	 * 监听一次 监听本事件的发送者<br/>
-	 * <strong>超时时间只会在该监听器第一次被触发时才开始倒计时</strong>
 	 * EventHandlerNext的具体用法请参照{@link EventHandlerNext}
 	 * @param next 监听器本体
 	 * @param timeOut 超时时间
 	 * @see EventHandlerManager
 	 * @see EventHandlerNext
 	 */
-	public <T, K extends EventHandlerNext<T>> void onNext(K next, long timeOut) {
-		EventHandlerManager.getInstance().onNext(getSenderId(), next, timeOut);
+	public <T, K extends EventHandlerNext<T>> void onNext(K next, long timeOut, PreProcessorData<T> data) {
+		EventHandlerManager.getInstance().onNext(getSenderId(), next, timeOut, this, data);
 	}
 
 	/**
 	 * <h2>注册一个上下文监听器</h2>
 	 * 使用全局配置的超时时间 监听本事件的发送者<br/>
-	 * <strong>超时时间只会在该监听器第一次被触发时才开始倒计时</strong>
 	 * EventHandlerNext的具体用法请参照{@link EventHandlerNext}
 	 * @param next 监听器本体
 	 * @param triggerCount 最高触发次数
 	 * @see EventHandlerManager
 	 * @see EventHandlerNext
 	 */
-	public <T, K extends EventHandlerNext<T>> void onNext(K next, int triggerCount) {
-		EventHandlerManager.getInstance().onNext(getSenderId(), next, triggerCount);
+	public <T, K extends EventHandlerNext<T>> void onNext(K next, int triggerCount, PreProcessorData<T> data) {
+		EventHandlerManager.getInstance().onNext(getSenderId(), next, triggerCount, this, data);
 	}
 
 	/**
 	 * <h2>注册一个上下文监听器</h2>
 	 * 监听本事件的发送者<br/>
-	 * <strong>超时时间只会在该监听器第一次被触发时才开始倒计时</strong>
 	 * EventHandlerNext的具体用法请参照{@link EventHandlerNext}
 	 * @param next 监听器本体
 	 * @param timeOut 超时时间
@@ -320,8 +316,23 @@ public class MessageEventPack extends BaseEventPack{
 	 * @see EventHandlerManager
 	 * @see EventHandlerNext
 	 */
-	public <T, K extends EventHandlerNext<T>> void onNext(K next, long timeOut, int triggerCount) {
-		EventHandlerManager.getInstance().onNext(getSenderId(), next, timeOut, triggerCount);
+	public <T, K extends EventHandlerNext<T>> void onNext(K next, long timeOut, int triggerCount, PreProcessorData<T> data) {
+		EventHandlerManager.getInstance().onNext(getSenderId(), next, timeOut, triggerCount, this, data);
+	}
+
+	/**
+	 * <h2>注册一个上下文监听器</h2>
+	 * 监听指定的qq号事件<br/>
+	 * EventHandlerNext的具体用法请参照{@link EventHandlerNext}
+	 * @param target 监听目标qq号
+	 * @param next 监听器本体
+	 * @param  timeOut 超时时间
+	 * @param triggerCount 最高触发次数
+	 * @see EventHandlerManager
+	 * @see EventHandlerNext
+	 */
+	public <T, K extends EventHandlerNext<T>> void onNext(long target, K next, long timeOut, int triggerCount, PreProcessorData<T> data) {
+		EventHandlerManager.getInstance().onNext(target, next, timeOut, triggerCount, this, data);
 	}
 
 	/**
@@ -333,7 +344,7 @@ public class MessageEventPack extends BaseEventPack{
 	 * @param next 监听器本体
 	 * @param  timeOut 超时时间
 	 * @param triggerCount 最高触发次数
-	 * @see EventHandlerManager
+	 * @see EventHandlerManager#onNext(long, EventHandlerNext, long, int)
 	 * @see EventHandlerNext
 	 */
 	public <T, K extends EventHandlerNext<T>> void onNext(long target, K next, long timeOut, int triggerCount) {
@@ -342,49 +353,17 @@ public class MessageEventPack extends BaseEventPack{
 
 	/**
 	 * <h2>注册一个上下文监听器并开始倒计时</h2>
-	 * 使用全局配置的超时时间 只监听一次 监听本事件的发送者<br/>
-	 * <strong>倒计时将立即开始</strong>
-	 * EventHandlerNext的具体用法请参照{@link EventHandlerNext}
-	 * @param next 监听器本体
-	 * @param data 当前PreProcessorData 防止监听器没被触发时给onDestroy之类的用
-	 * @see EventHandlerManager
-	 * @see EventHandlerNext
-	 */
-	public <T, K extends EventHandlerNext<T>> void onNextNow(K next, PreProcessorData<T> data) {
-		EventHandlerManager.getInstance().onNextNow(getSenderId(), next, -1, -1, this, data);
-	}
-
-	/**
-	 * <h2>注册一个上下文监听器并开始倒计时</h2>
 	 * 监听本事件的发送者<br/>
-	 * <strong>倒计时将立即开始</strong>
+	 * <strong>超时时间只会在该监听器第一次被触发时才开始倒计时</strong>
 	 * EventHandlerNext的具体用法请参照{@link EventHandlerNext}
 	 * @param next 监听器本体
-	 * @param data 当前PreProcessorData 防止监听器没被触发时给onDestroy之类的用
 	 * @param timeOut 超时时间
 	 * @param triggerCount 监听次数
-	 * @see EventHandlerManager
+	 * @see EventHandlerManager#onNext(long, EventHandlerNext, long, int)
 	 * @see EventHandlerNext
 	 */
-	public <T, K extends EventHandlerNext<T>> void onNextNow(K next, PreProcessorData<T> data, long timeOut, int triggerCount) {
-		EventHandlerManager.getInstance().onNextNow(getSenderId(), next, timeOut, triggerCount, this, data);
-	}
-
-	/**
-	 * <h2>注册一个上下文监听器并开始倒计时</h2>
-	 * 监听指定的qq号事件<br/>
-	 * <strong>倒计时将立即开始</strong>
-	 * EventHandlerNext的具体用法请参照{@link EventHandlerNext}
-	 * @param target 监听目标qq号
-	 * @param next 监听器本体
-	 * @param data 当前PreProcessorData 防止监听器没被触发时给onDestroy之类的用
-	 * @param timeOut 超时时间
-	 * @param triggerCount 监听次数
-	 * @see EventHandlerManager
-	 * @see EventHandlerNext
-	 */
-	public <T, K extends EventHandlerNext<T>> void onNextNow(long target, K next, PreProcessorData<T> data, long timeOut, int triggerCount) {
-		EventHandlerManager.getInstance().onNextNow(target, next, timeOut, triggerCount, this, data);
+	public <T, K extends EventHandlerNext<T>> void onNext(K next, long timeOut, int triggerCount) {
+		EventHandlerManager.getInstance().onNext(getSenderId(), next, timeOut, triggerCount);
 	}
 
 	/**

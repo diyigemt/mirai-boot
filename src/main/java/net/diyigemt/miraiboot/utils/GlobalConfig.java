@@ -36,11 +36,38 @@ public class GlobalConfig {
   public Object get(String key) { return STORE.get(key); }
 
   /**
+   * <h2>根据key获取内容</h2>
+   * @param key 键
+   * @return 值
+   */
+  public <T> T get(String key, T defaultValue) {
+    Object o = STORE.get(key);
+    T res  = defaultValue;
+    try {
+       res = (T) o;
+    } catch (ClassCastException e) {
+      ExceptionHandlerManager.getInstance().emit(e);
+    }
+    return o == null ? defaultValue : res;
+  }
+
+  /**
    * <h2>存入一个配置</h2>
    * @param key 键
    * @param o 值
    */
   public void put(String key, Object o) { STORE.put(key, o); }
+
+  /**
+   * <h2>根据key获取boolean内容</h2>
+   * @param key 键
+   * @param defaultValue 默认值 获取失败时返回
+   * @return 值
+   */
+  public boolean getBoolean(String key, boolean defaultValue) {
+    Object o = STORE.get(key);
+    return o == null ? defaultValue : Boolean.parseBoolean(o.toString());
+  }
 
   /**
    * <h2>批量存入键值对</h2>

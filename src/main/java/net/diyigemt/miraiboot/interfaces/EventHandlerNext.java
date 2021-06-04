@@ -25,7 +25,6 @@ import net.diyigemt.miraiboot.entity.MessageEventPack;
  * }
  * </pre>
  * <strong>详细用法请参考{@link EventHandlerManager#onNext}</strong><br/>
- * <strong>详细用法请参考{@link EventHandlerManager#onNextNow}</strong>
  * @author diyigemt
  * @since 1.0.0
  */

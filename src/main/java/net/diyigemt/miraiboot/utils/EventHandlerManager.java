@@ -289,8 +289,8 @@ public class EventHandlerManager {
    * @param target 监听目标qq号
    * @param onNext 事件handler
    */
-  public <T, K extends EventHandlerNext<T>> void onNext(long target, K onNext) {
-    onNext(target, onNext, -2, -1);
+  public <T, K extends EventHandlerNext<T>> void onNext(long target, K onNext, MessageEventPack eventPack, PreProcessorData<T> data) {
+    onNext(target, onNext, -2, -1, eventPack, data);
   }
 
   /**
@@ -299,8 +299,8 @@ public class EventHandlerManager {
    * @param onNext 事件handler
    * @param timeOut 超时时间
    */
-  public <T, K extends EventHandlerNext<T>> void onNext(long target, K onNext, long timeOut) {
-    onNext(target, onNext, timeOut, -1);
+  public <T, K extends EventHandlerNext<T>> void onNext(long target, K onNext, long timeOut, MessageEventPack eventPack, PreProcessorData<T> data) {
+    onNext(target, onNext, timeOut, -1, eventPack, data);
   }
 
   /**
@@ -309,10 +309,9 @@ public class EventHandlerManager {
    * @param onNext 事件handler
    * @param triggerCount 监听次数
    */
-  public <T, K extends EventHandlerNext<T>> void onNext(long target, K onNext, int triggerCount) {
-    Long time = (Long) GlobalConfig.getInstance().get(DEFAULT_EVENT_NET_TIMEOUT);
-    if (time == null) time = DEFAULT_EVENT_NET_TIMEOUT_TIME;
-    onNext(target, onNext, time, triggerCount);
+  public <T, K extends EventHandlerNext<T>> void onNext(long target, K onNext, int triggerCount, MessageEventPack eventPack, PreProcessorData<T> data) {
+    long time = checkTimeOut(-1L);
+    onNext(target, onNext, time, triggerCount, eventPack, data);
   }
 
   /**
@@ -325,11 +324,7 @@ public class EventHandlerManager {
    * @param triggerCount 监听次数 不合法将设置为-1 表示无限监听
    */
   public <T, K extends EventHandlerNext<T>> void onNext(long target, K onNext, long timeOut, int triggerCount) {
-    List<EventHandlerNextItem<?, ? extends EventHandlerNext<?>>> events = LISTENING_STORE.get(target);
-    if (events == null) events = new ArrayList<>();
-    EventHandlerNextItem<T, K> eventHandlerNextItem = createCheckItem(onNext, timeOut, triggerCount);
-    events.add(eventHandlerNextItem);
-    LISTENING_STORE.put(target, events);
+    onNext(target, onNext, timeOut, triggerCount, null, null);
   }
 
   /**
@@ -342,10 +337,10 @@ public class EventHandlerManager {
    * @param eventPack 当前MessageEvent用于给onDestroy之类的用
    * @param data 当前PreProcessorData用于给onDestroy之类的用
    */
-  public <T, K extends EventHandlerNext<T>> void onNextNow(long target, K onNext, long timeOut, int triggerCount, MessageEventPack eventPack, PreProcessorData<T> data) {
+  public <T, K extends EventHandlerNext<T>> void onNext(long target, K onNext, long timeOut, int triggerCount, MessageEventPack eventPack, PreProcessorData<T> data) {
     List<EventHandlerNextItem<?, ? extends EventHandlerNext<?>>> events = LISTENING_STORE.get(target);
     if (events == null) events = new ArrayList<>();
-    EventHandlerNextItem<T, K> eventHandlerNextItem = createCheckItem(onNext, timeOut, triggerCount);
+    EventHandlerNextItem<T, K> eventHandlerNextItem = createNextItem(onNext, timeOut, triggerCount);
     final List<EventHandlerNextItem<?, ? extends EventHandlerNext<?>>> finalEvents = events;
     eventHandlerNextItem.setLastEventPack(eventPack);
     eventHandlerNextItem.setLastData(data);
@@ -353,8 +348,7 @@ public class EventHandlerManager {
       @Override
       public void run() {
         eventHandlerNextItem.onTimeOut();
-        eventHandlerNextItem.onDestroy();
-        finalEvents.remove(eventHandlerNextItem);
+        handlerNextEnd(finalEvents, eventHandlerNextItem);
         if (finalEvents.isEmpty()) LISTENING_STORE.remove(target);
       }
     });
@@ -396,8 +390,7 @@ public class EventHandlerManager {
             @Override
             public void run() {
               next.onTimeOut();
-              next.onDestroy();
-              events.remove(next);
+              handlerNextEnd(events, next);
             }
           });
         }
@@ -466,13 +459,24 @@ public class EventHandlerManager {
    * @param triggerCount 监听次数 不合法将设置为-1 表示无限监听
    * @return 合法的监听信息存储类
    */
-  private <T, K extends EventHandlerNext<T>> EventHandlerNextItem<T, K> createCheckItem(K onNext, long timeOut, int triggerCount) {
-    if (timeOut < -1) {
-      Long time = (Long) GlobalConfig.getInstance().get(DEFAULT_EVENT_NET_TIMEOUT);
-      timeOut = time == null ? DEFAULT_EVENT_NET_TIMEOUT_TIME : time;
-    }
+  private <T, K extends EventHandlerNext<T>> EventHandlerNextItem<T, K> createNextItem(K onNext, long timeOut, int triggerCount) {
+    timeOut = checkTimeOut(timeOut);
     if (triggerCount < 1 ) triggerCount = -1;
     return new EventHandlerNextItem<>(onNext, timeOut, triggerCount);
+  }
+
+  /**
+   * <h2>将超时时间合法化</h2>
+   * @param timeOut 超时时间
+   * @return 合法化的超时时间
+   */
+  private long checkTimeOut(long timeOut) {
+    long res = timeOut;
+    if (timeOut < -1) {
+      Long time = (Long) GlobalConfig.getInstance().get(DEFAULT_EVENT_NET_TIMEOUT);
+      res = time == null ? DEFAULT_EVENT_NET_TIMEOUT_TIME : time;
+    }
+    return res;
   }
 
   /**

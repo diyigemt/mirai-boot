@@ -7,7 +7,6 @@ import net.diyigemt.miraiboot.constant.FunctionId;
 import net.diyigemt.miraiboot.entity.MessageEventPack;
 import net.diyigemt.miraiboot.permission.CheckPermission;
 
-@EventHandlerComponent
 public class TestFunction{
 
   @EventHandler(target = "reply")
