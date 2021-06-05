@@ -5,6 +5,7 @@ import net.diyigemt.miraiboot.annotation.AutoInit;
 import net.diyigemt.miraiboot.annotation.EventHandlerComponent;
 import net.diyigemt.miraiboot.annotation.ExceptionHandlerComponent;
 import net.diyigemt.miraiboot.core.PluginMgr;
+import net.diyigemt.miraiboot.core.RegisterProcess;
 import net.diyigemt.miraiboot.mirai.MiraiMain;
 import net.diyigemt.miraiboot.utils.FileUtil;
 
@@ -13,10 +14,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.net.JarURLConnection;
 import java.net.URL;
-import java.net.URLClassLoader;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.List;
+import java.util.*;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
@@ -34,7 +32,7 @@ public class PluginLoader {
     //读取缓冲，等待检查
     private static List<Class<?>> Plugin_Temp = new ArrayList<>();
 
-    public static URLClassLoader loader;
+    public static JarPluginLoader loader;
 
     private static boolean flag = false;
 
@@ -42,77 +40,39 @@ public class PluginLoader {
 
     public static List<Class<?>> getPluginClasses(){
         MiraiMain.logger.info("开始扫描插件");
+        boolean flag = false;
         try{
             FileUtil.init(Main.class);
             File[] plugins = FileUtil.getInstance().getPlugins();
+            if(plugins.length == 0){
+                MiraiMain.logger.warning("当前MiraiBoot没有加载任何插件");
+                return classes;
+            }
             for(File file : plugins){
-                String fileName = file.getName();
-                if(fileName.endsWith(".jar")){
-                    URL url = new URL("jar:file:/" + file.getAbsolutePath() + "!/");
-                    JarURLConnection connection = (JarURLConnection) url.openConnection();
-                    JarFile jar = connection.getJarFile();
-                    loader = new URLClassLoader(new URL[]{url}, Thread.currentThread().getContextClassLoader());
-                    Plugin_Temp.clear();//重新初始化
-                    flag = false;
-                    Enumeration<JarEntry> files = jar.entries();
-                    Manifest manifest = jar.getManifest();
-                    String MainClass = manifest.getMainAttributes().getValue("Main-Class");
-                    String PackName = MainClass.substring(0, MainClass.lastIndexOf(".")).replace(".", "/");//获取主方法所在的包路径
-                    //反射onLoad方法
-                    Class<?> mainClass = loader.loadClass(MainClass);
-                    Object main = mainClass.newInstance();
-                    Method onLoad = null;
-                    try{
-                        onLoad = mainClass.getMethod("onLoad");
-                    }catch (NoSuchMethodException e){
-                        MiraiMain.logger.error(file.getName() + ": 未知的MiraiBoot插件格式");
-                        continue;
-                    }
-                    MiraiMain.logger.info("发现插件：" + file.getName());
-                    onLoad.invoke(main);
-
-                    if(flag){//在onLoad中加载其它包时存在失败，放弃该插件的加载。
-                        MiraiMain.logger.error("自定义加载项: " + file.getName() + ": 加载失败，缺少部分依赖，已放弃该插件所有加载");
-                        continue;
-                    }
-
-                    Field UEFI = mainClass.getField("UEFIMode");//获取UEFI设置
-                    int i = 0;
-                    UEFI.setAccessible(true);
-                    isUEFI = (boolean) UEFI.get(main);
-
-                    if(isUEFI){
-                        MiraiMain.logger.info("正在加载： " + fileName + "(UEFI)");
-                        QuickJarScanner(files, PackName);//UEFI（迫真）
-                        if(Plugin_Temp.size() == 0){//扫了一圈啥也没有
-                            GlobalJarScanner(files);//LEGACY（传统）
-                        }
-                    }else {
-                        MiraiMain.logger.info("正在加载： " + fileName);
-                        GlobalJarScanner(files);
-                    }
-
-                    if(flag){//加载过程中存在失败
-                        Plugin_Temp.clear();//因为存在依赖加载失败，为了程序稳定性，放弃扫描该插件的所有结果
-                        connection.getJarFile().close();
-                        MiraiMain.logger.error("插件: " + file.getName() + ": 启动失败，缺少部分依赖");
-                        continue;
-                    }
-                    if(Plugin_Temp.size() == 0){//还是啥也没有
-                        connection.getJarFile().close();
-                        MiraiMain.logger.error("插件: " + file.getName() + ": 该插件中未找到任何有效的类，加载失败");
-                    }else {
-                        classes.addAll(Plugin_Temp);
-                        PluginMgr.addPluginConnection(connection);
-                        MiraiMain.logger.info("插件: " + file.getName() + "，加载成功");
-                    }
-                }
+                flag = LoadPlugin(file);
+                if(flag) PluginMgr.addLoader(loader, file.getName());//成功的loader交给插件管理器保存
             }
         }catch (Exception e) {
             e.printStackTrace();
         }
 
         return classes;
+    }
+
+    /**
+     * <h2>热加载插件指令</h2>
+     * @param path 绝对/相对路径
+     */
+    public static void LoadPlugin(String path){
+        try{
+            File file = new File(path);
+            boolean flag = LoadPlugin(file);
+            if(!flag) return;
+            PluginMgr.addLoader(loader, file.getName());//成功的loader交给插件管理器保存
+            RegisterProcess.AnnotationScanner(classes, MiraiApplication.config);
+        }catch (Exception e){
+            e.printStackTrace();
+        }
     }
 
 
@@ -124,6 +84,77 @@ public class PluginLoader {
             Enumeration<JarEntry> files = file.entries();
             GlobalJarScanner(files);
         }
+    }
+
+    private static boolean LoadPlugin(File file) throws Exception{
+        String fileName = file.getName();
+        if(fileName.endsWith(".jar")){
+            URL url = new URL("jar:file:/" + file.getAbsolutePath() + "!/");
+            JarURLConnection connection = (JarURLConnection) url.openConnection();
+            JarFile jar = connection.getJarFile();
+            loader = new JarPluginLoader(new URL[]{url});
+            Plugin_Temp.clear();//重新初始化
+            flag = false;
+            Enumeration<JarEntry> files = jar.entries();
+            Manifest manifest = jar.getManifest();
+            String MainClass = manifest.getMainAttributes().getValue("Main-Class");
+            if(MainClass == null){
+                MiraiMain.logger.error(file.getName() + ": 该jar没有绑定主类，无法加载");
+                return false;
+            }
+            String PackName = MainClass.substring(0, MainClass.lastIndexOf(".")).replace(".", "/");//获取主方法所在的包路径
+            //反射onLoad方法
+            Class<?> mainClass = loader.loadClass(MainClass);
+            Object main = mainClass.newInstance();
+            Method onLoad = null;
+            try{
+                onLoad = mainClass.getMethod("onLoad");
+            }catch (NoSuchMethodException e){
+                MiraiMain.logger.error(file.getName() + ": 未知的MiraiBoot插件格式");
+                return false;
+            }
+            MiraiMain.logger.info("发现插件：" + file.getName());
+            onLoad.invoke(main);
+
+            if(flag){//在onLoad中加载其它包时存在失败，放弃该插件的加载。
+                MiraiMain.logger.error("自定义加载项: " + file.getName() + ": 加载失败，缺少部分依赖，已放弃该插件所有加载");
+                return false;
+            }
+
+            Field UEFI = mainClass.getField("UEFIMode");//获取UEFI设置
+            int i = 0;
+            UEFI.setAccessible(true);
+            isUEFI = (boolean) UEFI.get(main);
+
+            if(isUEFI){
+                MiraiMain.logger.info("正在加载： " + fileName + "(UEFI)");
+                QuickJarScanner(files, PackName);//UEFI（迫真）
+                if(Plugin_Temp.size() == 0){//扫了一圈啥也没有
+                    GlobalJarScanner(files);//LEGACY（传统）
+                }
+            }else {
+                MiraiMain.logger.info("正在加载： " + fileName);
+                GlobalJarScanner(files);
+            }
+
+            if(flag){//加载过程中存在失败
+                Plugin_Temp.clear();//因为存在依赖加载失败，为了程序稳定性，放弃扫描该插件的所有结果
+                connection.getJarFile().close();
+                MiraiMain.logger.error("插件: " + file.getName() + ": 启动失败，缺少部分依赖");
+                return false;
+            }
+            if(Plugin_Temp.size() == 0){//还是啥也没有
+                connection.getJarFile().close();
+                MiraiMain.logger.error("插件: " + file.getName() + ": 该插件中未找到任何有效的类，加载失败");
+                return false;
+            }else {
+                classes.addAll(Plugin_Temp);
+                PluginMgr.addPluginConnection(connection);
+                MiraiMain.logger.info("插件: " + file.getName() + "，加载成功");
+            }
+        }
+
+        return true;
     }
 
     private static void QuickJarScanner(Enumeration<JarEntry> files, String PackName) {
