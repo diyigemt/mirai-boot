@@ -13,7 +13,6 @@ import net.diyigemt.miraiboot.utils.builder.VoiceMessageBuilder;
 
 import java.io.File;
 
-@EventHandlerComponent
 public class TextVocMsgBuilder {
     private static final String LocalPath = "fff";//TODO: 素材本地路径,自己填
     private static final String URLPath = "https://meamea.moe/voices/01-1.mp3";//素材URL

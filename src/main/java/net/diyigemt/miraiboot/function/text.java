@@ -9,7 +9,6 @@ import net.diyigemt.miraiboot.utils.builder.ImageMessageBuilder;
 
 import java.io.File;
 
-@EventHandlerComponent
 public class text {
     @EventHandler(target = "textSend")
     public void Text(MessageEventPack eventPack, PreProcessorData data){

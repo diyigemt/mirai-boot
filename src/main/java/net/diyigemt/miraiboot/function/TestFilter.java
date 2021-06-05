@@ -9,7 +9,6 @@ import net.diyigemt.miraiboot.entity.PreProcessorData;
 import net.diyigemt.miraiboot.entity.MessageEventPack;
 import net.diyigemt.miraiboot.permission.CheckPermission;
 
-@EventHandlerComponent
 public class TestFilter {
 
   @EventHandler(target = "filter1")

@@ -15,7 +15,7 @@ public interface IMessageFilter {
    * 具体实现
    * @param source 消息纯文本
    * @param eventPack 消息事件封装
-   * @param item 默认设置
+   * @param item 同注解下的其他配置
    * @return 是否通过, true:通过
    */
   boolean check(String source, MessageEventPack eventPack, MessageFilterItem item);
