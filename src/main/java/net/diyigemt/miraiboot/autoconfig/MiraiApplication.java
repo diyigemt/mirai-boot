@@ -163,7 +163,7 @@ public class MiraiApplication {
     BotManager.getInstance().loginAll();
     MiraiMain.logger.info("bot登录成功 系统启动完成");
     // 阻塞主线程
-    MiraiBootConsole.ConsoleListener();
+    MiraiBootConsole.getInstance().listenLoop();
   }
 
   /**
@@ -197,7 +197,7 @@ public class MiraiApplication {
       Class<? extends Exception> value = annotation.value();
       int priority = annotation.priority();
       String name = annotation.name();
-      ExceptionHandlerItem item = new ExceptionHandlerItem(name, value, clazz, method, priority);
+      ExceptionHandlerItem item = new ExceptionHandlerItem(name, clazz, method, value, priority);
       handlers.add(item);
     }
 
@@ -269,7 +269,7 @@ public class MiraiApplication {
       if (priority == 0 && classPriority != 0) priority = classPriority;
       Class<? extends Exception> value = annotation.value();
       String name = annotation.name();
-      ExceptionHandlerItem item = new ExceptionHandlerItem(name, value, clazz, method, priority);
+      ExceptionHandlerItem item = new ExceptionHandlerItem(name, clazz, method, value, priority);
       ExceptionHandlerManager.getInstance().on(item);
     }
   }

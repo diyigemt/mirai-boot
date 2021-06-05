@@ -2,6 +2,7 @@ package net.diyigemt.miraiboot.entity;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 
 import java.lang.reflect.Method;
@@ -12,14 +13,16 @@ import java.lang.reflect.Method;
  * @author diyigemt
  * @since 1.0.0
  */
-@Data
-@AllArgsConstructor
-public final class ExceptionHandlerItem implements Comparable<ExceptionHandlerItem> {
-  private String name;
+@Getter
+public final class ExceptionHandlerItem extends MiraiBootHandlerItem implements Comparable<ExceptionHandlerItem> {
   private final Class<? extends Throwable> target;
-  private final Class<?> invoker;
-  private final Method handler;
   private final int priority;
+
+  public ExceptionHandlerItem(String name, Class<?> invoker, Method handler, Class<? extends Throwable> target, int priority) {
+    super(name, invoker, handler);
+    this.target = target;
+    this.priority = priority;
+  }
 
   @Override
   public int compareTo(@NotNull ExceptionHandlerItem o) {
