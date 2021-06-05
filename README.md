@@ -86,11 +86,11 @@ miraiboot是是对mirai框架的简单Java封装。
 <dependency>
         <groupId>net.diyigemt.miraiboot</groupId>
         <artifactId>mirai-boot</artifactId>
-        <version>1.0.4</version>
+        <version>1.0.5</version>
 </dependency>
 ```
 
-你也可以去 [releases](https://github.com/diyigemt/mirai-boot/releases/tag/v1.0.4)下载jar包并导入项目。
+你也可以去 [releases](https://github.com/diyigemt/mirai-boot/releases/tag/v1.0.5)下载jar包并导入项目。
 **注：第一次miraiboot需要引入mirai-login-solver-selenium这个依赖以完成新设备的滑动验证**
 
 bot的设备信息文件 `*.json`将会存放在/config/qq号/*.json文件中，若是从其他框架迁移，可直接将json文件放在该文件夹下，并在配置文件中指定文件名即可，无需再次引入`mirai-login-solver-selenium`	
@@ -136,6 +136,8 @@ config：保存miraiboot的配置文件和bot的device.json文件
 cache：保存mirai-core的文件
 
 data：保存miraiboot的资源文件 放在其中的文件可以很方便地通过工具类访问
+
+data/plugin：保存插件
 
 **关于bot设备信息**
 
@@ -233,8 +235,8 @@ targets可以接受一个数组，priority指代执行优先级。
 创建一个主类，并调用MiraiApplication的静态run方法。
 
 ```java
-import org.miraiboot.annotation.MiraiBootApplication;
-import org.miraiboot.autoconfig.MiraiApplication;
+import net.diyigemt.miraiboot.annotation.MiraiBootApplication;
+import net.diyigemt.miraiboot.autoconfig.MiraiApplication;
 
 @MiraiBootApplication
 public class Main {
@@ -1201,7 +1203,7 @@ permit cancel reply @1235472346
 
 MiraiBoot支持插件式开发模式
 
-若采用插件式开发，需要去Release中下载miraiboot的核心包miraiboot-core.jar单独运行，并将打包后的插件放置在./data/plugin中
+若采用插件式开发，miraiboot的依赖版本需要为1.0.5+，需要去[Releasev1.0.5](https://github.com/diyigemt/mirai-boot/releases/tag/v1.0.5)中下载miraiboot的核心包mirai-boot-1.0.5-core.jar单独运行，并将打包后的插件放置在./data/plugin中
 
 ### MiraiBootPlugin插件类
 
@@ -1524,7 +1526,7 @@ MiraiBoot将会对扫描到以上注解的class进行相应的注册和初始化
         <dependency>
             <groupId>net.diyigemt.miraiboot</groupId>
             <artifactId>mirai-boot</artifactId>
-            <version>1.0.3</version>
+            <version>1.0.5</version>
             <scope>provided</scope>
         </dependency>
 ```
