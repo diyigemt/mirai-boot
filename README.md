@@ -1247,7 +1247,7 @@ public class Main extends MiraiBootPlugin{//在主类上继承插件类
 }
 ```
 
-
+当然，以上的`@MiraiBootApplication`和`static main`方法不是必须的，这里只是为了方便将插件和miraiboot核心写到一起了
 
 使用结果：
 
