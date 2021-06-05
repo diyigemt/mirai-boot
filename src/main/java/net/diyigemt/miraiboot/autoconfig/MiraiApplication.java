@@ -95,8 +95,7 @@ public class MiraiApplication {
     classes.add(AuthMgr.class);
     // 初始化permission数据库
     classes.add(PermissionDAO.class);
-    List<Class<?>> pluginClasses = PluginLoader.getPluginClasses();
-    classes.addAll(pluginClasses);
+    classes.addAll(PluginLoader.getPluginClasses());
     System.gc();//清理插件加载时因各种失败而变得无用的class
     // 开始处理事件handler和autoInit
     RegisterProcess.AnnotationScanner(classes, config);
