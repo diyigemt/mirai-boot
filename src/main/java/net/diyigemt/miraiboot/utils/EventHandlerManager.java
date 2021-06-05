@@ -409,7 +409,7 @@ public class EventHandlerManager {
 
   /**
    * <h2>取消所有正在监听的上下文事件</h2>
-   * 退出是调用
+   * 退出时调用
    */
   public void cancelAll() {
     if (LISTENING_STORE.isEmpty()) return;

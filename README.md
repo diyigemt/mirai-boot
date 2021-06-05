@@ -1199,7 +1199,9 @@ permit cancel reply @1235472346
 
 ## 插件式开发
 
-​	MiraiBoot支持插件式开发模式
+MiraiBoot支持插件式开发模式
+
+若采用插件式开发，需要去Release中下载miraiboot的核心包miraiboot-core.jar单独运行，并将打包后的插件放置在./data/plugin中
 
 ### MiraiBootPlugin插件类
 
