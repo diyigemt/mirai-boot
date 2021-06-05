@@ -108,6 +108,9 @@ public class MiraiApplication {
         if (clazz.isAnnotationPresent(ExceptionHandlerComponent.class)) {
           handleExceptionHandler(clazz);
         }
+        if (clazz.isAnnotationPresent(MiraiBootComponent.class)) {
+          handleComponent(clazz);
+        }
       }
     }
     // 事件注册完成 对正则进行编译
@@ -271,6 +274,14 @@ public class MiraiApplication {
       String name = annotation.name();
       ExceptionHandlerItem item = new ExceptionHandlerItem(name, clazz, method, value, priority);
       ExceptionHandlerManager.getInstance().on(item);
+    }
+  }
+  private static void handleComponent(Class<?> clazz) {
+    for (Method method : clazz.getMethods()) {
+      if (!method.isAnnotationPresent(ConsoleCommand.class)) continue;
+      ConsoleCommand annotation = method.getAnnotation(ConsoleCommand.class);
+      String value = annotation.value();
+      MiraiBootConsole.getInstance().on(value, clazz, method);
     }
   }
 }
