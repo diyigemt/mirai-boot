@@ -190,4 +190,23 @@ public class CommandUtil {
 		}
 		return data;
 	}
+
+	/**
+	 * <h2>构建Handler的基础Name</h2>
+	 * @param clazz 类名
+	 * @return 基础name
+	 */
+	public String parseHandlerBaseName(Class<?> clazz) {
+		return clazz.getPackageName() + "." + clazz.getName();
+	}
+
+	/**
+	 * <h2>构建Handler的基础Name</h2>
+	 * @param clazz 类名
+	 * @param handler 包名
+	 * @return 基础name
+	 */
+	public String parseHandlerBaseName(Class<?> clazz, Method handler) {
+		return parseHandlerBaseName(clazz) + "." + handler.getName();
+	}
 }

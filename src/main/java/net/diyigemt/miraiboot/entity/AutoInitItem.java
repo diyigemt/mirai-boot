@@ -14,11 +14,10 @@ import java.lang.reflect.Method;
  * @see AutoInit
  */
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
 public class AutoInitItem implements Comparable<AutoInitItem> {
-  private int priority;
-  private Method handler;
+  private final String name;
+  private final int priority;
+  private final Method handler;
 
   @Override
   public int compareTo(@NotNull AutoInitItem o) {

@@ -56,10 +56,11 @@ public class RegisterProcess {
      * @param clazz 目标类
      */
     private static void handleAutoInit(Class<?> clazz, List<AutoInitItem> res) {
+        String name = CommandUtil.getInstance().parseHandlerBaseName(clazz) + "." + "init";
         AutoInit annotation = clazz.getAnnotation(AutoInit.class);
         for (Method method : clazz.getMethods()) {
             if (method.getName().equals("init") && method.canAccess(null)) {
-                AutoInitItem item = new AutoInitItem(annotation.value(), method);
+                AutoInitItem item = new AutoInitItem(name, annotation.value(), method);
                 res.add(item);
             }
         }
@@ -81,6 +82,7 @@ public class RegisterProcess {
             Class<? extends Exception> value = annotation.value();
             int priority = annotation.priority();
             String name = annotation.name();
+            if (name.equals("")) name = CommandUtil.getInstance().parseHandlerBaseName(clazz, method);
             ExceptionHandlerItem item = new ExceptionHandlerItem(name, clazz, method, value, priority);
             handlers.add(item);
         }
@@ -153,6 +155,7 @@ public class RegisterProcess {
             if (priority == 0 && classPriority != 0) priority = classPriority;
             Class<? extends Exception> value = annotation.value();
             String name = annotation.name();
+            if (name.equals("")) name = CommandUtil.getInstance().parseHandlerBaseName(clazz, method);
             ExceptionHandlerItem item = new ExceptionHandlerItem(name, clazz, method, value, priority);
             ExceptionHandlerManager.getInstance().on(item);
         }

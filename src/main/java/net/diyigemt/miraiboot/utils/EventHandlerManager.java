@@ -81,8 +81,8 @@ public class EventHandlerManager {
     if (!b) return;
     List<EventHandlerItem> eventHandlerItems = OTHER_EVENT_STORE.get(target);
     if (eventHandlerItems == null) eventHandlerItems = new ArrayList<>();
-
-    EventHandlerItem eventHandlerItem = new EventHandlerItem(target, invoker, handler, type, exceptionHandlers);
+    String name = CommandUtil.getInstance().parseHandlerBaseName(invoker, handler);
+    EventHandlerItem eventHandlerItem = new EventHandlerItem(name, invoker, handler, type, exceptionHandlers);
     if (!eventHandlerItems.contains(eventHandlerItem)) eventHandlerItems.add(eventHandlerItem);
     OTHER_EVENT_STORE.put(target, eventHandlerItems);
   }
@@ -116,7 +116,8 @@ public class EventHandlerManager {
     if (b) return;
     List<EventHandlerItem> eventHandlerItems = STORE.get(target);
     if (eventHandlerItems == null) eventHandlerItems = new ArrayList<>();
-    EventHandlerItem eventHandlerItem = new EventHandlerItem(target, invoker, handler, type, exceptionHandlers);
+    String name = CommandUtil.getInstance().parseHandlerBaseName(invoker, handler);
+    EventHandlerItem eventHandlerItem = new EventHandlerItem(name, invoker, handler, type, exceptionHandlers);
     if (!eventHandlerItems.contains(eventHandlerItem)) eventHandlerItems.add(eventHandlerItem);
     STORE.put(target, eventHandlerItems);
   }

@@ -2,6 +2,7 @@ package net.diyigemt.miraiboot.core;
 
 import net.diyigemt.miraiboot.entity.ConsoleHandlerItem;
 import net.diyigemt.miraiboot.mirai.MiraiMain;
+import net.diyigemt.miraiboot.utils.CommandUtil;
 import net.diyigemt.miraiboot.utils.ExceptionHandlerManager;
 
 import java.lang.reflect.InvocationTargetException;
@@ -39,7 +40,8 @@ public final class MiraiBootConsole {
 	public boolean on(String target, Class<?> invoker, Method handler) {
 		ConsoleHandlerItem one = store.get(target);
 		if (one != null) return false;
-		ConsoleHandlerItem item = new ConsoleHandlerItem(target, invoker, handler);
+		String name = CommandUtil.getInstance().parseHandlerBaseName(invoker, handler);
+		ConsoleHandlerItem item = new ConsoleHandlerItem(name, invoker, handler);
 		store.put(target, item);
 		return true;
 	}
