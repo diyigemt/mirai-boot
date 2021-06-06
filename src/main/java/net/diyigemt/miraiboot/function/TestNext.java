@@ -14,7 +14,6 @@ import net.diyigemt.miraiboot.interfaces.EventHandlerNext;
 
 import java.util.List;
 
-@EventHandlerComponent
 public class TestNext {
 
   @EventHandler(target = "搜图")

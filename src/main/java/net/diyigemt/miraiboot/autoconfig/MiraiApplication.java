@@ -5,6 +5,7 @@ import net.diyigemt.miraiboot.constant.ConstantGlobal;
 import net.diyigemt.miraiboot.constant.EventHandlerType;
 import net.diyigemt.miraiboot.constant.FunctionId;
 import net.diyigemt.miraiboot.core.MiraiBootConsole;
+import net.diyigemt.miraiboot.core.RegisterProcess;
 import net.diyigemt.miraiboot.dao.PermissionDAO;
 import net.diyigemt.miraiboot.entity.*;
 import net.diyigemt.miraiboot.function.Alias;
@@ -32,6 +33,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * @since 1.0.0
  */
 public class MiraiApplication {
+
+  public static ConfigFile config;
   public static void run(Class<?> mainClass, String... args) {
     // 打印banner
     InputStream banner = mainClass.getResourceAsStream("/banner.txt");
@@ -73,7 +76,6 @@ public class MiraiApplication {
       }
       return;
     }
-    ConfigFile config;
     try {
       config = new Yaml().loadAs(new InputStreamReader(new FileInputStream(configFile)), ConfigFile.class);
     } catch (FileNotFoundException e) {
@@ -93,27 +95,13 @@ public class MiraiApplication {
     classes.add(AuthMgr.class);
     // 初始化permission数据库
     classes.add(PermissionDAO.class);
-    List<Class<?>> pluginClasses = PluginLoader.getPluginClasses();
-    classes.addAll(pluginClasses);
+    classes.addAll(PluginLoader.getPluginClasses());
+    System.gc();//清理插件加载时因各种失败而变得无用的class
     // 开始处理事件handler和autoInit
-    List<AutoInitItem> inits = new ArrayList<>();
-    if (!classes.isEmpty()) {
-      for (Class<?> clazz : classes) {
-        if (clazz.isAnnotationPresent(AutoInit.class)) {
-          handleAutoInit(clazz, inits);
-        }
-        if (clazz.isAnnotationPresent(EventHandlerComponent.class)) {
-          handleEventHandler(clazz);
-        }
-        if (clazz.isAnnotationPresent(ExceptionHandlerComponent.class)) {
-          handleExceptionHandler(clazz);
-        }
-        if (clazz.isAnnotationPresent(MiraiBootComponent.class)) {
-          handleComponent(clazz);
-        }
-      }
-    }
-    // 事件注册完成 对正则进行编译
+    List<AutoInitItem> inits = RegisterProcess.AnnotationScanner(classes, config);
+    //事件注册完成，释放所有List
+    classes.clear();
+    //对正则进行编译
     CommandUtil.getInstance().compileCommandPattern();
     // 开始读取配置文件
     ConfigFileMain miraiboot = config.getMiraiboot();
@@ -161,127 +149,12 @@ public class MiraiApplication {
         e.printStackTrace();
       }
     }
+    inits.clear();//初始化完成后释放所有记载
     // 初始化完成 统一登录
     MiraiMain.logger.info("初始化完成 开始登录bot");
     BotManager.getInstance().loginAll();
     MiraiMain.logger.info("bot登录成功 系统启动完成");
     // 阻塞主线程
     MiraiBootConsole.getInstance().listenLoop();
-  }
-
-  /**
-   * 初始化被@AutoInit注释的类
-   * @param res 暂存 等候排序
-   * @param clazz 目标类
-   */
-  private static void handleAutoInit(Class<?> clazz, List<AutoInitItem> res) {
-    AutoInit annotation = clazz.getAnnotation(AutoInit.class);
-    for (Method method : clazz.getMethods()) {
-      if (method.getName().equals("init") && method.canAccess(null)) {
-        AutoInitItem item = new AutoInitItem(annotation.value(), method);
-        res.add(item);
-      }
-    }
-  }
-
-  /**
-   * 将被@EventHandlerComponent注册的类<br/>
-   * 中被@EventHandler注册的方法加入EventhendlerManager中统一管理
-   * @param clazz 被@EventHandlerComponent注册的类
-   */
-  private static void handleEventHandler(Class<?> clazz) {
-    // 提取类私有的异常处理器
-    List<ExceptionHandlerItem> handlers = null;
-    Method[] methods = clazz.getMethods();
-    for (Method method : methods) {
-      if (!method.isAnnotationPresent(ExceptionHandler.class)) continue;
-      if (handlers == null) handlers = new ArrayList<>();
-      ExceptionHandler annotation = method.getAnnotation(ExceptionHandler.class);
-      Class<? extends Exception> value = annotation.value();
-      int priority = annotation.priority();
-      String name = annotation.name();
-      ExceptionHandlerItem item = new ExceptionHandlerItem(name, clazz, method, value, priority);
-      handlers.add(item);
-    }
-
-    for (Method method : methods) {
-      if (!method.isAnnotationPresent(EventHandler.class)) continue;
-      EventHandler methodAnnotation = method.getAnnotation(EventHandler.class);
-      // 注册其他事件Handler
-      AtomicBoolean b = new AtomicBoolean(false);
-      EventHandlerType[] types = methodAnnotation.type();
-      for (EventHandlerType type : types) {
-        if (type == EventHandlerType.OTHER_HANDLER) {
-          EventHandlerManager.getInstance().onOther("", clazz, method, handlers);
-          b.set(true);
-          break;
-        }
-      }
-      // 如果注册为BotEventHandler 将不能被注册为消息事件Handler
-      if (b.get()) continue;
-      // 获取与指令对应的权限id
-      EventHandlerComponent classAnnotation = clazz.getAnnotation(EventHandlerComponent.class);
-      int permissionIndex = classAnnotation.value();
-      if (method.isAnnotationPresent(CheckPermission.class)) {
-        CheckPermission permission = method.getAnnotation(CheckPermission.class);
-        permissionIndex = permission.functionId() == 0 ? permissionIndex : permission.functionId();
-      }
-      // 注册强制触发EventHandler
-      if (methodAnnotation.isAny()) {
-        EventHandlerManager.getInstance().onAny(clazz, method, handlers);
-        String target = methodAnnotation.target();
-        // 注册权限id
-        String methodName = method.getName();
-        String className = clazz.getCanonicalName();
-        String s = target.equals("") ? className + "." + methodName : target;
-        FunctionId.put(s, permissionIndex);
-        continue;
-      }
-      String targetName = methodAnnotation.target();
-      String start = methodAnnotation.start();
-      if (targetName.equals("")) {
-        targetName = method.getName();
-      }
-      if (start.equals("")) {
-        Object o = GlobalConfig.getInstance().get(ConstantGlobal.DEFAULT_COMMAND_START);
-        if (!o.toString().equals("")) targetName = o + targetName;
-      } else {
-        targetName = start + targetName;
-        // 注册指令开头
-        CommandUtil.getInstance().registerCommandStart(start);
-      }
-
-      FunctionId.put(targetName, permissionIndex);
-      EventHandlerManager.getInstance().on(targetName, clazz, method, handlers);
-    }
-  }
-  private static void handleExceptionHandler(Class<?> clazz) {
-    // 不在事件处理器类中扫描异常处理器 防止重复注册
-    if (clazz.isAnnotationPresent(EventHandlerComponent.class)) return;
-
-    ExceptionHandlerComponent classAnnotation = clazz.getAnnotation(ExceptionHandlerComponent.class);
-    int classPriority = classAnnotation.value();
-    for (Method method : clazz.getMethods()) {
-      if (!method.isAnnotationPresent(ExceptionHandler.class)) continue;
-      ExceptionHandler annotation = method.getAnnotation(ExceptionHandler.class);
-      if (!method.isAnnotationPresent(ExceptionHandler.class)) continue;
-      // 检查返回值类型
-      Class<?> returnType = method.getReturnType();
-      if (!(returnType == void.class || returnType == boolean.class)) continue;
-      int priority = annotation.priority();
-      if (priority == 0 && classPriority != 0) priority = classPriority;
-      Class<? extends Exception> value = annotation.value();
-      String name = annotation.name();
-      ExceptionHandlerItem item = new ExceptionHandlerItem(name, clazz, method, value, priority);
-      ExceptionHandlerManager.getInstance().on(item);
-    }
-  }
-  private static void handleComponent(Class<?> clazz) {
-    for (Method method : clazz.getMethods()) {
-      if (!method.isAnnotationPresent(ConsoleCommand.class)) continue;
-      ConsoleCommand annotation = method.getAnnotation(ConsoleCommand.class);
-      String value = annotation.value();
-      MiraiBootConsole.getInstance().on(value, clazz, method);
-    }
   }
 }

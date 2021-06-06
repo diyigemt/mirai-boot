@@ -2,8 +2,6 @@ package net.diyigemt.miraiboot.core;
 
 import net.diyigemt.miraiboot.entity.ConsoleHandlerItem;
 import net.diyigemt.miraiboot.mirai.MiraiMain;
-import net.diyigemt.miraiboot.utils.BotManager;
-import net.diyigemt.miraiboot.utils.EventHandlerManager;
 import net.diyigemt.miraiboot.utils.ExceptionHandlerManager;
 
 import java.lang.reflect.InvocationTargetException;
@@ -26,11 +24,14 @@ public final class MiraiBootConsole {
 
 	private static final Pattern EMPTY_SOURCE = Pattern.compile("^\\s+$");
 
-	public static MiraiBootConsole getInstance() { return INSTANCE; }
+	public static MiraiBootConsole getInstance() {
+		return INSTANCE;
+	}
 
 	/**
 	 * <h2>注册一条控制台指令</h2>
-	 * @param target 指令名
+	 *
+	 * @param target  指令名
 	 * @param invoker 操作类
 	 * @param handler 操作方法
 	 * @return 是否注册成功, 当存在同名指令时返回false
