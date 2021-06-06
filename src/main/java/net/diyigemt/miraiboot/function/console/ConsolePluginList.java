@@ -10,7 +10,7 @@ import net.diyigemt.miraiboot.utils.EventHandlerManager;
 import java.util.List;
 
 @MiraiBootComponent
-public class ConsoleLoadPlugin {
+public class ConsolePluginList {
 
 	@ConsoleCommand("plugin")
 	public void plugin() {

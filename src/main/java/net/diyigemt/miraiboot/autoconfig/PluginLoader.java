@@ -130,6 +130,7 @@ public class PluginLoader {
                 MiraiMain.logger.info("正在加载： " + fileName + "(UEFI)");
                 QuickJarScanner(files, PackName);//UEFI（迫真）
                 if(Plugin_Temp.size() == 0){//扫了一圈啥也没有
+                    MiraiMain.logger.warning("插件：" + fileName + ": 未扫描到任何有效注解，正在尝试全包扫描。");
                     GlobalJarScanner(files);//LEGACY（传统）
                 }
             }else {
