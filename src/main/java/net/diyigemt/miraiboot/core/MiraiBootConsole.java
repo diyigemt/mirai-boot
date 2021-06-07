@@ -97,7 +97,7 @@ public final class MiraiBootConsole {
 			boolean emit = emit(strings[0], Arrays.copyOfRange(strings, 1, strings.length, String[].class));
 			if (!emit) {
 				MiraiMain.logger.error("命令：" + "\"" + source + "\"" + " 执行失败或不是有效的MiraiBoot命令");
-			}System.gc();
+			}
 		}
 	}
 
