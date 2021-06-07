@@ -9,6 +9,7 @@ import net.diyigemt.miraiboot.core.RegisterProcess;
 import net.diyigemt.miraiboot.dao.PermissionDAO;
 import net.diyigemt.miraiboot.entity.*;
 import net.diyigemt.miraiboot.function.Alias;
+import net.diyigemt.miraiboot.function.console.ConsoleExit;
 import net.diyigemt.miraiboot.listener.BotEventListener;
 import net.diyigemt.miraiboot.listener.MessageEventListener;
 import net.diyigemt.miraiboot.mirai.MiraiMain;
@@ -95,6 +96,9 @@ public class MiraiApplication {
     classes.add(AuthMgr.class);
     // 初始化permission数据库
     classes.add(PermissionDAO.class);
+    // 初始化自带控制台指令
+    List<Class<?>> consoleCommand = GlobalLoader.getClasses(ConsoleExit.class.getPackageName());
+    classes.addAll(consoleCommand);
     classes.addAll(PluginLoader.getPluginClasses());
     System.gc();//清理插件加载时因各种失败而变得无用的class
     // 开始处理事件handler和autoInit
