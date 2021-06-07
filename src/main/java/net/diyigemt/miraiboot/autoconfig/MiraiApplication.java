@@ -5,6 +5,7 @@ import net.diyigemt.miraiboot.constant.ConstantGlobal;
 import net.diyigemt.miraiboot.constant.EventHandlerType;
 import net.diyigemt.miraiboot.constant.FunctionId;
 import net.diyigemt.miraiboot.core.MiraiBootConsole;
+import net.diyigemt.miraiboot.core.PluginMgr;
 import net.diyigemt.miraiboot.core.RegisterProcess;
 import net.diyigemt.miraiboot.dao.PermissionDAO;
 import net.diyigemt.miraiboot.entity.*;
@@ -96,7 +97,6 @@ public class MiraiApplication {
     // 初始化permission数据库
     classes.add(PermissionDAO.class);
     classes.addAll(PluginLoader.getPluginClasses());
-    System.gc();//清理插件加载时因各种失败而变得无用的class
     // 开始处理事件handler和autoInit
     List<AutoInitItem> inits = RegisterProcess.AnnotationScanner(classes, config);
     //事件注册完成，释放所有List
@@ -150,11 +150,14 @@ public class MiraiApplication {
       }
     }
     inits.clear();//初始化完成后释放所有记载
+    System.gc();//清理插件加载时因各种失败而变得无用的class
     // 初始化完成 统一登录
     MiraiMain.logger.info("初始化完成 开始登录bot");
     BotManager.getInstance().loginAll();
     MiraiMain.logger.info("bot登录成功 系统启动完成");
     // 阻塞主线程
+//    Map<String, List<PluginItem>> text = PluginMgr.manifests;
+//    int i = 0;
     MiraiBootConsole.getInstance().listenLoop();
   }
 }

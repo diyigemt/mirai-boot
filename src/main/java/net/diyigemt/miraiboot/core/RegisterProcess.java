@@ -7,6 +7,7 @@ import net.diyigemt.miraiboot.constant.FunctionId;
 import net.diyigemt.miraiboot.entity.AutoInitItem;
 import net.diyigemt.miraiboot.entity.ConfigFile;
 import net.diyigemt.miraiboot.entity.ExceptionHandlerItem;
+import net.diyigemt.miraiboot.exception.MultipleParameterException;
 import net.diyigemt.miraiboot.permission.CheckPermission;
 import net.diyigemt.miraiboot.utils.CommandUtil;
 import net.diyigemt.miraiboot.utils.EventHandlerManager;
@@ -44,6 +45,26 @@ public class RegisterProcess {
                 }
                 if (clazz.isAnnotationPresent(MiraiBootComponent.class)) {
                     handleComponent(clazz);
+                }
+            }
+
+            // 开始自动初始化
+            Collections.sort(inits);
+            for (AutoInitItem item : inits) {
+                int parameterCount = item.getHandler().getParameterCount();
+                Object[] param = null;
+                if (parameterCount != 0) {
+                    param = new Object[parameterCount];
+                    param[0] = config;
+                }
+                try {
+                    if (parameterCount == 0) {
+                        item.getHandler().invoke(null);
+                    } else {
+                        item.getHandler().invoke(null, param);
+                    }
+                } catch (IllegalAccessException | InvocationTargetException e) {
+                    e.printStackTrace();
                 }
             }
         }

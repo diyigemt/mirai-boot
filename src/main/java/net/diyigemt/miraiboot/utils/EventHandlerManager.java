@@ -6,6 +6,7 @@ import net.diyigemt.miraiboot.constant.EventType;
 import net.diyigemt.miraiboot.constant.FunctionId;
 import net.diyigemt.miraiboot.entity.*;
 import net.diyigemt.miraiboot.interfaces.EventHandlerNext;
+import net.diyigemt.miraiboot.interfaces.UnloadHandler;
 import net.diyigemt.miraiboot.permission.CheckPermission;
 import net.diyigemt.miraiboot.permission.PermissionCheck;
 import net.mamoe.mirai.event.ListeningStatus;
@@ -24,7 +25,16 @@ import static net.diyigemt.miraiboot.constant.ConstantGlobal.DEFAULT_EVENT_NET_T
  * @author Heythem723
  * @since 1.0.0
  */
-public class EventHandlerManager {
+public class EventHandlerManager implements UnloadHandler {
+  @Override
+  public void onUnload(List<PluginItem> pluginItems) {
+    for(PluginItem pluginItem : pluginItems){
+      if(pluginItem.getAnnotationData() instanceof EventHandler){//过滤掉其它Manager的数据
+        //do something...
+      }
+    }
+  }
+
   /**
    * 单列
    */
