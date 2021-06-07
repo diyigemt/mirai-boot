@@ -81,13 +81,22 @@ public class ExceptionHandlerManager {
     for (int i = 0; i < STORE.size(); i++) {
       ExceptionHandlerItem item = STORE.get(i);
       if (item.getName().equals(name)) {
-        STORE.remove(i);
-        return item;
+        return STORE.remove(i);
       }
     }
     return null;
   }
 
+  /**
+   * 处理异常
+   * @param e 异常
+   * @param eventPack 发生异常的事件
+   * @param data 发生异常的预处理数据
+   * @param handlers 存储处理该异常handler的list
+   * @param <T> 异常类
+   * @param <K> 异常事件类型
+   * @return 有对应的异常处理类并且执行成功返回true
+   */
   public <T extends Throwable, K extends BaseEventPack> boolean handleException(T e, K eventPack, PreProcessorData<?> data, List<ExceptionHandlerItem> handlers) {
     if (handlers == null || handlers.isEmpty()) return false;
     List<ExceptionHandlerItem> collect = handlers.stream().filter(item -> item.check(e.getClass())).collect(Collectors.toList());

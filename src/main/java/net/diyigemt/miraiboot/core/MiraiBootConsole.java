@@ -46,6 +46,12 @@ public final class MiraiBootConsole {
 		return true;
 	}
 
+	/**
+	 * <h2>根据指令执行对应的方法</h2>
+	 * @param target 指令名
+	 * @param args 指令的参数
+	 * @return 有对应的处理方法且执行成功返回true
+	 */
 	public boolean emit(String target, String... args) {
 		List<String> arg = Arrays.asList(args);
 		ConsoleHandlerItem item = store.get(target);
@@ -91,7 +97,25 @@ public final class MiraiBootConsole {
 			boolean emit = emit(strings[0], Arrays.copyOfRange(strings, 1, strings.length, String[].class));
 			if (!emit) {
 				MiraiMain.logger.error("命令：" + "\"" + source + "\"" + " 执行失败或不是有效的MiraiBoot命令");
+			}System.gc();
+		}
+	}
+
+	/**
+	 * <h2>根据名字移除一个控制台指令</h2>
+	 * @param name 指令名
+	 * @return 被移除的指令
+	 */
+	public ConsoleHandlerItem remove(String name) {
+		if (store.isEmpty()) return null;
+		String t = null;
+		for (Map.Entry<String, ConsoleHandlerItem> next : store.entrySet()) {
+			if (next.getValue().getName().equals(name)) {
+				t = next.getKey();
+				break;
 			}
 		}
+		if (t == null) return null;
+		return store.remove(t);
 	}
 }

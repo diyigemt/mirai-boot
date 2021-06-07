@@ -124,20 +124,33 @@ public class EventHandlerManager {
 
   /**
    * <h2>根据指令移除MessageHandler</h2>
-   * @param target 指令
+   * @param name 指令item的全名(包名+类名+方法名)
    * @return 被移除的Handler列表
    */
-  public List<EventHandlerItem> remove(String target) {
-    return STORE.remove(target);
+  public EventHandlerItem remove(String name) {
+    List<EventHandlerItem> items = STORE.get(name);
+    return remove(name, items);
   }
 
   /**
    * <h2>根据指令移除OtherHandler</h2>
-   * @param target 指令
+   * @param name 指令item的全名(包名+类名+方法名)
    * @return 被移除的Handler列表
    */
-  public List<EventHandlerItem> removeOther(String target) {
-    return OTHER_EVENT_STORE.remove(target);
+  public EventHandlerItem removeOther(String name) {
+    List<EventHandlerItem> items = OTHER_EVENT_STORE.get(name);
+    return remove(name, items);
+  }
+
+  public EventHandlerItem remove(String name, List<EventHandlerItem> items) {
+    if (items == null) return null;
+    for (EventHandlerItem item : items) {
+      if (item.getName().equals(name)) {
+        items.remove(item);
+        return item;
+      }
+    }
+    return null;
   }
 
   /**
