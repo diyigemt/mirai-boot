@@ -98,7 +98,7 @@ public class MiraiApplication {
     classes.add(PermissionDAO.class);
     classes.addAll(PluginLoader.getPluginClasses());
     // 开始处理事件handler和autoInit
-    List<AutoInitItem> inits = RegisterProcess.AnnotationScanner(classes, config);
+    List<AutoInitItem> inits = RegisterProcess.AnnotationScanner(classes);
     //事件注册完成，释放所有List
     classes.clear();
     //对正则进行编译

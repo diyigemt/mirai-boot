@@ -55,7 +55,7 @@ public class PluginLoader {
                 if(flag) {
                     PluginMgr.addLoader(loader, file.getName());//成功的loader交给插件管理器保存
                     PluginMgr.addPluginManifest(file.getName(), pluginItems);//创建加载类清单
-                    RegisterProcess.AnnotationScanner(classes, MiraiApplication.config);
+                    RegisterProcess.AnnotationScanner(classes);
                 }
             }
         }catch (Exception e) {
@@ -76,7 +76,7 @@ public class PluginLoader {
             if(!flag) return;
             PluginMgr.addLoader(loader, file.getName());//成功的loader交给插件管理器保存
             PluginMgr.addPluginManifest(file.getName(), pluginItems);//创建加载类清单
-            RegisterProcess.AnnotationScanner(classes, MiraiApplication.config);
+            RegisterProcess.AnnotationScanner(classes);
         }catch (Exception e){
             e.printStackTrace();
         }
