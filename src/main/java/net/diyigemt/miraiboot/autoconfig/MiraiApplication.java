@@ -105,8 +105,6 @@ public class MiraiApplication {
     List<AutoInitItem> inits = RegisterProcess.AnnotationScanner(classes);
     //事件注册完成，释放所有List
     classes.clear();
-    //对正则进行编译
-    CommandUtil.getInstance().compileCommandPattern();
     // 开始读取配置文件
     ConfigFileMain miraiboot = config.getMiraiboot();
     final boolean isNetwork = miraiboot.getLogger().isNetwork();

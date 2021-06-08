@@ -12,7 +12,6 @@ import net.diyigemt.miraiboot.entity.MessageFilterItem;
 import net.diyigemt.miraiboot.entity.MessageProcessorImp;
 import net.diyigemt.miraiboot.entity.PreProcessorData;
 
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -90,6 +89,7 @@ public class CommandUtil {
 	 */
 	public void registerCommandStart(String start) {
 		COMMAND_START_SET.add(start);
+		compileCommandPattern();
 	}
 
 	/**
