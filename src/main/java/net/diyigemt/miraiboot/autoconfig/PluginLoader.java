@@ -1,15 +1,15 @@
 package net.diyigemt.miraiboot.autoconfig;
 
 import net.diyigemt.miraiboot.Main;
-import net.diyigemt.miraiboot.annotation.AutoInit;
-import net.diyigemt.miraiboot.annotation.EventHandlerComponent;
-import net.diyigemt.miraiboot.annotation.ExceptionHandlerComponent;
+import net.diyigemt.miraiboot.annotation.*;
 import net.diyigemt.miraiboot.core.PluginMgr;
 import net.diyigemt.miraiboot.core.RegisterProcess;
+import net.diyigemt.miraiboot.entity.PluginItem;
 import net.diyigemt.miraiboot.mirai.MiraiMain;
 import net.diyigemt.miraiboot.utils.FileUtil;
 
 import java.io.File;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.net.JarURLConnection;
@@ -38,6 +38,8 @@ public class PluginLoader {
 
     private static boolean isUEFI  = true;
 
+    private static List<PluginItem> pluginItems = new ArrayList<>();
+
     public static List<Class<?>> getPluginClasses(){
         MiraiMain.logger.info("开始扫描插件");
         boolean flag = false;
@@ -50,7 +52,11 @@ public class PluginLoader {
             }
             for(File file : plugins){
                 flag = LoadPlugin(file);
-                if(flag) PluginMgr.addLoader(loader, file.getName());//成功的loader交给插件管理器保存
+                if(flag) {
+                    PluginMgr.addLoader(loader, file.getName());//成功的loader交给插件管理器保存
+                    PluginMgr.addPluginManifest(file.getName(), pluginItems);//创建加载类清单
+                    RegisterProcess.AnnotationScanner(classes);
+                }
             }
         }catch (Exception e) {
             e.printStackTrace();
@@ -69,7 +75,8 @@ public class PluginLoader {
             boolean flag = LoadPlugin(file);
             if(!flag) return;
             PluginMgr.addLoader(loader, file.getName());//成功的loader交给插件管理器保存
-            RegisterProcess.AnnotationScanner(classes, MiraiApplication.config);
+            PluginMgr.addPluginManifest(file.getName(), pluginItems);//创建加载类清单
+            RegisterProcess.AnnotationScanner(classes);
         }catch (Exception e){
             e.printStackTrace();
         }
@@ -95,6 +102,7 @@ public class PluginLoader {
             loader = new JarPluginLoader(new URL[]{url});
             Plugin_Temp.clear();//重新初始化
             flag = false;
+            pluginItems = new ArrayList<>();
             Enumeration<JarEntry> files = jar.entries();
             Manifest manifest = jar.getManifest();
             String MainClass = manifest.getMainAttributes().getValue("Main-Class");
@@ -195,6 +203,34 @@ public class PluginLoader {
                 || classFile.isAnnotationPresent(AutoInit.class)){
 
             Plugin_Temp.add(classFile);
+
+            if(classFile.isAnnotationPresent(AutoInit.class)) return;//对于AutoInit来说，他不需要再往下走了
+//            Method onUnload = null;
+//            try{
+//                onUnload = classFile.getMethod("onUnload");
+//            }catch (NoSuchMethodException ignore){}
+//            if(onUnload != null){
+//                PluginMgr.addUnloadController(onUnload);
+//            }
+
+            //记录
+            String ClassName = classFile.getName();
+            PluginItem pluginItem = new PluginItem();
+            pluginItem.setClassName(ClassName.substring(ClassName.lastIndexOf(".") + 1));//类名
+            pluginItem.setPackageName(classFile.getPackageName());//包名
+            for(Method method : classFile.getMethods()){
+                for(Annotation annotation : method.getAnnotations()){
+                    if(annotation instanceof EventHandler){
+                        pluginItem.setAnnotationData(annotation);//命令所在的注解
+                    }
+                    else if(annotation instanceof ExceptionHandler){
+                        pluginItem.setAnnotationData(annotation);//命令所在的注解
+                    }
+                    else continue;//啥都不是
+
+                    pluginItems.add(pluginItem);
+                }
+            }
         }
     }
 }

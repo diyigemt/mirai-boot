@@ -1,9 +1,13 @@
 package net.diyigemt.miraiboot.core;
 
 import net.diyigemt.miraiboot.autoconfig.JarPluginLoader;
+import net.diyigemt.miraiboot.entity.PluginItem;
 import net.diyigemt.miraiboot.mirai.MiraiMain;
+import net.diyigemt.miraiboot.utils.EventHandlerManager;
+import net.diyigemt.miraiboot.utils.ExceptionHandlerManager;
 
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.net.JarURLConnection;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -19,8 +23,20 @@ public class PluginMgr {
      */
     private static List<Map<String, JarPluginLoader>> loaders = new ArrayList<>();
 
+    private static Map<String, List<PluginItem>> manifests = new HashMap<>();
+
+//    private static List<Method> unLoadControllers = new ArrayList<>();
+
     public static void addPluginConnection(JarURLConnection connection){
         Plugin_Cache.add(connection);
+    }
+
+//    public static void addUnloadController(Method UnloadController){
+//        unLoadControllers.add(UnloadController);
+//    }
+
+    public static void addPluginManifest(String jarName, List<PluginItem> pluginItemList){
+        manifests.put(jarName, pluginItemList);
     }
 
     public static void addLoader(JarPluginLoader loader, String jarName){
@@ -60,9 +76,12 @@ public class PluginMgr {
             return;
         }
         try{
+            List<PluginItem> pluginItem = manifests.get(jarFileName);
             connection.getJarFile().close();//关闭插件jar打开状态
             RemoveLoader(jarFileName);//销毁该插件的ClassLoader
             //TODO: 释放该插件的实例化
+            EventHandlerManager.getInstance().onUnload(pluginItem);//注销EventHandler
+            ExceptionHandlerManager.getInstance().onUnload(pluginItem);//注销ExceptionHandler
 //            List<Map<String, JarPluginLoader>> list = loaders;
             System.gc();//让JVM启动垃圾回收
             Plugin_Cache.remove(connection);//从当前清单中除名

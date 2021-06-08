@@ -7,6 +7,7 @@ import net.diyigemt.miraiboot.constant.FunctionId;
 import net.diyigemt.miraiboot.entity.AutoInitItem;
 import net.diyigemt.miraiboot.entity.ConfigFile;
 import net.diyigemt.miraiboot.entity.ExceptionHandlerItem;
+import net.diyigemt.miraiboot.exception.MultipleParameterException;
 import net.diyigemt.miraiboot.permission.CheckPermission;
 import net.diyigemt.miraiboot.utils.CommandUtil;
 import net.diyigemt.miraiboot.utils.EventHandlerManager;
@@ -29,7 +30,7 @@ public class RegisterProcess {
 
 
 
-    public static List<AutoInitItem> AnnotationScanner(List<Class<?>> classes, ConfigFile config){
+    public static List<AutoInitItem> AnnotationScanner(List<Class<?>> classes){
         List<AutoInitItem> inits = new ArrayList<>();
         if (!classes.isEmpty()) {
             for (Class<?> clazz : classes) {

@@ -1,10 +1,8 @@
 package net.diyigemt.miraiboot.utils;
 
-
-import net.diyigemt.miraiboot.entity.BaseEventPack;
-import net.diyigemt.miraiboot.entity.ExceptionHandlerItem;
-import net.diyigemt.miraiboot.entity.MessageEventPack;
-import net.diyigemt.miraiboot.entity.PreProcessorData;
+import net.diyigemt.miraiboot.annotation.ExceptionHandler;
+import net.diyigemt.miraiboot.entity.*;
+import net.diyigemt.miraiboot.interfaces.UnloadHandler;
 import net.diyigemt.miraiboot.mirai.MiraiMain;
 import net.mamoe.mirai.event.events.BotEvent;
 
@@ -22,7 +20,16 @@ import static net.diyigemt.miraiboot.constant.ConstantException.MAX_PARAM_COUNT;
  * @author diyigemt
  * @since 1.0.0
  */
-public class ExceptionHandlerManager {
+public class ExceptionHandlerManager implements UnloadHandler {
+  @Override
+  public void onUnload(List<PluginItem> pluginItems) {
+    for(PluginItem pluginItem : pluginItems){
+      if(pluginItem.getAnnotationData() instanceof ExceptionHandler){//过滤掉其它Manager的数据
+        //do something...
+      }
+    }
+  }
+
   /**
    * 全局唯一实例
    */
