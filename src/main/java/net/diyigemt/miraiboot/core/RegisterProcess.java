@@ -83,7 +83,7 @@ public class RegisterProcess {
             Class<? extends Exception> value = annotation.value();
             int priority = annotation.priority();
             String name = annotation.name();
-            if (name.equals("")) name = CommandUtil.getInstance().parseHandlerBaseName(clazz, method);
+            if (name.equals("")) name = CommandUtil.getInstance().parseHandlerBaseName(clazz);
             ExceptionHandlerItem item = new ExceptionHandlerItem(name, clazz, method, value, priority);
             handlers.add(item);
         }
@@ -121,20 +121,7 @@ public class RegisterProcess {
                 FunctionId.put(s, permissionIndex);
                 continue;
             }
-            String targetName = methodAnnotation.target();
-            String start = methodAnnotation.start();
-            if (targetName.equals("")) {
-                targetName = method.getName();
-            }
-            if (start.equals("")) {
-                Object o = GlobalConfig.getInstance().get(ConstantGlobal.DEFAULT_COMMAND_START);
-                if (!o.toString().equals("")) targetName = o + targetName;
-            } else {
-                targetName = start + targetName;
-                // 注册指令开头
-                CommandUtil.getInstance().registerCommandStart(start);
-            }
-
+            String targetName = CommandUtil.getInstance().parseTargetAndStart(methodAnnotation, method.getName());
             FunctionId.put(targetName, permissionIndex);
             EventHandlerManager.getInstance().on(targetName, clazz, method, handlers);
         }
@@ -156,7 +143,7 @@ public class RegisterProcess {
             if (priority == 0 && classPriority != 0) priority = classPriority;
             Class<? extends Exception> value = annotation.value();
             String name = annotation.name();
-            if (name.equals("")) name = CommandUtil.getInstance().parseHandlerBaseName(clazz, method);
+            if (name.equals("")) name = CommandUtil.getInstance().parseHandlerBaseName(clazz);
             ExceptionHandlerItem item = new ExceptionHandlerItem(name, clazz, method, value, priority);
             ExceptionHandlerManager.getInstance().on(item);
         }

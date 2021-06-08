@@ -11,6 +11,7 @@ import net.diyigemt.miraiboot.permission.CheckPermission;
 import net.diyigemt.miraiboot.permission.PermissionCheck;
 import net.mamoe.mirai.event.ListeningStatus;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
@@ -21,19 +22,12 @@ import static net.diyigemt.miraiboot.constant.ConstantGlobal.DEFAULT_EVENT_NET_T
 /**
  * <h2>事件总处理器</h2>
  * 管理着所有注册的事件 包括消息事件和上下文监听事件和强制触发事件<be/>
+ *
  * @author diyigemt
  * @author Heythem723
  * @since 1.0.0
  */
 public class EventHandlerManager implements UnloadHandler {
-  @Override
-  public void onUnload(List<PluginItem> pluginItems) {
-    for(PluginItem pluginItem : pluginItems){
-      if(pluginItem.getAnnotationData() instanceof EventHandler){//过滤掉其它Manager的数据
-        //do something...
-      }
-    }
-  }
 
   /**
    * 单列
@@ -63,6 +57,7 @@ public class EventHandlerManager implements UnloadHandler {
 
   /**
    * <h2>获取单列对象</h2>
+   *
    * @return EventHandlerManager
    */
   public static EventHandlerManager getInstance() {
@@ -73,7 +68,8 @@ public class EventHandlerManager implements UnloadHandler {
 
   /**
    * <h2>注册非消息事件Handler</h2>
-   * @param target 消息事件对应名
+   *
+   * @param target  消息事件对应名
    * @param invoker Handler所在的类
    * @param handler Handler
    */
@@ -91,7 +87,7 @@ public class EventHandlerManager implements UnloadHandler {
     if (!b) return;
     List<EventHandlerItem> eventHandlerItems = OTHER_EVENT_STORE.get(target);
     if (eventHandlerItems == null) eventHandlerItems = new ArrayList<>();
-    String name = CommandUtil.getInstance().parseHandlerBaseName(invoker, handler);
+    String name = CommandUtil.getInstance().parseHandlerBaseName(invoker);
     EventHandlerItem eventHandlerItem = new EventHandlerItem(name, invoker, handler, type, exceptionHandlers);
     if (!eventHandlerItems.contains(eventHandlerItem)) eventHandlerItems.add(eventHandlerItem);
     OTHER_EVENT_STORE.put(target, eventHandlerItems);
@@ -99,16 +95,18 @@ public class EventHandlerManager implements UnloadHandler {
 
   /**
    * <h2>注册强制执行Handler</h2>
+   *
    * @param invoker Handler所在的类
    * @param handler Handler
    */
   public void onAny(Class<?> invoker, Method handler, List<ExceptionHandlerItem> exceptionHandlers) {
-    on(HANDLER_ANY_NAME, invoker ,handler, exceptionHandlers);
+    on(HANDLER_ANY_NAME, invoker, handler, exceptionHandlers);
   }
 
   /**
    * <h2>注册指令名和与之对应的Handler</h2>
-   * @param target 指令
+   *
+   * @param target  指令
    * @param invoker Handler所在的类
    * @param handler Handler
    */
@@ -126,7 +124,7 @@ public class EventHandlerManager implements UnloadHandler {
     if (b) return;
     List<EventHandlerItem> eventHandlerItems = STORE.get(target);
     if (eventHandlerItems == null) eventHandlerItems = new ArrayList<>();
-    String name = CommandUtil.getInstance().parseHandlerBaseName(invoker, handler);
+    String name = CommandUtil.getInstance().parseHandlerBaseName(invoker);
     EventHandlerItem eventHandlerItem = new EventHandlerItem(name, invoker, handler, type, exceptionHandlers);
     if (!eventHandlerItems.contains(eventHandlerItem)) eventHandlerItems.add(eventHandlerItem);
     STORE.put(target, eventHandlerItems);
@@ -134,22 +132,28 @@ public class EventHandlerManager implements UnloadHandler {
 
   /**
    * <h2>根据指令移除MessageHandler</h2>
+   *
    * @param name 指令item的全名(包名+类名+方法名)
    * @return 被移除的Handler列表
    */
-  public EventHandlerItem remove(String name) {
-    List<EventHandlerItem> items = STORE.get(name);
-    return remove(name, items);
+  public EventHandlerItem remove(String name, String target) {
+    List<EventHandlerItem> items = STORE.get(target);
+    EventHandlerItem res = remove(name, items);
+    if (items != null && items.isEmpty()) STORE.remove(target);
+    return res;
   }
 
   /**
    * <h2>根据指令移除OtherHandler</h2>
+   *
    * @param name 指令item的全名(包名+类名+方法名)
    * @return 被移除的Handler列表
    */
   public EventHandlerItem removeOther(String name) {
-    List<EventHandlerItem> items = OTHER_EVENT_STORE.get(name);
-    return remove(name, items);
+    List<EventHandlerItem> items = OTHER_EVENT_STORE.get("");
+    EventHandlerItem res = remove(name, items);
+    if (items != null && items.isEmpty()) STORE.remove("");
+    return res;
   }
 
   public EventHandlerItem remove(String name, List<EventHandlerItem> items) {
@@ -165,6 +169,7 @@ public class EventHandlerManager implements UnloadHandler {
 
   /**
    * <h2>执行非消息事件Handler</h2>
+   *
    * @param eventPack 封装事件
    * @param plainText 内容纯文本
    * @return 结果 为null为无事发生
@@ -175,14 +180,15 @@ public class EventHandlerManager implements UnloadHandler {
 
   /**
    * <h2>执行非消息事件Handler</h2>
-   * @param target 指令
+   *
+   * @param target    指令
    * @param eventPack 封装事件
    * @return 结果 为null为无事发生
    */
   public String emitOther(String target, BotEventPack eventPack) {
     List<EventHandlerItem> eventHandlerItems = OTHER_EVENT_STORE.get(target);
     if (eventHandlerItems == null) return null;
-    for (EventHandlerItem handler: eventHandlerItems) {
+    for (EventHandlerItem handler : eventHandlerItems) {
       Method method = handler.getHandler();
       Class<?> invoker = handler.getInvoker();
       int count = method.getParameterCount();
@@ -206,7 +212,8 @@ public class EventHandlerManager implements UnloadHandler {
 
   /**
    * <h2>根据指令触发EventHandler</h2>
-   * @param target 指令(包含指令开头)
+   *
+   * @param target    指令(包含指令开头)
    * @param eventPack 封装事件
    * @param plainText 内容纯文本
    * @return 结果 为null为无事发生
@@ -230,8 +237,8 @@ public class EventHandlerManager implements UnloadHandler {
         boolean flag = true;
         CheckPermission annotation = method.getAnnotation(CheckPermission.class);
         //获取权限ID
-        if(annotation.isStrictRestricted()){
-          if(!PermissionCheck.strictRestrictedCheck(eventPack)){
+        if (annotation.isStrictRestricted()) {
+          if (!PermissionCheck.strictRestrictedCheck(eventPack)) {
             eventPack.reply("您当前的权限不足以对目标用户操作");
           }
         }
@@ -246,18 +253,17 @@ public class EventHandlerManager implements UnloadHandler {
           permissionName = s.equals("") ? className + "." + methodName : s;
         }
         int commandId = FunctionId.getMap(permissionName);
-        if(PermissionCheck.checkGroupPermission(eventPack, commandId)){
-          if(SQLNonTempAuth){
+        if (PermissionCheck.checkGroupPermission(eventPack, commandId)) {
+          if (SQLNonTempAuth) {
             continue;
           }
           flag = false;
         }
-        if(!PermissionCheck.individualAuthCheck(handler, eventPack) && flag){
+        if (!PermissionCheck.individualAuthCheck(handler, eventPack) && flag) {
           eventPack.reply("您没有权限使用该功能");
           continue;
-        }
-        else {
-          if(!PermissionCheck.identityCheck(handler, eventPack) && flag){
+        } else {
+          if (!PermissionCheck.identityCheck(handler, eventPack) && flag) {
             eventPack.reply("权限不足");
             continue;
           }
@@ -310,6 +316,7 @@ public class EventHandlerManager implements UnloadHandler {
 
   /**
    * <h2>注册一个上下文事件监听器</h2>
+   *
    * @param target 监听目标qq号
    * @param onNext 事件handler
    */
@@ -319,8 +326,9 @@ public class EventHandlerManager implements UnloadHandler {
 
   /**
    * <h2>注册一个上下文事件监听器</h2>
-   * @param target 监听目标qq号
-   * @param onNext 事件handler
+   *
+   * @param target  监听目标qq号
+   * @param onNext  事件handler
    * @param timeOut 超时时间
    */
   public <T, K extends EventHandlerNext<T>> void onNext(long target, K onNext, long timeOut, MessageEventPack eventPack, PreProcessorData<T> data) {
@@ -329,8 +337,9 @@ public class EventHandlerManager implements UnloadHandler {
 
   /**
    * <h2>注册一个上下文事件监听器</h2>
-   * @param target 监听目标qq号
-   * @param onNext 事件handler
+   *
+   * @param target       监听目标qq号
+   * @param onNext       事件handler
    * @param triggerCount 监听次数
    */
   public <T, K extends EventHandlerNext<T>> void onNext(long target, K onNext, int triggerCount, MessageEventPack eventPack, PreProcessorData<T> data) {
@@ -342,9 +351,10 @@ public class EventHandlerManager implements UnloadHandler {
    * <h2>注册一个上下文事件监听器</h2>
    * <strong>注意 超时时间将会在该事件被触发后才开始计时 也就是注册监听器时不会计时 如果需要计时请使用onNextNow方法</strong>
    * <strong>每次监听器被触发时倒计时将重置</strong>
-   * @param target 监听目标qq号
-   * @param onNext 事件handler
-   * @param timeOut 超时时间 不合法将使用配置文件中的超时时间或者默认的5min
+   *
+   * @param target       监听目标qq号
+   * @param onNext       事件handler
+   * @param timeOut      超时时间 不合法将使用配置文件中的超时时间或者默认的5min
    * @param triggerCount 监听次数 不合法将设置为-1 表示无限监听
    */
   public <T, K extends EventHandlerNext<T>> void onNext(long target, K onNext, long timeOut, int triggerCount) {
@@ -354,12 +364,13 @@ public class EventHandlerManager implements UnloadHandler {
   /**
    * <h2>注册一个上下文事件监听器并开始超时时间计时</h2>
    * <strong>每次监听器被触发时倒计时将重置</strong>
-   * @param target 监听目标qq号
-   * @param onNext 事件handler
-   * @param timeOut 超时时间 不合法将使用配置文件中的超时时间或者默认的5min
+   *
+   * @param target       监听目标qq号
+   * @param onNext       事件handler
+   * @param timeOut      超时时间 不合法将使用配置文件中的超时时间或者默认的5min
    * @param triggerCount 监听次数 不合法将设置为-1 表示无限监听
-   * @param eventPack 当前MessageEvent用于给onDestroy之类的用
-   * @param data 当前PreProcessorData用于给onDestroy之类的用
+   * @param eventPack    当前MessageEvent用于给onDestroy之类的用
+   * @param data         当前PreProcessorData用于给onDestroy之类的用
    */
   public <T, K extends EventHandlerNext<T>> void onNext(long target, K onNext, long timeOut, int triggerCount, MessageEventPack eventPack, PreProcessorData<T> data) {
     List<EventHandlerNextItem<?, ? extends EventHandlerNext<?>>> events = LISTENING_STORE.get(target);
@@ -383,7 +394,8 @@ public class EventHandlerManager implements UnloadHandler {
   /**
    * <h2>触发上下文监听事件</h2>
    * 一般由MessageEventListener调用
-   * @param target 被监听的qq号
+   *
+   * @param target    被监听的qq号
    * @param eventPack 触发事件
    * @param plainText 事件内容纯文本
    * @return 结果 为null表示一切正常
@@ -452,11 +464,12 @@ public class EventHandlerManager implements UnloadHandler {
    * 例如: 假设全局开头为"/"
    * <per>
    * {@code
-   *    /alias /搜图 search
+   * /alias /搜图 search
    * }
    * </per>
+   *
    * @param target 要注册别名的指令
-   * @param alias 要注册的别名
+   * @param alias  要注册的别名
    */
   public void registerAlias(String target, String alias) {
     // 将别名与方法对应起来
@@ -469,6 +482,7 @@ public class EventHandlerManager implements UnloadHandler {
   /**
    * <h2>统一注册别名</h2>
    * 读取配置初始化时调用
+   *
    * @param alias 所有别名
    */
   public void registerAlias(Map<String, String> alias) {
@@ -478,19 +492,21 @@ public class EventHandlerManager implements UnloadHandler {
 
   /**
    * <h2>将监听超时时间和次数合法化</h2>
-   * @param onNext 事件handler
-   * @param timeOut 超时时间 不合法将使用配置文件中的超时时间或者默认的5min
+   *
+   * @param onNext       事件handler
+   * @param timeOut      超时时间 不合法将使用配置文件中的超时时间或者默认的5min
    * @param triggerCount 监听次数 不合法将设置为-1 表示无限监听
    * @return 合法的监听信息存储类
    */
   private <T, K extends EventHandlerNext<T>> EventHandlerNextItem<T, K> createNextItem(K onNext, long timeOut, int triggerCount) {
     timeOut = checkTimeOut(timeOut);
-    if (triggerCount < 1 ) triggerCount = -1;
+    if (triggerCount < 1) triggerCount = -1;
     return new EventHandlerNextItem<>(onNext, timeOut, triggerCount);
   }
 
   /**
    * <h2>将超时时间合法化</h2>
+   *
    * @param timeOut 超时时间
    * @return 合法化的超时时间
    */
@@ -505,8 +521,9 @@ public class EventHandlerManager implements UnloadHandler {
 
   /**
    * <h2>上下文监听收尾工作</h2>
+   *
    * @param events 监听事件列表
-   * @param next 事件本身
+   * @param next   事件本身
    */
   private void handlerNextEnd(List<EventHandlerNextItem<?, ? extends EventHandlerNext<?>>> events, EventHandlerNextItem<?, ? extends EventHandlerNext<?>> next) {
     next.cancel();
@@ -528,6 +545,31 @@ public class EventHandlerManager implements UnloadHandler {
     }
     if (!res) {
       e.printStackTrace();
+    }
+  }
+
+  /**
+   * 卸载插件
+   * @param pluginItems PluginMgr提供的类清单
+   */
+  @Override
+  public void onUnload(List<PluginItem> pluginItems) {
+    for (PluginItem pluginItem : pluginItems) {
+      Annotation annotationData = pluginItem.getAnnotationData();
+      if (!(annotationData instanceof EventHandler)) {
+        continue;
+      }
+      EventHandler annotation = (EventHandler) annotationData;
+      String className = pluginItem.getClassName();
+      String packageName = pluginItem.getPackageName();
+      String name = CommandUtil.getInstance().getHandlerBaseName(packageName, className);
+      if (annotation.isAny()) {
+        remove(name, HANDLER_ANY_NAME);
+        continue;
+      }
+      // 假设用户不会将target置空(希望)
+      String command = CommandUtil.getInstance().parseTargetAndStart(annotation, "");
+      remove(name, command);
     }
   }
 }

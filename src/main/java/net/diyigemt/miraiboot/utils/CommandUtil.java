@@ -64,6 +64,23 @@ public class CommandUtil {
 	 */
 	public static CommandUtil getInstance() { return INSTANCE; }
 
+	public String parseTargetAndStart(EventHandler annotation, String defaultName) {
+		String targetName = annotation.target();
+		String start = annotation.start();
+		if (targetName.equals("")) {
+			targetName = defaultName;
+		}
+		if (start.equals("")) {
+			Object o = GlobalConfig.getInstance().get(ConstantGlobal.DEFAULT_COMMAND_START);
+			if (!o.toString().equals("")) targetName = o + targetName;
+		} else {
+			targetName = start + targetName;
+			// 注册指令开头
+			CommandUtil.getInstance().registerCommandStart(start);
+		}
+		return targetName;
+	}
+
 	/**
 	 * <h2>注册一个指令开头</h2>
 	 * <p>什么是指令开头呢 就比如"/搜图" 那么指令本身是"搜图" 而"/"就是指令开头了</p>
@@ -197,16 +214,16 @@ public class CommandUtil {
 	 * @return 基础name
 	 */
 	public String parseHandlerBaseName(Class<?> clazz) {
-		return clazz.getPackageName() + "." + clazz.getName();
+		return clazz.getName();
 	}
 
 	/**
 	 * <h2>构建Handler的基础Name</h2>
-	 * @param clazz 类名
-	 * @param handler 包名
+	 * @param className 类名
+	 * @param packageName 包名
 	 * @return 基础name
 	 */
-	public String parseHandlerBaseName(Class<?> clazz, Method handler) {
-		return parseHandlerBaseName(clazz) + "." + handler.getName();
+	public String getHandlerBaseName(String packageName, String className) {
+		return packageName + "." + className;
 	}
 }

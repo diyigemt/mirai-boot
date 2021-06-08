@@ -1,6 +1,8 @@
 package net.diyigemt.miraiboot.core;
 
 import net.diyigemt.miraiboot.entity.ConsoleHandlerItem;
+import net.diyigemt.miraiboot.entity.PluginItem;
+import net.diyigemt.miraiboot.interfaces.UnloadHandler;
 import net.diyigemt.miraiboot.mirai.MiraiMain;
 import net.diyigemt.miraiboot.utils.CommandUtil;
 import net.diyigemt.miraiboot.utils.ExceptionHandlerManager;
@@ -17,7 +19,7 @@ import java.util.regex.Pattern;
  * @author diyigemt
  * @author Haythem
  */
-public final class MiraiBootConsole {
+public final class MiraiBootConsole implements UnloadHandler {
 
 	private static final MiraiBootConsole INSTANCE = new MiraiBootConsole();
 
@@ -40,7 +42,7 @@ public final class MiraiBootConsole {
 	public boolean on(String target, Class<?> invoker, Method handler) {
 		ConsoleHandlerItem one = store.get(target);
 		if (one != null) return false;
-		String name = CommandUtil.getInstance().parseHandlerBaseName(invoker, handler);
+		String name = CommandUtil.getInstance().parseHandlerBaseName(invoker);
 		ConsoleHandlerItem item = new ConsoleHandlerItem(name, invoker, handler);
 		store.put(target, item);
 		return true;
@@ -117,5 +119,11 @@ public final class MiraiBootConsole {
 		}
 		if (t == null) return null;
 		return store.remove(t);
+	}
+
+	@Override
+	public void onUnload(List<PluginItem> pluginItems) {
+
+
 	}
 }

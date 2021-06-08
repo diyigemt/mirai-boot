@@ -82,6 +82,7 @@ public class PluginMgr {
             //TODO: 释放该插件的实例化
             EventHandlerManager.getInstance().onUnload(pluginItem);//注销EventHandler
             ExceptionHandlerManager.getInstance().onUnload(pluginItem);//注销ExceptionHandler
+            MiraiBootConsole.getInstance().onUnload(pluginItem);//注销控制台指令
 //            List<Map<String, JarPluginLoader>> list = loaders;
             System.gc();//让JVM启动垃圾回收
             Plugin_Cache.remove(connection);//从当前清单中除名
