@@ -7,7 +7,6 @@ import net.diyigemt.miraiboot.utils.EventHandlerManager;
 import net.diyigemt.miraiboot.utils.ExceptionHandlerManager;
 
 import java.io.IOException;
-import java.lang.reflect.Method;
 import java.net.JarURLConnection;
 import java.util.ArrayList;
 import java.util.HashMap;

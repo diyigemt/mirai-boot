@@ -30,7 +30,7 @@ public class RegisterProcess {
 
 
 
-    public static List<AutoInitItem> AnnotationScanner(List<Class<?>> classes){
+    public static List<AutoInitItem> AnnotationScanner(List<Class<?>> classes, ConfigFile... config){
         List<AutoInitItem> inits = new ArrayList<>();
         if (!classes.isEmpty()) {
             for (Class<?> clazz : classes) {
@@ -48,6 +48,30 @@ public class RegisterProcess {
                 }
             }
         }
+
+        if(config.length == 0) return inits;//plugin文件夹中插件和框架内来源
+        else if(config.length == 1){//热加载来源
+            // 开始自动初始化
+            Collections.sort(inits);
+            for (AutoInitItem item : inits) {
+                int parameterCount = item.getHandler().getParameterCount();
+                Object[] param = null;
+                if (parameterCount != 0) {
+                    param = new Object[parameterCount];
+                    param[0] = config[0];
+                }
+                try {
+                    if (parameterCount == 0) {
+                        item.getHandler().invoke(null);
+                    } else {
+                        item.getHandler().invoke(null, param);
+                    }
+                } catch (IllegalAccessException | InvocationTargetException e) {
+                    e.printStackTrace();
+                }
+            }
+            inits.clear();//初始化完成后释放所有记载
+        }else throw new MultipleParameterException("Parameter \"config\" need 1 but found " + config.length);//错误的使用方式
         return inits;
     }
 

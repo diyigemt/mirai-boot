@@ -4,8 +4,11 @@ import net.diyigemt.miraiboot.Main;
 import net.diyigemt.miraiboot.annotation.*;
 import net.diyigemt.miraiboot.core.PluginMgr;
 import net.diyigemt.miraiboot.core.RegisterProcess;
+import net.diyigemt.miraiboot.entity.EventHandlerItem;
 import net.diyigemt.miraiboot.entity.PluginItem;
 import net.diyigemt.miraiboot.mirai.MiraiMain;
+import net.diyigemt.miraiboot.utils.EventHandlerManager;
+import net.diyigemt.miraiboot.utils.ExceptionHandlerManager;
 import net.diyigemt.miraiboot.utils.FileUtil;
 
 import java.io.File;
@@ -78,7 +81,7 @@ public class PluginLoader {
       if (!flag) return;
       PluginMgr.addLoader(loader, file.getName());//成功的loader交给插件管理器保存
       PluginMgr.addPluginManifest(file.getName(), pluginItems);//创建加载类清单
-      RegisterProcess.AnnotationScanner(classes);
+      RegisterProcess.AnnotationScanner(classes, MiraiApplication.config);
     } catch (Exception e) {
       e.printStackTrace();
     }
