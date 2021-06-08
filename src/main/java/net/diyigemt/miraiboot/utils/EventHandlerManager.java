@@ -15,6 +15,7 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static net.diyigemt.miraiboot.constant.ConstantGlobal.DEFAULT_EVENT_NET_TIMEOUT;
 import static net.diyigemt.miraiboot.constant.ConstantGlobal.DEFAULT_EVENT_NET_TIMEOUT_TIME;
@@ -565,6 +566,10 @@ public class EventHandlerManager implements UnloadHandler {
       String name = CommandUtil.getInstance().getHandlerBaseName(packageName, className);
       if (annotation.isAny()) {
         remove(name, HANDLER_ANY_NAME);
+        continue;
+      }
+      if (Arrays.stream(annotation.type()).anyMatch(item -> item == EventHandlerType.OTHER_HANDLER)) {
+        removeOther(name);
         continue;
       }
       // 假设用户不会将target置空(希望)

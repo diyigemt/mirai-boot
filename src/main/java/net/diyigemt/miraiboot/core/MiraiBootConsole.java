@@ -1,5 +1,7 @@
 package net.diyigemt.miraiboot.core;
 
+import net.diyigemt.miraiboot.annotation.ConsoleCommand;
+import net.diyigemt.miraiboot.annotation.EventHandler;
 import net.diyigemt.miraiboot.entity.ConsoleHandlerItem;
 import net.diyigemt.miraiboot.entity.PluginItem;
 import net.diyigemt.miraiboot.interfaces.UnloadHandler;
@@ -7,6 +9,7 @@ import net.diyigemt.miraiboot.mirai.MiraiMain;
 import net.diyigemt.miraiboot.utils.CommandUtil;
 import net.diyigemt.miraiboot.utils.ExceptionHandlerManager;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
@@ -104,11 +107,20 @@ public final class MiraiBootConsole implements UnloadHandler {
 	}
 
 	/**
+	 * <h2>根据指令移除一个指令</h2>
+	 * @param command 指令
+	 * @return 被移除的指令
+	 */
+	public ConsoleHandlerItem removeByCommand(String command) {
+		return store.remove(command);
+	}
+
+	/**
 	 * <h2>根据名字移除一个控制台指令</h2>
 	 * @param name 指令名
 	 * @return 被移除的指令
 	 */
-	public ConsoleHandlerItem remove(String name) {
+	public ConsoleHandlerItem removeByClassName(String name) {
 		if (store.isEmpty()) return null;
 		String t = null;
 		for (Map.Entry<String, ConsoleHandlerItem> next : store.entrySet()) {
@@ -123,7 +135,14 @@ public final class MiraiBootConsole implements UnloadHandler {
 
 	@Override
 	public void onUnload(List<PluginItem> pluginItems) {
-
-
+		for (PluginItem item : pluginItems) {
+			Annotation annotationData = item.getAnnotationData();
+			if (!(annotationData instanceof ConsoleCommand)) {
+				continue;
+			}
+			ConsoleCommand annotation = (ConsoleCommand) annotationData;
+			String value = annotation.value();
+			removeByCommand(value);
+		}
 	}
 }

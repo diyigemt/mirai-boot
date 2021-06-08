@@ -6,6 +6,7 @@ import net.diyigemt.miraiboot.interfaces.UnloadHandler;
 import net.diyigemt.miraiboot.mirai.MiraiMain;
 import net.mamoe.mirai.event.events.BotEvent;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
@@ -21,14 +22,6 @@ import static net.diyigemt.miraiboot.constant.ConstantException.MAX_PARAM_COUNT;
  * @since 1.0.0
  */
 public class ExceptionHandlerManager implements UnloadHandler {
-  @Override
-  public void onUnload(List<PluginItem> pluginItems) {
-    for(PluginItem pluginItem : pluginItems){
-      if(pluginItem.getAnnotationData() instanceof ExceptionHandler){//过滤掉其它Manager的数据
-        //do something...
-      }
-    }
-  }
 
   /**
    * 全局唯一实例
@@ -142,5 +135,25 @@ public class ExceptionHandlerManager implements UnloadHandler {
       }
     }
     return true;
+  }
+
+  /**
+   * 卸载插件
+   * @param pluginItems PluginMgr提供的类清单
+   */
+  @Override
+  public void onUnload(List<PluginItem> pluginItems) {
+    for(PluginItem item : pluginItems){
+      Annotation annotationData = item.getAnnotationData();
+      if (!(annotationData instanceof ExceptionHandler)) continue;
+      ExceptionHandler annotation = (ExceptionHandler) annotationData;
+      String name = annotation.name();
+      if (name.equals("")) {
+        String className = item.getClassName();
+        String packageName = item.getPackageName();
+        name = CommandUtil.getInstance().getHandlerBaseName(packageName, className);
+      }
+      remove(name);
+    }
   }
 }
