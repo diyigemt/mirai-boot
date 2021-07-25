@@ -142,7 +142,7 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass></mainClass>
+                            <mainClass>net.diyigemt.miraiboot.Main</mainClass>
                         </manifest>
                     </archive>
                     <descriptorRefs>
