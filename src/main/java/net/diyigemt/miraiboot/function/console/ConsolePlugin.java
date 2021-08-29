@@ -51,18 +51,18 @@ public class ConsolePlugin {
                 }
                 break;
 
-            case "reload":
-                if(args.get(1) == null){
-                    MiraiMain.logger.error("参数: [PluginName] 不能为空");
-                    break;
-                }
-                Path = args.get(1);
-                if(Path.matches("^.+\\.jar")){
-                    PluginLoader.LoadPlugin(Path);
-                } else {
-                    MiraiMain.logger.error("参数：[Path] 不是有效插件名称");
-                }
-                break;
+//            case "reload":
+//                if(args.get(1) == null){
+//                    MiraiMain.logger.error("参数: [PluginName] 不能为空");
+//                    break;
+//                }
+//                Path = args.get(1);
+//                if(Path.matches("^.+\\.jar")){
+//                    PluginLoader.LoadPlugin(Path);
+//                } else {
+//                    MiraiMain.logger.error("参数：[Path] 不是有效插件名称");
+//                }
+//                break;
         }
     }
 }
