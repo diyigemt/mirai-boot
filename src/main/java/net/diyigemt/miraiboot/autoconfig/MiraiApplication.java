@@ -100,7 +100,7 @@ public class MiraiApplication {
     // 初始化自带控制台指令
     List<Class<?>> consoleCommand = GlobalLoader.getClasses(ConsoleExit.class.getPackageName());
     classes.addAll(consoleCommand);
-    classes.addAll(PluginLoader.getPluginClasses());
+    classes.addAll(PluginLoader.getPluginClasses(mainClass));
     // 开始处理事件handler和autoInit
     List<AutoInitItem> inits = RegisterProcess.AnnotationScanner(classes);
     //事件注册完成，释放所有List

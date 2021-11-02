@@ -1,14 +1,10 @@
 package net.diyigemt.miraiboot.autoconfig;
 
-import net.diyigemt.miraiboot.Main;
 import net.diyigemt.miraiboot.annotation.*;
 import net.diyigemt.miraiboot.core.PluginMgr;
 import net.diyigemt.miraiboot.core.RegisterProcess;
-import net.diyigemt.miraiboot.entity.EventHandlerItem;
 import net.diyigemt.miraiboot.entity.PluginItem;
 import net.diyigemt.miraiboot.mirai.MiraiMain;
-import net.diyigemt.miraiboot.utils.EventHandlerManager;
-import net.diyigemt.miraiboot.utils.ExceptionHandlerManager;
 import net.diyigemt.miraiboot.utils.FileUtil;
 
 import java.io.File;
@@ -44,11 +40,11 @@ public class PluginLoader {
 
   private static List<PluginItem> pluginItems = new ArrayList<>();
 
-  public static List<Class<?>> getPluginClasses() {
+  public static List<Class<?>> getPluginClasses(Class<?> mainClass) {
     MiraiMain.logger.info("开始扫描插件");
     boolean flag = false;
     try {
-      FileUtil.init(Main.class);
+      FileUtil.init(mainClass);
       File[] plugins = FileUtil.getInstance().getPlugins();
       if (plugins.length == 0) {
         MiraiMain.logger.warning("当前MiraiBoot没有加载任何插件");

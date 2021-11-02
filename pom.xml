@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>net.diyigemt.miraiboot</groupId>
     <artifactId>mirai-boot</artifactId>
-    <version>1.0.6-beta</version>
+    <version>1.0.6</version>
     <name>miraiboot</name>
     <description>a simple mirai development framework</description>
     <url>https://github.com/diyigemt/mirai-boot</url>
@@ -213,7 +213,7 @@
                 <configuration>
                     <source>11</source>
                     <target>11</target>
-                    <fork>true</fork>
+<!--                    <fork>true</fork>-->
                     <verbose>true</verbose>
                     <encoding>UTF-8</encoding>
                     <showWarnings>false</showWarnings>
