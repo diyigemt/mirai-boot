@@ -587,6 +587,11 @@ public class MessageEventPack extends BaseEventPack{
 		return event;
 	}
 
+	/**
+	 * 为VoiceMessageBuilder提供的方法
+	 * @param resource 音频资源
+	 * @return 上传好的资源,可以直接加入messageChain中发送
+	 */
 	public Audio uploadAudio(ExternalResource resource) {
 		if (this.isGroup()) {
 			Group group = this.getGroup();
