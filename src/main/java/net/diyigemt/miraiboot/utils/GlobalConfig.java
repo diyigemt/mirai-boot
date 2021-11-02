@@ -82,6 +82,10 @@ public class GlobalConfig {
   public void init() {
     // 注册全局指令头
     Object o = get(ConstantGlobal.DEFAULT_COMMAND_START);
-    if (o != null && !o.toString().equals("")) CommandUtil.getInstance().registerCommandStart(o.toString());
+    if (o != null && !o.toString().equals("")) {
+      CommandUtil.getInstance().registerCommandStart(o.toString());
+    } else {
+      CommandUtil.getInstance().compileCommandPattern();
+    }
   }
 }

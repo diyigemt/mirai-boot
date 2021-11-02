@@ -69,9 +69,9 @@ public enum MessagePreProcessorMessageType {
   /**
    * 语音<br/>
    * https://github.com/mamoe/mirai/blob/dev/mirai-core-api/src/commonMain/kotlin/message/data/Voice.kt
-   * @see net.mamoe.mirai.message.data.Voice
+   * @see net.mamoe.mirai.message.data.Audio
    */
-  Voice,
+  Audio,
   /**
    * 表情市场中的表情<br/>
    * https://github.com/mamoe/mirai/blob/dev/mirai-core-api/src/commonMain/kotlin/message/data/MarketFace.kt

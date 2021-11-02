@@ -14,3 +14,4 @@ miraiboot:
   alias:
   configs: # 全局配置
     DEFAULT_COMMAND_START: ""
+    allow_r18: false

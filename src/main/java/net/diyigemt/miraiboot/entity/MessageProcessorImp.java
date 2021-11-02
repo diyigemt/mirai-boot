@@ -59,7 +59,7 @@ public class MessageProcessorImp implements IMessagePreProcessor<Object> {
         case LightApp:
           classes.add(LightApp.class);
           break;
-        case Voice:
+        case Audio:
           classes.add(Voice.class);
           break;
         case MarketFace:

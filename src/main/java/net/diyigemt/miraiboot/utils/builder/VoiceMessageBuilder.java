@@ -2,6 +2,7 @@ package net.diyigemt.miraiboot.utils.builder;
 
 import net.diyigemt.miraiboot.entity.EnhancedMessageChain;
 import net.diyigemt.miraiboot.entity.HttpProperties;
+import net.mamoe.mirai.contact.Group;
 import net.mamoe.mirai.event.events.MessageEvent;
 import net.mamoe.mirai.message.data.MessageChain;
 import net.mamoe.mirai.message.data.MessageChainBuilder;
@@ -150,7 +151,7 @@ public class VoiceMessageBuilder {
             }else {
                 ExternalResource resource = ExtResBuilder(i);
                 if(isUTTPRequestSuccess){
-                    chain = chain.plus(ExternalResource.Companion.uploadAsVoice(resource, event.getSubject()));
+                    chain = chain.plus(this.messageEventPack.uploadAudio(resource));
                     this.chains.append(chain);
                 }else {
                     chain = chain.plus("联网获取数据失败");
@@ -178,7 +179,7 @@ public class VoiceMessageBuilder {
      */
     public VoiceMessageBuilder add(File file){
         MessageChain chain = new MessageChainBuilder().build();
-        chain = chain.plus(ExternalResource.uploadAsVoice(ExternalResource.create(file), event.getSubject()));
+        chain = chain.plus(this.messageEventPack.uploadAudio(ExternalResource.create(file)));
         chains.append(chain);
         return this;
     }

@@ -7,9 +7,11 @@ import net.diyigemt.miraiboot.utils.EventHandlerManager;
 import net.mamoe.mirai.Bot;
 import net.mamoe.mirai.contact.*;
 import net.mamoe.mirai.event.events.*;
+import net.mamoe.mirai.message.data.Audio;
 import net.mamoe.mirai.message.data.MessageChain;
 import net.mamoe.mirai.message.data.OnlineMessageSource.Incoming;
 import net.mamoe.mirai.message.data.SingleMessage;
+import net.mamoe.mirai.utils.ExternalResource;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -583,6 +585,18 @@ public class MessageEventPack extends BaseEventPack{
 	 */
 	public MessageEvent getEvent() {
 		return event;
+	}
+
+	public Audio uploadAudio(ExternalResource resource) {
+		if (this.isGroup()) {
+			Group group = this.getGroup();
+			return group.uploadAudio(resource);
+		}
+		if (this.isFriend()) {
+			FriendMessageEvent event = (FriendMessageEvent) this.event;
+			return event.getSender().uploadAudio(resource);
+		}
+		return null;
 	}
 
 	public void setEvent(MessageEvent event) {
