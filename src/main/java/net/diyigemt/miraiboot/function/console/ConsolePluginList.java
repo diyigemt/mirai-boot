@@ -12,7 +12,7 @@ import java.util.List;
 @MiraiBootComponent
 public class ConsolePluginList {
 
-	@ConsoleCommand("plugin")
+
 	public void plugin() {
 		List<String> res = PluginMgr.getPluginConnectionList();
 		MiraiMain.logger.info("已加载插件：");

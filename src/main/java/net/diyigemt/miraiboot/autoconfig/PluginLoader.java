@@ -101,7 +101,7 @@ public class PluginLoader {
   private static boolean LoadPlugin(File file) throws Exception {
     String fileName = file.getName();
     if (fileName.endsWith(".jar")) {
-      URL url = new URL("jar:file:/" + file.getAbsolutePath() + "!/");
+      URL url = new URL("jar:file:" + file.getAbsolutePath() + "!/");
       JarURLConnection connection = (JarURLConnection) url.openConnection();
       JarFile jar = connection.getJarFile();
       loader = new JarPluginLoader(new URL[]{url});

@@ -1576,10 +1576,27 @@ MiraiBoot将会对扫描到以上注解的class进行相应的注册和初始化
 
 ## MiraiBoot控制台
 
-​	当MiraiBoot登录QQ完成后，控制台即可使用，控制台拥有以下命令：
+#### TODO：@ConsoleCommand注解
 
-| 指令   | 参数 | 说明                            |
-| ------ | ---- | ------------------------------- |
-| exit   | null | 停止所有BOT活动并关闭程序       |
-| plugin | null | 查询已被加载的所有MiraiBoot插件 |
 
+
+#### 默认命令
+
+当MiraiBoot登录QQ完成后，控制台即可使用，控制台本身拥有以下命令：
+
+| 指令   | 参数                 | 说明                      |
+| ------ | -------------------- | ------------------------- |
+| exit   | null                 | 停止所有BOT活动并关闭程序 |
+| plugin | [list\|load\|unload] | 插件管理命令              |
+
+##### plugin命令
+
+​	MiraiBoot中拥有一个插件管理器，用于加载和管理所有MiraiBoot插件。该管理器由plugin命令进行操作。
+
+​	以下是plugin命令的格式：
+
+| 指令                            | 说明                                   |
+| ------------------------------- | -------------------------------------- |
+| plugin list                     | 查看所有已加载的插件                   |
+| plugin load [path]              | 加载[path]指定的插件（相对或绝对路径） |
+| plugin unload [packageName.jar] | 卸载名为[packageName.jar]的插件        |

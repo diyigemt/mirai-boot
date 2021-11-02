@@ -1,6 +1,7 @@
 package net.diyigemt.miraiboot.core;
 
 import net.diyigemt.miraiboot.autoconfig.JarPluginLoader;
+import net.diyigemt.miraiboot.autoconfig.PluginLoader;
 import net.diyigemt.miraiboot.entity.PluginItem;
 import net.diyigemt.miraiboot.mirai.MiraiMain;
 import net.diyigemt.miraiboot.utils.EventHandlerManager;
@@ -8,10 +9,7 @@ import net.diyigemt.miraiboot.utils.ExceptionHandlerManager;
 
 import java.io.IOException;
 import java.net.JarURLConnection;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class PluginMgr {
 
@@ -69,28 +67,17 @@ public class PluginMgr {
     }
 
     public static void unLoadPlugin(String jarFileName){
-        JarURLConnection connection = getConnection(jarFileName);
-        if(connection == null){
-            MiraiMain.logger.error("未找到插件：" + jarFileName);
-            return;
+        if(unloadProcess(jarFileName)){
+            MiraiMain.logger.info("插件：" + jarFileName + " 卸载成功");
         }
-        try{
-            List<PluginItem> pluginItem = manifests.get(jarFileName);
-            connection.getJarFile().close();//关闭插件jar打开状态
-            RemoveLoader(jarFileName);//销毁该插件的ClassLoader
-            //TODO: 释放该插件的实例化
-            EventHandlerManager.getInstance().onUnload(pluginItem);//注销EventHandler
-            ExceptionHandlerManager.getInstance().onUnload(pluginItem);//注销ExceptionHandler
-            MiraiBootConsole.getInstance().onUnload(pluginItem);//注销控制台指令
-//            List<Map<String, JarPluginLoader>> list = loaders;
-            System.gc();//让JVM启动垃圾回收
-            Plugin_Cache.remove(connection);//从当前清单中除名
-        }catch (IOException e){
-            MiraiMain.logger.error("插件：" + jarFileName + " 卸载失败，请关闭本程序后手动删除插件");
-            return;
+    }
+
+    public static void reLoadPlugin(String jarFileName){
+        String path = Objects.requireNonNull(getConnection(jarFileName)).getJarFileURL().getPath();
+        if(unloadProcess(jarFileName)){
+            PluginLoader.LoadPlugin(path);
         }
 
-        MiraiMain.logger.info("插件：" + jarFileName + " 卸载成功");
     }
 
     private static JarURLConnection getConnection(String jarFileName){
@@ -105,5 +92,30 @@ public class PluginMgr {
         }
 
         return null;
+    }
+
+    private static boolean unloadProcess(String jarFileName){
+        JarURLConnection connection = getConnection(jarFileName);
+        if(connection == null){
+            MiraiMain.logger.error("未找到插件：" + jarFileName);
+            return false;
+        }
+        try{
+            List<PluginItem> pluginItem = manifests.get(jarFileName);
+            connection.getJarFile().close();//关闭插件jar打开状态
+            RemoveLoader(jarFileName);//销毁该插件的ClassLoader
+            //TODO: 释放该插件的实例化
+            EventHandlerManager.getInstance().onUnload(pluginItem);//注销EventHandler
+            ExceptionHandlerManager.getInstance().onUnload(pluginItem);//注销ExceptionHandler
+            MiraiBootConsole.getInstance().onUnload(pluginItem);//注销控制台指令
+//            List<Map<String, JarPluginLoader>> list = loaders;
+            System.gc();//让JVM启动垃圾回收
+            Plugin_Cache.remove(connection);//从当前清单中除名
+        }catch (IOException e){
+            MiraiMain.logger.error("插件：" + jarFileName + " 卸载失败，请关闭本程序后手动删除插件");
+            return false;
+        }
+
+        return true;
     }
 }
