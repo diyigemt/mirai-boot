@@ -1,10 +1,12 @@
 package net.diyigemt.miraiboot.utils;
 
+import net.diyigemt.miraiboot.mirai.MiraiMain;
 import net.mamoe.mirai.Bot;
 
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * <h2>用于bot的统一管理</h2>
@@ -93,9 +95,15 @@ public class BotManager {
   /**
    * <h2>将所有注册的Bot实例登入</h2>
    */
-  public void loginAll() {
+  public int loginAll() {
+    final AtomicInteger count = new AtomicInteger(0);
     STORE.forEach((qq, bot) -> {
       bot.login();
+      if (bot.isOnline()) {
+        count.addAndGet(1);
+        MiraiMain.logger.info("bot:" + bot.getId() + " 登录成功\n");
+      }
     });
+    return count.get();
   }
 }

@@ -7,6 +7,7 @@ import net.diyigemt.miraiboot.constant.FunctionId;
 import net.diyigemt.miraiboot.entity.AutoInitItem;
 import net.diyigemt.miraiboot.entity.ConfigFile;
 import net.diyigemt.miraiboot.entity.ExceptionHandlerItem;
+import net.diyigemt.miraiboot.entity.TimerItem;
 import net.diyigemt.miraiboot.exception.MultipleParameterException;
 import net.diyigemt.miraiboot.permission.CheckPermission;
 import net.diyigemt.miraiboot.utils.CommandUtil;
@@ -17,6 +18,7 @@ import net.diyigemt.miraiboot.utils.GlobalConfig;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -179,5 +181,12 @@ public class RegisterProcess {
             String value = annotation.value();
             MiraiBootConsole.getInstance().on(value, clazz, method);
         }
+    }
+    private static void handleTimer(Class<?> clazz) {
+        Arrays.stream(clazz.getMethods()).forEach(method -> {
+            if (!method.isAnnotationPresent(TimerHandler.class)) return;
+            TimerHandler annotation = method.getAnnotation(TimerHandler.class);
+            TimerItem item = new TimerItem(annotation.name(), clazz, method, annotation.value());
+        });
     }
 }

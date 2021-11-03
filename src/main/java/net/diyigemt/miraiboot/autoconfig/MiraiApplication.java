@@ -155,8 +155,8 @@ public class MiraiApplication {
     System.gc();//清理插件加载时因各种失败而变得无用的class
     // 初始化完成 统一登录
     MiraiMain.logger.info("初始化完成 开始登录bot");
-    BotManager.getInstance().loginAll();
-    MiraiMain.logger.info("bot登录成功 系统启动完成");
+    int botCount = BotManager.getInstance().loginAll();
+    MiraiMain.logger.info(botCount + "个bot登录成功 系统启动完成");
     // 阻塞主线程
 //    Map<String, List<PluginItem>> text = PluginMgr.manifests;
 //    int i = 0;
