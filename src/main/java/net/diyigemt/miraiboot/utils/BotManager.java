@@ -101,7 +101,7 @@ public class BotManager {
       bot.login();
       if (bot.isOnline()) {
         count.addAndGet(1);
-        MiraiMain.logger.info("bot:" + bot.getId() + " 登录成功\n");
+        MiraiMain.logger.info("bot:" + bot.getId() + " 登录成功");
       }
     });
     return count.get();

@@ -97,6 +97,7 @@ public class MiraiApplication {
     classes.add(AuthMgr.class);
     // 初始化permission数据库
     classes.add(PermissionDAO.class);
+    classes.add(TimerHandlerManager.class);
     // 初始化自带控制台指令
     List<Class<?>> consoleCommand = GlobalLoader.getClasses(ConsoleExit.class.getPackageName());
     classes.addAll(consoleCommand);

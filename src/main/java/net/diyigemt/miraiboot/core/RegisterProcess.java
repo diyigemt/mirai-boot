@@ -1,7 +1,6 @@
 package net.diyigemt.miraiboot.core;
 
 import net.diyigemt.miraiboot.annotation.*;
-import net.diyigemt.miraiboot.constant.ConstantGlobal;
 import net.diyigemt.miraiboot.constant.EventHandlerType;
 import net.diyigemt.miraiboot.constant.FunctionId;
 import net.diyigemt.miraiboot.entity.AutoInitItem;
@@ -13,7 +12,6 @@ import net.diyigemt.miraiboot.permission.CheckPermission;
 import net.diyigemt.miraiboot.utils.CommandUtil;
 import net.diyigemt.miraiboot.utils.EventHandlerManager;
 import net.diyigemt.miraiboot.utils.ExceptionHandlerManager;
-import net.diyigemt.miraiboot.utils.GlobalConfig;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -176,17 +174,24 @@ public class RegisterProcess {
     }
     private static void handleComponent(Class<?> clazz) {
         for (Method method : clazz.getMethods()) {
-            if (!method.isAnnotationPresent(ConsoleCommand.class)) continue;
-            ConsoleCommand annotation = method.getAnnotation(ConsoleCommand.class);
-            String value = annotation.value();
-            MiraiBootConsole.getInstance().on(value, clazz, method);
+            if (method.isAnnotationPresent(ConsoleCommand.class)) {
+                handleConsoleCommand(clazz, method);
+                continue;
+            }
+            if (method.isAnnotationPresent(TimerHandler.class)) {
+                handleTimer(clazz, method);
+            }
         }
     }
-    private static void handleTimer(Class<?> clazz) {
-        Arrays.stream(clazz.getMethods()).forEach(method -> {
-            if (!method.isAnnotationPresent(TimerHandler.class)) return;
-            TimerHandler annotation = method.getAnnotation(TimerHandler.class);
-            TimerItem item = new TimerItem(annotation.name(), clazz, method, annotation.value());
-        });
+
+    private static void handleConsoleCommand(Class<?> clazz, Method method) {
+        ConsoleCommand annotation = method.getAnnotation(ConsoleCommand.class);
+        String value = annotation.value();
+        MiraiBootConsole.getInstance().on(value, clazz, method);
+    }
+
+    private static void handleTimer(Class<?> clazz, Method method) {
+        TimerHandler annotation = method.getAnnotation(TimerHandler.class);
+        TimerItem item = new TimerItem(annotation.name(), clazz, method, annotation.value());
     }
 }

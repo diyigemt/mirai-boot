@@ -22,7 +22,7 @@ import static net.diyigemt.miraiboot.constant.ConstantGlobal.DEFAULT_EVENT_NET_T
 
 /**
  * <h2>事件总处理器</h2>
- * 管理着所有注册的事件 包括消息事件和上下文监听事件和强制触发事件<be/>
+ * 管理着所有注册的事件 包括消息事件和上下文监听事件和强制触发事件<br/>
  *
  * @author diyigemt
  * @author Heythem723

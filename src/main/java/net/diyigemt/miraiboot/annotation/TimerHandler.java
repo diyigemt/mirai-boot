@@ -35,6 +35,7 @@ public @interface TimerHandler {
 
   /**
    * timer的名字<br/>
+   * 全局标志一个独一无二的timer,不能重名<br/>
    * 会在配置或执行出错时在log中打印
    * @since 1.0.7
    */
