@@ -912,6 +912,10 @@ public class TestNext {
 
 更详细的内容可以看`MessageEventPack#onNext`、`EventHandlerNext`
 
+## 定时任务
+
+//TODO
+
 ## 异常处理
 
 `miraiboot`的异常处理分为局部异常处理和全局异常处理
@@ -1203,7 +1207,7 @@ permit cancel reply @1235472346
 
 MiraiBoot支持插件式开发模式
 
-若采用插件式开发，miraiboot的依赖版本需要为1.0.5+，需要去[Releasev1.0.5](https://github.com/diyigemt/mirai-boot/releases/)中下载miraiboot的核心包mirai-boot-1.0.5-core.jar单独运行，并将打包后的插件放置在./data/plugin中
+若采用插件式开发，miraiboot的依赖版本需要为1.0.5+，需要去[Release](https://github.com/diyigemt/mirai-boot/releases/)中下载miraiboot的核心包mirai-boot-x.x.x-core.jar单独运行，并将打包后的插件放置在./data/plugin中
 
 ### MiraiBootPlugin插件类
 
