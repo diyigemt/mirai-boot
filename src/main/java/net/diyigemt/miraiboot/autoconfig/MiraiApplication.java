@@ -26,6 +26,7 @@ import org.yaml.snakeyaml.Yaml;
 import java.io.*;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -79,7 +80,7 @@ public class MiraiApplication {
       return;
     }
     try {
-      config = new Yaml().loadAs(new InputStreamReader(new FileInputStream(configFile)), ConfigFile.class);
+      config = new Yaml().loadAs(new InputStreamReader(new FileInputStream(configFile), StandardCharsets.UTF_8), ConfigFile.class);
     } catch (FileNotFoundException e) {
       e.printStackTrace();
       MiraiMain.logger.error("配置文件读取出错");

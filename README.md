@@ -86,7 +86,7 @@ miraiboot是是对mirai框架的简单Java封装。
 <dependency>
         <groupId>net.diyigemt.miraiboot</groupId>
         <artifactId>mirai-boot</artifactId>
-        <version>1.0.6</version>
+        <version>1.0.7</version>
 </dependency>
 ```
 
