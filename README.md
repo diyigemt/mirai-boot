@@ -1207,7 +1207,7 @@ permit cancel reply @1235472346
 
 MiraiBoot支持插件式开发模式
 
-若采用插件式开发，miraiboot的依赖版本需要为1.0.5+，需要去[Release](https://github.com/diyigemt/mirai-boot/releases/)中下载miraiboot的核心包mirai-boot-x.x.x-core.jar单独运行，并将打包后的插件放置在./data/plugin中
+若采用插件式开发，miraiboot的依赖版本需要为1.0.6+，需要去[Release](https://github.com/diyigemt/mirai-boot/releases/)中下载miraiboot的核心包mirai-boot-x.x.x-core.jar单独运行，并将打包后的插件放置在./data/plugin中
 
 ### MiraiBootPlugin插件类
 
