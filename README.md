@@ -57,6 +57,18 @@ Please note that for various reasons, developers may **stop updating** or **dele
 而现在因为事情太多了目前这个项目已经失去了及时维护的可能(通过最后的开发分支也能看出来qwq)<br/>
 我只能说尽量维护吧
 
+### 给还在继续使用该框架的用户
+对不起qwq<br/>
+如果需要更新mirai的核心版本,可以在项目的pom文件中直接覆盖父级项目的依赖版本<br/>
+```xml
+<dependency>
+            <groupId>net.mamoe</groupId>
+            <artifactId>mirai-core-jvm</artifactId>
+            <version>// version to override</version>
+</dependency>
+```
+不过跨大版本号(**目前使用的是2.7.1**)**可能**会出现问题<br/>
+如果出问题了可以发issue通知我,我会及时修复
 ## 介绍
 
 miraiboot是是对mirai框架的简单Java封装。
