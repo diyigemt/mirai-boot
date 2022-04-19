@@ -50,6 +50,13 @@ Please note that for various reasons, developers may **stop updating** or **dele
 
 ---
 
+## 谢罪
+可以的话建议使用其他更好的框架<br/>
+现在的mirai社区已经有更多更好的集成了mirai的java开发框架了<br/>
+就如开发文档开头说的，这个项目是我在mirai初期苦于没有一个好用的java开发框架而建立的<br/>
+而现在因为事情太多了目前这个项目已经失去了及时维护的可能(通过最后的开发分支也能看出来qwq)<br/>
+我只能说尽量维护吧
+
 ## 介绍
 
 miraiboot是是对mirai框架的简单Java封装。
@@ -300,13 +307,13 @@ public class Test {
 
 将受到注解的方法指定为消息事件处理器
 
-| 类型               | 属性名 | 默认值              | 说明                                                       |
-| ------------------ | ------ | ------------------- | ---------------------------------------------------------- |
+| 类型               | 属性名 | 默认值              | 说明                            |
+| ------------------ | ------ | ------------------- |-------------------------------|
 | String             | target | ""                  | 匹配的指令名，只有消息中包含该指令名才会触发消息事件处理器 |
-| String             | start  | ""                  | 指令开头                                                   |
-| String(正则)       | split  | "\\s+"              | 用于分离参数的正则表达式                                   |
-| EventHandlerType[] | type   | MESSAGE_HANDLER_ALL | 指定需要处理的消息类型                                     |
-| boolean            | isAny  | false               | 为true时忽略type和target，即处理所有消息事件               |
+| String             | start  | ""                  | 指令开头                          |
+| String(正则)       | split  | "\\s+"              | 用于分离参数的正则表达式                  |
+| EventHandlerType[] | type   | MESSAGE_HANDLER_ALL | 指定需要处理的消息类型                   |
+| boolean            | isAny  | false               | 为true时忽略除了type的所有设置，即处理所有消息事件 |
 
 ##### `target`：
 
@@ -354,7 +361,7 @@ public void test1() {}
 
 ##### `isAny`：
 
-当其值为true时，注册一个强制触发的消息事件处理器，忽略target，split，start，type的参数设置，处理所有类型的消息事件。
+当其值为true时，注册一个强制触发的消息事件处理器，忽略target，split，start的参数设置，处理所有类型的消息事件。
 
 #### MessageEventPack
 
