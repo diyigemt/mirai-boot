@@ -7,7 +7,6 @@ import net.diyigemt.miraiboot.utils.EventHandlerManager;
 import net.mamoe.mirai.Bot;
 import net.mamoe.mirai.contact.*;
 import net.mamoe.mirai.event.events.*;
-import net.mamoe.mirai.message.data.Audio;
 import net.mamoe.mirai.message.data.MessageChain;
 import net.mamoe.mirai.message.data.OnlineMessageSource.Incoming;
 import net.mamoe.mirai.message.data.SingleMessage;
@@ -592,7 +591,7 @@ public class MessageEventPack extends BaseEventPack{
 	 * @param resource 音频资源
 	 * @return 上传好的资源,可以直接加入messageChain中发送
 	 */
-	public Audio uploadAudio(ExternalResource resource) {
+	public net.mamoe.mirai.message.data.OfflineAudio uploadAudio(ExternalResource resource) {
 		if (this.isGroup()) {
 			Group group = this.getGroup();
 			return group.uploadAudio(resource);
