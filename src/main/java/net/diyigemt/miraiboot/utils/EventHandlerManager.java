@@ -225,7 +225,7 @@ public class EventHandlerManager implements UnloadHandler {
     for (EventHandlerItem handler : eventHandlerItems) {
       boolean isAny = target.equals(HANDLER_ANY_NAME);
       EventHandlerType[] type = handler.getType();
-      if (!checkEventType(type, eventPack)) return null;
+      if (!checkEventType(type, eventPack)) continue;
       Method method = handler.getHandler();
       // 判断Filter 用于过滤强制触发事件
       if (method.isAnnotationPresent(MessageFilter.class) || method.isAnnotationPresent(MessageFilters.class)) {
